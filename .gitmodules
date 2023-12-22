@@ -1,0 +1,4 @@
+
+[submodule "lib/munit"]
+	path = lib/munit
+	url = git@github.com:nemequ/munit.git

@@ -1,0 +1,586 @@
+#include "dcc.h"
+
+#include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+
+int (*dcc_debug_log)(char const *format, ...) = NULL;
+
+// `1` の半ビットの転送継続時間の最小値
+dcc_TimeMicroSec const dcc_minOneHalfBitSentPeriod = 55UL;
+
+// `1` の半ビットの転送継続時間の最大値
+dcc_TimeMicroSec const dcc_maxOneHalfBitSentPeriod = 61UL;
+
+// 受信した `1` の半ビットの許容時間の最小値
+dcc_TimeMicroSec const dcc_minOneHalfBitReceivedPeriod = 52UL;
+
+// 受信した `1` の半ビットの許容時間の最大値
+dcc_TimeMicroSec const dcc_maxOneHalfBitReceivedPeriod = 64UL;
+
+// `0` の半ビットの転送継続時間の最小値
+dcc_TimeMicroSec const dcc_minZeroHalfBitSentPeriod = 95UL;
+
+// `0` の半ビットの転送継続時間の最大値
+dcc_TimeMicroSec const dcc_maxZeroHalfBitSentPeriod = 9900UL;
+
+// 引き伸ばされた `0` ビットの総和継続時間の最大値
+dcc_TimeMicroSec const dcc_maxStretchedZeroBitPeriod = 12000UL;
+
+// 受信した `0` の半ビットの許容時間の最小値
+dcc_TimeMicroSec const dcc_minZeroHalfBitReceivedPeriod = 90UL;
+
+// 受信した `0` の半ビットの許容時間の最大値
+dcc_TimeMicroSec const dcc_maxZeroHalfBitReceivedPeriod = 10000UL;
+
+// 転送した `1` の半ビットの時間の差の最大値
+dcc_TimeMicroSec const dcc_maxOneHalfBitSentPeriodDiff = 3UL;
+
+// 受信した `1` の半ビットの時間の差の最大値
+dcc_TimeMicroSec const dcc_maxOneHalfBitReceivedPeriodDiff = 6UL;
+
+static unsigned long uldiff(unsigned long const a, unsigned long const b) { return a > b ? a - b : b - a; }
+
+dcc_Bit dcc_getBit(dcc_Bits32 const *const bits, size_t const index) {
+  return (dcc_Bit)((bits[index / 32] >> (31 - index % 32)) & 1);
+}
+
+void dcc_setBit(dcc_Bits32 *const bits, size_t const index, dcc_Bit const bit) {
+  if (bit == 0) {
+    bits[index / 32] &= ~(DCC_BITS32_C(1) << (31 - index % 32));
+  } else {
+    bits[index / 32] |= DCC_BITS32_C(1) << (31 - index % 32);
+  }
+}
+
+struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *array, size_t const size) {
+  return (struct dcc_SignalBuffer){ array, array + size, array, array };
+}
+
+dcc_TimeMicroSec *nextSignalBufferPointer(struct dcc_SignalBuffer const buffer, dcc_TimeMicroSec const *const pointer) {
+  dcc_TimeMicroSec const *const next = pointer + 1;
+  return next == buffer.last ? buffer.head : (dcc_TimeMicroSec *) next;
+}
+
+enum dcc_Result dcc_writeSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const signal) {
+  DCC_DEBUG_LOG("dcc_writeSignalBuffer(buffer: %p, signal: %d)", buffer, signal);
+  dcc_TimeMicroSec const *const nextWriteAt = nextSignalBufferPointer(*buffer, buffer->writeAt);
+  if (nextWriteAt == buffer->readAt) return dcc_Failure;
+  *buffer->writeAt = signal;
+  buffer->writeAt = (dcc_TimeMicroSec *) nextWriteAt;
+  return dcc_Success;
+}
+
+void dcc_writesSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const *const signals,
+                            size_t const signalsSize, size_t *const writtenSize) {
+  for (*writtenSize = 0; *writtenSize < signalsSize; (*writtenSize)++)
+    if (dcc_writeSignalBuffer(buffer, signals[*writtenSize]) == dcc_Failure) break;
+}
+
+enum dcc_Result dcc_readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
+  if (buffer->readAt == buffer->writeAt) return dcc_Failure;
+  *signal = *buffer->readAt;
+  *buffer->readAt = 0;
+  buffer->readAt = nextSignalBufferPointer(*buffer, buffer->readAt);
+  return dcc_Success;
+}
+
+void dcc_readsSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signals,
+                           size_t const signalsSize, size_t *const readSize) {
+  for (*readSize = 0; *readSize < signalsSize; (*readSize)++)
+    if (dcc_readSignalBuffer(buffer, signals + *readSize) == dcc_Failure) break;
+}
+
+enum dcc_Result dcc_decodeSignal(dcc_TimeMicroSec const period1, dcc_TimeMicroSec const period2, dcc_Bit *const bit) {
+  if (period1 >= dcc_minOneHalfBitReceivedPeriod && period1 <= dcc_maxOneHalfBitReceivedPeriod &&
+      uldiff(period1, period2) <= dcc_maxOneHalfBitReceivedPeriodDiff) {
+    *bit = DCC_BIT_C(1);
+    return dcc_Success;
+  }
+  if (period1 >= dcc_minZeroHalfBitReceivedPeriod && period1 <= dcc_maxZeroHalfBitReceivedPeriod &&
+      period2 >= dcc_minZeroHalfBitReceivedPeriod && period2 <= dcc_maxZeroHalfBitReceivedPeriod &&
+      period1 + period2 <= dcc_maxStretchedZeroBitPeriod) {
+    *bit = DCC_BIT_C(0);
+    return dcc_Success;
+  }
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_decodeSignals(dcc_TimeMicroSec const *const signals, size_t const signalsSize,
+                                  size_t *const decodedSingalsSize, dcc_Bits32 *const bits, size_t const head,
+                                  size_t const bitsSize, size_t *const writtenBitsSize) {
+  *decodedSingalsSize = 0;
+  *writtenBitsSize = 0;
+  if (signalsSize < 3) return dcc_Success;
+  size_t signalsIndex = 0;
+  *writtenBitsSize = 0;
+  enum dcc_Result result = dcc_Success;
+  while (2 * signalsIndex + 2 < signalsSize && head + *writtenBitsSize < bitsSize) {
+    dcc_Bit bit;
+    if (dcc_decodeSignal(signals[2 * signalsIndex + 1] - signals[2 * signalsIndex],
+                         signals[2 * signalsIndex + 2] - signals[2 * signalsIndex + 1], &bit)) {
+      dcc_setBit(bits, head + *writtenBitsSize, bit);
+      (*writtenBitsSize)++;
+    } else {
+      result = dcc_Failure;
+    }
+    signalsIndex++;
+  }
+  *decodedSingalsSize = 2 * signalsIndex;
+  return result;
+}
+
+enum dcc_Result dcc_consumeThroughPreamble(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
+                                           size_t *const next) {
+  DCC_DEBUG_LOG("consumeThroughPreamble(bits: %p, head: %d, bitsSize: %d, next: %p)", bits, head, bitsSize, next);
+  int count = 0;
+  size_t i;
+  for (i = head; i < bitsSize; i++) {
+    if (dcc_getBit(bits, i))
+      count++;
+    else {
+      if (count > 12) {
+        *next = i;
+        return dcc_Success;
+      }
+      count = 0;
+    }
+  }
+  if (count > 12) {
+    *next = i;
+    return dcc_Success;
+  }
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_consumeBit(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize, dcc_Bit expected,
+                               size_t *const next) {
+  DCC_DEBUG_LOG("consumeBit(bits: %p, head: %d, bitsSize: %d, expected: %d, next: %p)", bits, head, bitsSize, expected,
+                next);
+  if (head >= bitsSize) return dcc_Failure;
+  if (dcc_getBit(bits, head) != expected) return dcc_Failure;
+  *next = head + 1;
+  return dcc_Success;
+}
+
+enum dcc_Result dcc_consumePacketStartBit(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
+                                          size_t *const next) {
+  DCC_DEBUG_LOG("consumePacketStartBit(bits: %p, head: %d, bitsSize: %d, next: %p)", bits, head, bitsSize, next);
+  return dcc_consumeBit(bits, head, bitsSize, 0, next);
+}
+
+enum dcc_Result dcc_consumeByte(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
+                                uint8_t *const data, size_t *const next) {
+  DCC_DEBUG_LOG("consumeByte(bits: %p, head: %d, bitsSize: %d, data: %p, next: %p)", bits, head, bitsSize, data, next);
+  size_t i;
+  *data = 0;
+  for (i = 0; head + i < bitsSize && i < 8; i++) *data = (uint8_t)(((*data) << 1) + dcc_getBit(bits, head + i));
+  if (i < 8) return dcc_Failure;
+  *next = head + i;
+  return dcc_Success;
+}
+
+enum dcc_Result dcc_consumePacketEndBit(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
+                                        size_t *const next) {
+  DCC_DEBUG_LOG("consumePacketEndBit(bits: %p, head: %d, bitsSize: %d, next: %p)", bits, head, bitsSize, next);
+  return dcc_consumeBit(bits, head, bitsSize, 1, next);
+}
+
+enum dcc_Result dcc_consumePacket(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
+                                  uint8_t *const packet, size_t packetSize, size_t *const writtenPacketSize,
+                                  size_t *const next) {
+  DCC_DEBUG_LOG(
+    "consumePacket(bits: %p, head: %d, bitsSize: %d, packet: %p, packetSize: %d, writtenPacketSize: %p, next: %p)",
+    bits, head, bitsSize, packet, packetSize, writtenPacketSize, next);
+  *writtenPacketSize = 0;
+  *next = head;
+  enum dcc_Result result;
+  int i = 0;
+  while (true) {
+    result = dcc_consumePacketStartBit(bits, *next, bitsSize, next);
+    if (result == dcc_Failure) break;
+    if (packetSize <= *writtenPacketSize) return dcc_Failure;
+    result = dcc_consumeByte(bits, *next, bitsSize, packet + *writtenPacketSize, next);
+    if (result == dcc_Failure) return dcc_Failure;
+    (*writtenPacketSize)++;
+    i++;
+  }
+  return dcc_consumePacketEndBit(bits, *next, bitsSize, next);
+}
+
+bool dcc_validatePacket(uint8_t const *const bytes, size_t bytesSize, uint8_t const checksum) {
+  uint8_t sum = 0;
+  for (size_t i = 0; i < bytesSize; i++) sum ^= bytes[i];
+  return sum == checksum;
+}
+
+enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet) {
+  if (dcc_Success == dcc_parseSpeedAndDirectionPacket(bytes, bytesSize, &packet->speedAndDirectionPacket)) {
+    packet->tag = dcc_SpeedAndDirectionPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == dcc_parseAllDecoderResetPacket(bytes, bytesSize)) {
+    packet->tag = dcc_AllDecoderResetPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == dcc_parseAllDecoderIdlePacket(bytes, bytesSize)) {
+    packet->tag = dcc_AllDecoderIdlePacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == dcc_parseDecoderResetPacket(bytes, bytesSize, &packet->decoderResetPacket)) {
+    packet->tag = dcc_DecoderResetPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == dcc_parseHardResetPacket(bytes, bytesSize, &packet->hardResetPacket)) {
+    packet->tag = dcc_HardResetPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success ==
+      dcc_parseDecoderAcknowledgementRequestPacket(bytes, bytesSize, &packet->decoderAcknowledgementRequestPacket)) {
+    packet->tag = dcc_DecoderAcknowledgementRequestPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == dcc_parseFactoryTestInstructionPacket(bytes, bytesSize, &packet->factoryTestInstructionPacket)) {
+    packet->tag = dcc_FactoryTestInstructionPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == dcc_parseConsistControlPacket(bytes, bytesSize, &packet->consistControlPacket)) {
+    packet->tag = dcc_ConsistControlPacketTag;
+    return dcc_Success;
+  }
+  if (dcc_Success == parseSpeedStep128ControlPacket(bytes, bytesSize, &packet->speedStep128ControlPacket)) {
+    packet->tag = dcc_SpeedStep128ControlPacketTag;
+    return dcc_Success;
+  }
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_parseSpeedAndDirectionPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                                 struct dcc_SpeedAndDirectionPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  if ((bytes[1] & 0xC0) != 0x40) return dcc_Failure;  // check packet identifier
+  if (bytes[0] & 0x80) return dcc_Failure;
+  packet->address = bytes[0] & UINT8_C(0x7F);
+  packet->direction = ((int) bytes[1]) & UINT8_C(0x20) ? dcc_Forward : dcc_Backward;
+  packet->speed = (uint8_t)((bytes[1] & UINT8_C(0xF)) << 1) | ((bytes[1]) & UINT8_C(0x10));
+  return dcc_Success;
+}
+
+enum dcc_Result dcc_parseAllDecoderResetPacket(uint8_t const *const bytes, size_t const bytesSize) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0) return dcc_Success;
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_parseAllDecoderIdlePacket(uint8_t const *const bytes, size_t const bytesSize) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  if (bytes[0] == 0xFF && bytes[1] == 0 && bytes[2] == 0xFF) return dcc_Success;
+  return dcc_Failure;
+}
+
+static enum dcc_Result dcc_parseMultiFunctionDecoderAddress(uint8_t const *const bytes, size_t const bytesSize,
+                                                            dcc_Address *const address, size_t *const addressSize) {
+  if (bytesSize < 1) return dcc_Failure;
+  if ((bytes[0] & 0xC0) == 0xC0 && bytes[0] != 0xFF) {
+    if (bytesSize < 2) return dcc_Failure;
+    *address = (dcc_Address)((bytes[0] & 0x3F) << 8 | bytes[1]);
+    *addressSize = 2;
+    return dcc_Success;
+  }
+  *address = bytes[0];
+  *addressSize = 1;
+  return dcc_Success;
+}
+
+enum dcc_Result dcc_parseDecoderResetPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                            struct dcc_DecoderResetPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  size_t addressSize;
+  if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
+    return dcc_Failure;
+  }
+  if (bytesSize < addressSize + 1) return dcc_Failure;
+  if (bytes[addressSize] == 0) return dcc_Success;
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_parseHardResetPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                         struct dcc_HardResetPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  size_t addressSize;
+  if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
+    return dcc_Failure;
+  }
+  if (bytesSize < addressSize + 1) return dcc_Failure;
+  if (bytes[addressSize] == 1) return dcc_Success;
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_parseDecoderAcknowledgementRequestPacket(
+  uint8_t const *const bytes, size_t const bytesSize, struct dcc_DecoderAcknowledgementRequestPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  size_t addressSize;
+  if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
+    return dcc_Failure;
+  }
+  if (bytesSize < addressSize + 1) return dcc_Failure;
+  if (bytes[addressSize] == 0xF) return dcc_Success;
+  return dcc_Failure;
+}
+
+enum dcc_Result dcc_parseFactoryTestInstructionPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                                      struct dcc_FactoryTestInstructionPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  size_t addressSize;
+  if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
+    return dcc_Failure;
+  }
+  if ((bytes[addressSize] & 0xFE) != 2) return dcc_Failure;
+  packet->dataSize = 0;
+  if (addressSize <= bytesSize) {
+    packet->data[0] = bytes[addressSize];
+    packet->dataSize++;
+  }
+  if (addressSize + 1 <= bytesSize) {
+    packet->data[1] = bytes[addressSize + 1];
+    packet->dataSize++;
+  }
+  if (bytesSize < addressSize + 4) return dcc_Success;
+  return dcc_Success;
+}
+
+enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                              struct dcc_ConsistControlPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  size_t addressSize;
+  if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
+    return dcc_Failure;
+  }
+  if (bytesSize < addressSize + 2) return dcc_Failure;
+  if ((bytes[addressSize] & 0xF0) != 0x10) return dcc_Failure;
+  switch (bytes[addressSize] & 0x0F) {
+    case 2:
+      packet->direction = dcc_Forward;
+      break;
+    case 3:
+      packet->direction = dcc_Backward;
+      break;
+    default:
+      return dcc_Failure;
+  }
+  packet->consistAddress = bytes[addressSize + 1] & 0x7F;
+  return dcc_Success;
+}
+
+enum dcc_Result parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                               struct dcc_SpeedStep128ControlPacket *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
+  size_t addressSize;
+  if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
+    return dcc_Failure;
+  }
+  if (bytesSize < addressSize + 2) return dcc_Failure;
+  if ((bytes[addressSize] & 0xFF) != 0x3F) return dcc_Failure;
+  switch (bytes[addressSize + 1] & 0x80) {
+    case 0:
+      packet->direction = dcc_Backward;
+      break;
+    case 1:
+      packet->direction = dcc_Forward;
+      break;
+    default:
+      assert(false);
+  }
+  dcc_Speed const speed = (dcc_Speed)(bytes[addressSize + 1] & 0x7F);
+  switch (speed) {
+    case 0:
+      packet->emergencyStop = false;
+      packet->speed = speed;
+      break;
+    case 1:
+      packet->emergencyStop = true;
+      packet->speed = 0;
+      break;
+    default:
+      packet->emergencyStop = false;
+      packet->speed = speed - 1;
+      break;
+  }
+  return dcc_Success;
+}
+
+void shiftBits(dcc_Bits32 *const restrict bits, size_t const bitsSize, int const shift) {
+  if (shift == 0) return;
+  if (shift > 0) {
+    size_t i;
+    for (i = 0; i < bitsSize / 32 - 1; i++) {
+      bits[i] = (bits[i] << shift) | (bits[i + 1] >> (32 - shift));
+    }
+    bits[i] = bits[i] << shift;
+    return;
+  }
+  for (size_t i = bitsSize / 32 - 1; i > 0; i--) {
+    bits[i] = (bits[i] >> -shift) | (bits[i - 1] << (32 + shift));
+  }
+  bits[0] = bits[0] >> -shift;
+}
+
+int dcc_showSignalBuffer(char *restrict buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer) {
+  return snprintf(buffer, bufferSize, "{\"head\":%p,\"last\":%p,\"readAt\":%p,\"writeAt\":%p}", signalBuffer.head,
+                  signalBuffer.last, signalBuffer.readAt, signalBuffer.writeAt);
+}
+
+int dcc_showBytes(char *restrict buffer, size_t bufferSize, uint8_t const *const packet, size_t const packetSize) {
+  int writtenSize = 0;
+  for (size_t i = 0; i < packetSize; i++) {
+    if (i != 0) writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, " ");
+    writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "%02X", packet[i]);
+  }
+  return writtenSize;
+}
+
+int dcc_showDirection(char *restrict buffer, size_t bufferSize, enum dcc_Direction const direction) {
+  switch (direction) {
+    case dcc_Forward:
+      return snprintf(buffer, bufferSize, "Forward");
+    case dcc_Backward:
+      return snprintf(buffer, bufferSize, "Backward");
+    default:
+      return snprintf(buffer, bufferSize, "Unknown");
+  }
+}
+
+int dcc_showSpeedAndDirectionPacket(char *restrict buffer, size_t bufferSize,
+                                    struct dcc_SpeedAndDirectionPacket const packet) {
+  int writtenSize = 0;
+  writtenSize +=
+    snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "{\"address\":%d,\"direction\":", packet.address);
+  writtenSize += dcc_showDirection(buffer + writtenSize, bufferSize - (size_t) writtenSize, packet.direction);
+  writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, ",\"speed\":%d}", packet.speed);
+  return writtenSize;
+}
+
+int dcc_showDecoderResetPacket(char *restrict buffer, size_t bufferSize, struct dcc_DecoderResetPacket const packet) {
+  return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
+}
+
+int dcc_showHardResetPacket(char *restrict buffer, size_t bufferSize, struct dcc_HardResetPacket const packet) {
+  return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
+}
+
+int dcc_showFactoryTestInstructionPacket(char *restrict buffer, size_t bufferSize,
+                                         struct dcc_FactoryTestInstructionPacket const packet) {
+  int writtenSize = 0;
+  writtenSize +=
+    snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "{\"address\":%d,\"data\":[", packet.address);
+  for (size_t i = 0; i < packet.dataSize; i++) {
+    if (i != 0) writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, ",");
+    writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "%#X", packet.data[i]);
+  }
+  writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "]}");
+  return writtenSize;
+}
+
+int dcc_showDecoderAcknowledgementRequestPacket(char *restrict buffer, size_t bufferSize,
+                                                struct dcc_DecoderAcknowledgementRequestPacket const packet) {
+  return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
+}
+
+int dcc_showConsistControlPacket(char *restrict buffer, size_t bufferSize,
+                                 struct dcc_ConsistControlPacket const packet) {
+  int writtenSize = 0;
+  writtenSize +=
+    snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "{\"address\":%d,\"direction\":", packet.address);
+  writtenSize += dcc_showDirection(buffer + writtenSize, bufferSize - (size_t) writtenSize, packet.direction);
+  writtenSize +=
+    snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, ",\"consistAddress\":%d}", packet.consistAddress);
+  return writtenSize;
+}
+
+int dcc_showSpeedStep128ControlPacket(char *restrict buffer, size_t bufferSize,
+                                      struct dcc_SpeedStep128ControlPacket const packet) {
+  int writtenSize = 0;
+  writtenSize +=
+    snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "{\"address\":%d,\"direction\":", packet.address);
+  writtenSize += dcc_showDirection(buffer + writtenSize, bufferSize - (size_t) writtenSize, packet.direction);
+  writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                          ",\"emergencyStop\":%s,\"speed\":%d}", packet.emergencyStop ? "true" : "false", packet.speed);
+  return writtenSize;
+}
+
+int dcc_showPacket(char *restrict buffer, size_t bufferSize, struct dcc_Packet const packet) {
+  int writtenSize = 0;
+  switch (packet.tag) {
+    case dcc_SpeedAndDirectionPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_SpeedAndDirectionPacketTag\",\"packet\":");
+      writtenSize += dcc_showSpeedAndDirectionPacket(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                                                     packet.speedAndDirectionPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    case dcc_AllDecoderResetPacketTag:
+      return snprintf(buffer, bufferSize, "{\"tag\":\"dcc_AllDecoderResetPacketTag\"}");
+    case dcc_AllDecoderIdlePacketTag:
+      return snprintf(buffer, bufferSize, "{\"tag\":\"dcc_AllDecoderIdlePacketTag\"}");
+    case dcc_DecoderResetPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_DecoderResetPacketTag\",\"packet\":");
+      writtenSize +=
+        dcc_showDecoderResetPacket(buffer + writtenSize, bufferSize - (size_t) writtenSize, packet.decoderResetPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    case dcc_HardResetPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_HardResetPacketTag\",\"packet\":");
+      writtenSize +=
+        dcc_showHardResetPacket(buffer + writtenSize, bufferSize - (size_t) writtenSize, packet.hardResetPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    case dcc_FactoryTestInstructionPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_FactoryTestInstructionPacketTag\",\"packet\":");
+      writtenSize += dcc_showFactoryTestInstructionPacket(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                                                          packet.factoryTestInstructionPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    case dcc_DecoderFlagsSetPacketTag:
+      // 未実装
+      return snprintf(buffer, bufferSize, "{\"tag\":\"dcc_DecoderFlagsSetPacketTag\"}");
+    case dcc_AdvancedAddressingSetPacketTag:
+      // 未実装
+      return snprintf(buffer, bufferSize, "{\"tag\":\"dcc_AdvancedAddressingSetPacketTag\"}");
+    case dcc_DecoderAcknowledgementRequestPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_DecoderAcknowledgementRequestPacketTag\",\"packet\":");
+      writtenSize += dcc_showDecoderAcknowledgementRequestPacket(
+        buffer + writtenSize, bufferSize - (size_t) writtenSize, packet.decoderAcknowledgementRequestPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    case dcc_ConsistControlPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_ConsistControlPacketTag\",\"packet\":");
+      writtenSize += dcc_showConsistControlPacket(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                                                  packet.consistControlPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    case dcc_SpeedStep128ControlPacketTag:
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                              "{\"tag\":\"dcc_SpeedStep128ControlPacketTag\",\"packet\":");
+      writtenSize += dcc_showSpeedStep128ControlPacket(buffer + writtenSize, bufferSize - (size_t) writtenSize,
+                                                       packet.speedStep128ControlPacket);
+      writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
+      return writtenSize;
+    default:
+      return snprintf(buffer, bufferSize, "{\"tag\":\"Not implemented or unknown\"}");
+  }
+}
