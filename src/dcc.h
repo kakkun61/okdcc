@@ -226,18 +226,18 @@ enum dcc_Result parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_
 
 enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
 
-void shiftBits(dcc_Bits32 *const restrict bits, size_t const bitsSize, int const shift);
+void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift);
 
-int dcc_showSignalBuffer(char *restrict buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer);
+int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer);
 
-int dcc_showBytes(char *restrict buffer, size_t bufferSize, uint8_t const *const bytes, size_t const bytesSize);
+int dcc_showBytes(char *buffer, size_t bufferSize, uint8_t const *const bytes, size_t const bytesSize);
 
-int dcc_showDirection(char *restrict buffer, size_t bufferSize, enum dcc_Direction const direction);
+int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const direction);
 
-int dcc_showSpeedAndDirectionPacket(char *restrict buffer, size_t bufferSize,
+int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize,
                                     struct dcc_SpeedAndDirectionPacket const packet);
 
-int dcc_showPacket(char *restrict buffer, size_t bufferSize, struct dcc_Packet const packet);
+int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
 
 extern int (*dcc_debug_log)(char const *format, ...);
 

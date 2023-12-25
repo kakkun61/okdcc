@@ -419,7 +419,7 @@ enum dcc_Result parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_
   return dcc_Success;
 }
 
-void shiftBits(dcc_Bits32 *const restrict bits, size_t const bitsSize, int const shift) {
+void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift) {
   if (shift == 0) return;
   if (shift > 0) {
     size_t i;
@@ -435,12 +435,12 @@ void shiftBits(dcc_Bits32 *const restrict bits, size_t const bitsSize, int const
   bits[0] = bits[0] >> -shift;
 }
 
-int dcc_showSignalBuffer(char *restrict buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer) {
+int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer) {
   return snprintf(buffer, bufferSize, "{\"head\":%p,\"last\":%p,\"readAt\":%p,\"writeAt\":%p}", signalBuffer.head,
                   signalBuffer.last, signalBuffer.readAt, signalBuffer.writeAt);
 }
 
-int dcc_showBytes(char *restrict buffer, size_t bufferSize, uint8_t const *const packet, size_t const packetSize) {
+int dcc_showBytes(char *buffer, size_t bufferSize, uint8_t const *const packet, size_t const packetSize) {
   int writtenSize = 0;
   for (size_t i = 0; i < packetSize; i++) {
     if (i != 0) writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, " ");
@@ -449,7 +449,7 @@ int dcc_showBytes(char *restrict buffer, size_t bufferSize, uint8_t const *const
   return writtenSize;
 }
 
-int dcc_showDirection(char *restrict buffer, size_t bufferSize, enum dcc_Direction const direction) {
+int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const direction) {
   switch (direction) {
     case dcc_Forward:
       return snprintf(buffer, bufferSize, "Forward");
@@ -460,7 +460,7 @@ int dcc_showDirection(char *restrict buffer, size_t bufferSize, enum dcc_Directi
   }
 }
 
-int dcc_showSpeedAndDirectionPacket(char *restrict buffer, size_t bufferSize,
+int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize,
                                     struct dcc_SpeedAndDirectionPacket const packet) {
   int writtenSize = 0;
   writtenSize +=
@@ -470,15 +470,15 @@ int dcc_showSpeedAndDirectionPacket(char *restrict buffer, size_t bufferSize,
   return writtenSize;
 }
 
-int dcc_showDecoderResetPacket(char *restrict buffer, size_t bufferSize, struct dcc_DecoderResetPacket const packet) {
+int dcc_showDecoderResetPacket(char *buffer, size_t bufferSize, struct dcc_DecoderResetPacket const packet) {
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
-int dcc_showHardResetPacket(char *restrict buffer, size_t bufferSize, struct dcc_HardResetPacket const packet) {
+int dcc_showHardResetPacket(char *buffer, size_t bufferSize, struct dcc_HardResetPacket const packet) {
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
-int dcc_showFactoryTestInstructionPacket(char *restrict buffer, size_t bufferSize,
+int dcc_showFactoryTestInstructionPacket(char *buffer, size_t bufferSize,
                                          struct dcc_FactoryTestInstructionPacket const packet) {
   int writtenSize = 0;
   writtenSize +=
@@ -491,12 +491,12 @@ int dcc_showFactoryTestInstructionPacket(char *restrict buffer, size_t bufferSiz
   return writtenSize;
 }
 
-int dcc_showDecoderAcknowledgementRequestPacket(char *restrict buffer, size_t bufferSize,
+int dcc_showDecoderAcknowledgementRequestPacket(char *buffer, size_t bufferSize,
                                                 struct dcc_DecoderAcknowledgementRequestPacket const packet) {
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
-int dcc_showConsistControlPacket(char *restrict buffer, size_t bufferSize,
+int dcc_showConsistControlPacket(char *buffer, size_t bufferSize,
                                  struct dcc_ConsistControlPacket const packet) {
   int writtenSize = 0;
   writtenSize +=
@@ -507,7 +507,7 @@ int dcc_showConsistControlPacket(char *restrict buffer, size_t bufferSize,
   return writtenSize;
 }
 
-int dcc_showSpeedStep128ControlPacket(char *restrict buffer, size_t bufferSize,
+int dcc_showSpeedStep128ControlPacket(char *buffer, size_t bufferSize,
                                       struct dcc_SpeedStep128ControlPacket const packet) {
   int writtenSize = 0;
   writtenSize +=
@@ -518,7 +518,7 @@ int dcc_showSpeedStep128ControlPacket(char *restrict buffer, size_t bufferSize,
   return writtenSize;
 }
 
-int dcc_showPacket(char *restrict buffer, size_t bufferSize, struct dcc_Packet const packet) {
+int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet) {
   int writtenSize = 0;
   switch (packet.tag) {
     case dcc_SpeedAndDirectionPacketTag:
