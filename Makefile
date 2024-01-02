@@ -10,8 +10,8 @@ build: .build/arduino-out/sketch.ino.bootloader.bin
 test: .build/unit
 	.build/unit
 
-.PHONY: app
-app: .build/app
+.PHONY: examples.cli
+examples.cli: .build/examples/cli
 
 .build/unit: .build/munit/munit.o .build/dcc.o .build/unit.o
 	@mkdir -p $(@D)
@@ -38,11 +38,11 @@ app: .build/app
 	  --libraries .,lib\
 	  sketch
 
-.build/app: .build/app.o .build/dcc.o
+.build/examples/cli: .build/examples/cli.o .build/dcc.o
 	@mkdir -p $(@D)
 	clang -o $@ $^
 
-.build/app.o: app/main.c
+.build/examples/cli.o: examples/cli/main.c
 	@mkdir -p $(@D)
 	clang -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
 
