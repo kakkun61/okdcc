@@ -2,3 +2,6 @@
 [submodule "lib/munit"]
 	path = lib/munit
 	url = git@github.com:nemequ/munit.git
+[submodule "lib/lvgl"]
+	path = lib/lvgl
+	url = git@github.com:lvgl/lvgl.git

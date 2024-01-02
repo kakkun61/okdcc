@@ -30,7 +30,13 @@ app: .build/app
 	clang -Ilib -c -o $@ $^
 
 .build/arduino-out/sketch.ino.bootloader.bin: sketch/sketch.ino
-	arduino-cli compile --build-path .build/arduino --build-cache-path .build/arduino-cache --output-dir .build/arduino-out --library src sketch
+	arduino-cli\
+	  compile\
+	  --build-path .build/arduino\
+	  --build-cache-path .build/arduino-cache\
+	  --output-dir .build/arduino-out\
+	  --libraries .,lib\
+	  sketch
 
 .build/app: .build/app.o .build/dcc.o
 	@mkdir -p $(@D)
@@ -60,7 +66,7 @@ setup:
 	# first `arduino-cli config init`
 	arduino-cli config add board_manager.additional_urls https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
 	arduino-cli core install m5stack:esp32
-	arduino-cli lib install M5Stack
+	arduino-cli lib install M5Stack M5GFX
 
 .PHONY: clean
 clean:
