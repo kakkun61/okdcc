@@ -234,8 +234,7 @@ int dcc_showBytes(char *buffer, size_t bufferSize, uint8_t const *const bytes, s
 
 int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const direction);
 
-int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize,
-                                    struct dcc_SpeedAndDirectionPacket const packet);
+int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize, struct dcc_SpeedAndDirectionPacket const packet);
 
 int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
 

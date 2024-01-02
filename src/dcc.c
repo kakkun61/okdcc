@@ -460,8 +460,7 @@ int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const 
   }
 }
 
-int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize,
-                                    struct dcc_SpeedAndDirectionPacket const packet) {
+int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize, struct dcc_SpeedAndDirectionPacket const packet) {
   int writtenSize = 0;
   writtenSize +=
     snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "{\"address\":%d,\"direction\":", packet.address);
@@ -496,8 +495,7 @@ int dcc_showDecoderAcknowledgementRequestPacket(char *buffer, size_t bufferSize,
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
-int dcc_showConsistControlPacket(char *buffer, size_t bufferSize,
-                                 struct dcc_ConsistControlPacket const packet) {
+int dcc_showConsistControlPacket(char *buffer, size_t bufferSize, struct dcc_ConsistControlPacket const packet) {
   int writtenSize = 0;
   writtenSize +=
     snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "{\"address\":%d,\"direction\":", packet.address);
