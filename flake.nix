@@ -7,9 +7,14 @@
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        name = "okdcc";
+        buildInputs = with pkgs; [
+          stdenv
+          xorg.libX11
+        ];
       in
       {
-        name = "okdcc";
+        inherit name;
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             arduino-cli
@@ -18,16 +23,14 @@
             nixpkgs-fmt
             python3
             python310Packages.pyserial
-            stdenv
-          ];
+            valgrind
+          ] ++ buildInputs;
         };
         packages.default = pkgs.stdenv.mkDerivation {
-          pname = "okdcc";
+          pname = name;
           version = "0.0.0";
           src = ./.;
-          nativeBuildInputs = with pkgs; [
-            stdenv
-          ];
+          nativeBuildInputs = buildInputs;
         };
         apps = {
           unit = {

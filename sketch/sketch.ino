@@ -46,7 +46,7 @@ void disp_drv_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *colo
 
   display.startWrite();
   display.setAddrWindow(area->x1, area->y1, w, h);
-  display.writePixels((uint16_t*) color_p, w * h, true);
+  display.writePixels((uint16_t *) color_p, w * h, true);
   display.endWrite();
 
   lv_disp_flush_ready(disp);

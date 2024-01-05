@@ -5,3 +5,6 @@
 [submodule "lib/lvgl"]
 	path = lib/lvgl
 	url = git@github.com:lvgl/lvgl.git
+[submodule "lib/lv_drivers"]
+	path = lib/lv_drivers
+	url = git@github.com:lvgl/lv_drivers.git

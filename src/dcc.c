@@ -377,7 +377,7 @@ enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t
     default:
       return dcc_Failure;
   }
-  packet->consistAddress = (dcc_ConsistAddress) (bytes[addressSize + 1] & 0x7F);
+  packet->consistAddress = (dcc_ConsistAddress)(bytes[addressSize + 1] & 0x7F);
   return dcc_Success;
 }
 
@@ -413,7 +413,7 @@ enum dcc_Result parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_
       break;
     default:
       packet->emergencyStop = false;
-      packet->speed = (dcc_Speed) (speed - 1);
+      packet->speed = (dcc_Speed)(speed - 1);
       break;
   }
   return dcc_Success;

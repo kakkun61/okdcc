@@ -1,9 +1,8 @@
+#include <dcc.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-
-#include <dcc.h>
 
 #define LINE_SIZE 1024
 #define SIGNAL_BUFFER_SIZE 256
