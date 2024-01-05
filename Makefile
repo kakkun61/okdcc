@@ -1,33 +1,42 @@
 PORT ?= /dev/ttyUSB0
 BUILD_DIR ?= .build
 
+ARDUINO_OUTS = sketch.ino.bin sketch.ino.bootloader.bin sketch.ino.elf sketch.ino.map sketch.ino.partitions.bin
+ARDUINO_OUT_PATHS = $(addprefix $(BUILD_DIR)/arduino-out/,$(ARDUINO_OUTS))
+
 .PHONY: all
-all: build $(BUILD_DIR)/unit
+all: build
 
 .PHONY: build
-build: $(BUILD_DIR)/arduino-out/sketch.ino.bootloader.bin $(BUILD_DIR)/unit $(BUILD_DIR)/examples/cli
+build: build.sketch build.test build.example.cli
+
+.PHONY: build.sketch
+build.sketch: $(ARDUINO_OUT_PATHS)
+
+.PHONY: build.example.cli
+build.example.cli: $(BUILD_DIR)/examples/cli
+
+.PHONY: build.test
+build.test: $(BUILD_DIR)/test
 
 .PHONY: install
-install: $(out)/sketch.ino.bootloader.bin $(out)/bin/unit
-
-$(out)/sketch.ino.bootloader.bin: $(BUILD_DIR)/arduino-out/sketch.ino.bootloader.bin
-	install -D $< $@
-
-$(out)/bin/unit: $(BUILD_DIR)/unit
-	install -D --mode 755 $< $@
+install: $(addprefix $(out)/,$(ARDUINO_OUTS)) $(out)/bin/test
 
 .PHONY: test
-test: $(BUILD_DIR)/unit
-	$(BUILD_DIR)/unit
+test: $(BUILD_DIR)/test
+	$(BUILD_DIR)/test
 
-.PHONY: example.cli
-example.cli: $(BUILD_DIR)/examples/cli
+$(out)/%: $(out)/arduino-out/%
+	install -D $< $@
 
-$(BUILD_DIR)/unit: $(BUILD_DIR)/munit/munit.o $(BUILD_DIR)/dcc.o $(BUILD_DIR)/unit.o
+$(out)/bin/test: $(BUILD_DIR)/test
+	install -D --mode 755 $< $@
+
+$(BUILD_DIR)/test: $(BUILD_DIR)/munit/munit.o $(BUILD_DIR)/dcc.o $(BUILD_DIR)/test.o
 	@mkdir -p $(@D)
 	$(CC) -o $@ $^
 
-$(BUILD_DIR)/unit.o: test/main.c
+$(BUILD_DIR)/test.o: test/main.c
 	@mkdir -p $(@D)
 	$(CC) -Wextra -Wno-unused-parameter -Ilib/munit -Isrc -c -o $@ $^
 
@@ -39,7 +48,7 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -Ilib/munit -c -o $@ $^
 
-$(BUILD_DIR)/arduino-out/sketch.ino.bootloader.bin: sketch/sketch.ino
+$(ARDUINO_OUT_PATHS)&: sketch/sketch.ino sketch/sketch.yaml sketch/lv_conf.h
 	arduino-cli\
 	  compile\
 	  --build-path $(BUILD_DIR)/arduino\
