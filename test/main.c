@@ -1,7 +1,6 @@
+#include <dcc.h>
+#include <munit.h>
 #include <stdbool.h>
-
-#include "dcc.h"
-#include "munit.h"
 
 static MunitResult test_decodeSignal_58_58_is_1(MunitParameter const params[], void *fixture) {
   dcc_Bit bit;
@@ -252,7 +251,8 @@ static MunitSuite const suite = {
                        test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0b11000011_is_768, NULL, NULL,
                        MUNIT_TEST_OPTION_NONE, NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE } },
+      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+    { NULL, NULL, NULL, 0, MUNIT_SUITE_OPTION_NONE } },
   1, MUNIT_SUITE_OPTION_NONE
 };
 
