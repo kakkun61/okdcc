@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 #include "dcc.h"
-#include "munit/munit.h"
+#include "munit.h"
 
 static MunitResult test_decodeSignal_58_58_is_1(MunitParameter const params[], void *fixture) {
   dcc_Bit bit;

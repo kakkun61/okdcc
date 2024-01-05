@@ -43,7 +43,7 @@ typedef uint8_t dcc_Speed;
 struct dcc_SpeedAndDirectionPacket {
   dcc_Address address;
   enum dcc_Direction direction;
-  dcc_Speed speed : 5;
+  dcc_Speed speed;
 };
 
 struct dcc_DecoderResetPacket {
@@ -75,14 +75,14 @@ struct dcc_DecoderAcknowledgementRequestPacket {
 struct dcc_ConsistControlPacket {
   dcc_Address address;
   enum dcc_Direction direction;
-  dcc_ConsistAddress consistAddress : 7;
+  dcc_ConsistAddress consistAddress;
 };
 
 struct dcc_SpeedStep128ControlPacket {
   dcc_Address address;
   enum dcc_Direction direction;
-  bool emergencyStop : 1;
-  dcc_Speed speed : 7;
+  bool emergencyStop;
+  dcc_Speed speed;
 };
 
 enum dcc_PacketTag {

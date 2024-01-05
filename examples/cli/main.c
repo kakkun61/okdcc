@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
-#include "dcc.h"
+#include <dcc.h>
 
-size_t const lineSize = 1024;
-size_t const signalBufferSize = 256;
-size_t const signalsSize = 256;
-size_t const bitsSize = 32 * 16;
-size_t const logBufferSize = 1024;
-size_t const bytesSize = 128;
+#define LINE_SIZE 1024
+#define SIGNAL_BUFFER_SIZE 256
+#define SIGNAL_SIZE 256
+#define BITS_SIZE (32 * 16)
+#define LOG_BUFFER_SIZE 1024
+#define BYTES_SIZE 128
 
 #define LOG(...)                                      \
   {                                                   \
@@ -36,18 +37,18 @@ char *readTimeMicroSec(char *line, dcc_TimeMicroSec *const timeMicroSec) {
 
 int main(void) {
   dcc_debug_log = debug_log;
-  char line[lineSize];
+  char line[LINE_SIZE];
   enum dcc_Result result;
-  dcc_TimeMicroSec signalBufferValues[signalBufferSize];
-  struct dcc_SignalBuffer signalBuffer = dcc_initializeSignalBuffer(signalBufferValues, signalBufferSize);
-  dcc_TimeMicroSec signals[signalsSize] = { 0 };
+  dcc_TimeMicroSec signalBufferValues[SIGNAL_BUFFER_SIZE];
+  struct dcc_SignalBuffer signalBuffer = dcc_initializeSignalBuffer(signalBufferValues, SIGNAL_BUFFER_SIZE);
+  dcc_TimeMicroSec signals[SIGNAL_SIZE] = { 0 };
   size_t leftSignalsSize = 0;
-  dcc_Bits32 bits[bitsSize / 32];
+  dcc_Bits32 bits[BITS_SIZE / 32];
   size_t leftBitsSize = 0;
-  uint8_t bytes[bytesSize];
+  uint8_t bytes[BYTES_SIZE];
   size_t leftBytesSize = 0;
-  char logBuffer[logBufferSize] = { 0 };
-  while (0 < printf("signals: ") && NULL != fgets(line, lineSize, stdin) && strlen(line) > 1) {
+  char logBuffer[LOG_BUFFER_SIZE] = { 0 };
+  while (0 < printf("signals: ") && NULL != fgets(line, LINE_SIZE, stdin) && strlen(line) > 1) {
     {
       // ここは、マイコンに実装する場合は割り込みで実行される部分
       LOG("interrupted");
@@ -58,17 +59,17 @@ int main(void) {
         if (dcc_Failure == dcc_writeSignalBuffer(&signalBuffer, timeMicroSec)) {
           LOG("write signal buffer error");
         }
-        dcc_showSignalBuffer(logBuffer, logBufferSize, signalBuffer);
+        dcc_showSignalBuffer(logBuffer, LOG_BUFFER_SIZE, signalBuffer);
         LOG("signal buffer: %s", logBuffer);
       }
     }
     {
       // ここは、マイコンに実装する場合はメインループで実行される部分
       LOG("main loop");
-      dcc_showSignalBuffer(logBuffer, logBufferSize, signalBuffer);
+      dcc_showSignalBuffer(logBuffer, LOG_BUFFER_SIZE, signalBuffer);
       LOG("signal buffer: %s", logBuffer);
       size_t readSize;
-      dcc_readsSignalBuffer(&signalBuffer, signals + leftSignalsSize, signalsSize - leftSignalsSize, &readSize);
+      dcc_readsSignalBuffer(&signalBuffer, signals + leftSignalsSize, SIGNAL_SIZE - leftSignalsSize, &readSize);
       LOG("read size: %lu", readSize);
       for (size_t i = leftSignalsSize; i < leftSignalsSize + readSize; i++) {
         LOG("copied signal: %lu", signals[i]);
@@ -77,13 +78,13 @@ int main(void) {
       size_t decodedSingalsSize;
       size_t writtenBitsSize;
       if (dcc_Failure == dcc_decodeSignals(signals, leftSignalsSize + readSize, &decodedSingalsSize, bits, leftBitsSize,
-                                           bitsSize, &writtenBitsSize)) {
+                                           BITS_SIZE, &writtenBitsSize)) {
         LOG("read signals size: %lu", decodedSingalsSize);
         LOG("written bits size: %lu", writtenBitsSize);
         // デコードでエラーになった
         LOG("decode 1st trial error");
         if (dcc_Failure == dcc_decodeSignals(signals, leftSignalsSize + readSize, &decodedSingalsSize, bits,
-                                             leftBitsSize + 1, bitsSize, &writtenBitsSize)) {
+                                             leftBitsSize + 1, BITS_SIZE, &writtenBitsSize)) {
           LOG("read signals size: %lu", decodedSingalsSize);
           LOG("written bits size: %lu", writtenBitsSize);
           LOG("decode 2nd trial error");
@@ -97,7 +98,7 @@ int main(void) {
       leftSignalsSize = newLeftSignalsSize;
       leftBitsSize = leftBitsSize + writtenBitsSize;
       for (size_t i = 0; i < leftBitsSize; i++) {
-        LOG("decoded bit: %d: %d", i, dcc_getBit(bits, i));
+        LOG("decoded bit: %zu: %d", i, dcc_getBit(bits, i));
       }
       size_t next;
       if (dcc_Failure == dcc_consumeThroughPreamble(bits, 0, leftBitsSize, &next)) {
@@ -107,11 +108,11 @@ int main(void) {
       LOG("consume through preamble success");
       LOG("next: %lu", next);
       size_t writtenBytesSize;
-      if (dcc_Failure == dcc_consumePacket(bits, next, leftBitsSize, bytes, bytesSize, &writtenBytesSize, &next)) {
+      if (dcc_Failure == dcc_consumePacket(bits, next, leftBitsSize, bytes, BYTES_SIZE, &writtenBytesSize, &next)) {
         LOG("consume packet error");
         continue;
       }
-      dcc_showBytes(logBuffer, logBufferSize, bytes, writtenBytesSize);
+      dcc_showBytes(logBuffer, LOG_BUFFER_SIZE, bytes, writtenBytesSize);
       LOG("packet: %s", logBuffer);
       bool valid = dcc_validatePacket(bytes, writtenBytesSize - 1, bytes[writtenBytesSize - 1]);
       LOG("valid: %s", valid ? "true" : "false");
@@ -120,10 +121,10 @@ int main(void) {
         LOG("parse packet error");
         continue;
       }
-      dcc_showPacket(logBuffer, logBufferSize, packet);
+      dcc_showPacket(logBuffer, LOG_BUFFER_SIZE, packet);
       LOG("packet: %s", logBuffer);
       leftBitsSize = leftBitsSize - next;
-      LOG("left bits size: %d", leftBitsSize);
+      LOG("left bits size: %zu", leftBitsSize);
     }
   }
   return EXIT_SUCCESS;

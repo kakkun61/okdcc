@@ -1,54 +1,64 @@
-PORT=/dev/ttyUSB0
+PORT ?= /dev/ttyUSB0
+BUILD_DIR ?= .build
 
 .PHONY: all
-all: build test
+all: build $(BUILD_DIR)/unit
 
 .PHONY: build
-build: .build/arduino-out/sketch.ino.bootloader.bin
+build: $(BUILD_DIR)/arduino-out/sketch.ino.bootloader.bin $(BUILD_DIR)/unit $(BUILD_DIR)/examples/cli
+
+.PHONY: install
+install: $(out)/sketch.ino.bootloader.bin $(out)/bin/unit
+
+$(out)/sketch.ino.bootloader.bin: $(BUILD_DIR)/arduino-out/sketch.ino.bootloader.bin
+	install -D $< $@
+
+$(out)/bin/unit: $(BUILD_DIR)/unit
+	install -D --mode 755 $< $@
 
 .PHONY: test
-test: .build/unit
-	.build/unit
+test: $(BUILD_DIR)/unit
+	$(BUILD_DIR)/unit
 
-.PHONY: examples.cli
-examples.cli: .build/examples/cli
+.PHONY: example.cli
+example.cli: $(BUILD_DIR)/examples/cli
 
-.build/unit: .build/munit/munit.o .build/dcc.o .build/unit.o
+$(BUILD_DIR)/unit: $(BUILD_DIR)/munit/munit.o $(BUILD_DIR)/dcc.o $(BUILD_DIR)/unit.o
 	@mkdir -p $(@D)
-	clang -o $@ $^
+	$(CC) -o $@ $^
 
-.build/unit.o: test/main.c
+$(BUILD_DIR)/unit.o: test/main.c
 	@mkdir -p $(@D)
-	clang -Wextra -Wno-unused-parameter -Ilib -Isrc -c -o $@ $^
+	$(CC) -Wextra -Wno-unused-parameter -Ilib/munit -Isrc -c -o $@ $^
 
-.build/dcc.o: src/dcc.c
+$(BUILD_DIR)/dcc.o: src/dcc.c
 	@mkdir -p $(@D)
-	clang -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
+	$(CC) -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
 
-.build/munit/munit.o: lib/munit/munit.c
+$(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
-	clang -Ilib -c -o $@ $^
+	$(CC) -Ilib/munit -c -o $@ $^
 
-.build/arduino-out/sketch.ino.bootloader.bin: sketch/sketch.ino
+$(BUILD_DIR)/arduino-out/sketch.ino.bootloader.bin: sketch/sketch.ino
 	arduino-cli\
 	  compile\
-	  --build-path .build/arduino\
-	  --build-cache-path .build/arduino-cache\
-	  --output-dir .build/arduino-out\
+	  --build-path $(BUILD_DIR)/arduino\
+	  --build-cache-path $(BUILD_DIR)/arduino-cache\
+	  --output-dir $(BUILD_DIR)/arduino-out\
 	  --libraries .,lib\
 	  sketch
 
-.build/examples/cli: .build/examples/cli.o .build/dcc.o
+$(BUILD_DIR)/examples/cli: $(BUILD_DIR)/examples/cli.o $(BUILD_DIR)/dcc.o
 	@mkdir -p $(@D)
-	clang -o $@ $^
+	$(CC) -o $@ $^
 
-.build/examples/cli.o: examples/cli/main.c
+$(BUILD_DIR)/examples/cli.o: examples/cli/main.c
 	@mkdir -p $(@D)
-	clang -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
+	$(CC) -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
 
 .PHONY: upload
 upload: build
-	arduino-cli upload --port $(PORT) --input-dir .build/arduino-out sketch
+	arduino-cli upload --port $(PORT) --input-dir $(BUILD_DIR)/arduino-out sketch
 
 .PHONY: format
 format: format.c format.nix
@@ -70,4 +80,4 @@ setup:
 
 .PHONY: clean
 clean:
-	-rm -rf .build debug_custom.json debug.cfg esp32.svd
+	-rm -rf $(BUILD_DIR) debug_custom.json debug.cfg esp32.svd

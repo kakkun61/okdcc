@@ -262,9 +262,9 @@ enum dcc_Result dcc_parseSpeedAndDirectionPacket(uint8_t const *const bytes, siz
   assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   if ((bytes[1] & 0xC0) != 0x40) return dcc_Failure;  // check packet identifier
   if (bytes[0] & 0x80) return dcc_Failure;
-  packet->address = bytes[0] & UINT8_C(0x7F);
-  packet->direction = ((int) bytes[1]) & UINT8_C(0x20) ? dcc_Forward : dcc_Backward;
-  packet->speed = (uint8_t)((bytes[1] & UINT8_C(0xF)) << 1) | ((bytes[1]) & UINT8_C(0x10));
+  packet->address = (dcc_Address)(bytes[0] & 0x7F);
+  packet->direction = bytes[1] & 0x20 ? dcc_Forward : dcc_Backward;
+  packet->speed = (uint8_t)(((bytes[1] & 0xF) << 1) | (bytes[1] & 0x10));
   return dcc_Success;
 }
 
@@ -377,7 +377,7 @@ enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t
     default:
       return dcc_Failure;
   }
-  packet->consistAddress = bytes[addressSize + 1] & 0x7F;
+  packet->consistAddress = (dcc_ConsistAddress) (bytes[addressSize + 1] & 0x7F);
   return dcc_Success;
 }
 
@@ -413,7 +413,7 @@ enum dcc_Result parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_
       break;
     default:
       packet->emergencyStop = false;
-      packet->speed = speed - 1;
+      packet->speed = (dcc_Speed) (speed - 1);
       break;
   }
   return dcc_Success;
