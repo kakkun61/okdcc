@@ -8,11 +8,11 @@
 static uint16_t const screenWidth = 320;
 static uint16_t const screenHeight = 240;
 
-static M5GFX display;
+static M5GFX gfx;
 
 void setup() {
   M5.begin();
-  display.init();
+  gfx.init();
   lv_init();
   Serial.begin(115200);
 
@@ -20,16 +20,10 @@ void setup() {
 
   lv_init();
 
-  static lv_disp_draw_buf_t draw_buf;
-  static lv_color_t draw_buf_colors[screenWidth * screenHeight / 10];
-  lv_disp_draw_buf_init(&draw_buf, draw_buf_colors, NULL, screenWidth * screenHeight / 10);
-  static lv_disp_drv_t disp_drv;
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.flush_cb = disp_drv_flush;
-  disp_drv.draw_buf = &draw_buf;
-  disp_drv.hor_res = screenWidth;
-  disp_drv.ver_res = screenHeight;
-  lv_disp_drv_register(&disp_drv);
+  lv_display_t *display = lv_display_create(screenWidth, screenHeight);
+  static uint8_t draw_buffer[screenWidth * screenHeight / 10];
+  lv_display_set_draw_buffers(display, draw_buffer, NULL, screenWidth * screenHeight / 10, LV_DISPLAY_RENDER_MODE_PARTIAL);
+  lv_display_set_flush_cb(display, display_flush);
 
   lv_example_btn_1();
 }
@@ -40,16 +34,16 @@ void loop() {
   delay(5);
 }
 
-void disp_drv_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p) {
+void display_flush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
   unsigned int const w = area->x2 - area->x1 + 1;
   unsigned int const h = area->y2 - area->y1 + 1;
 
-  display.startWrite();
-  display.setAddrWindow(area->x1, area->y1, w, h);
-  display.writePixels((uint16_t *) color_p, w * h, true);
-  display.endWrite();
+  gfx.startWrite();
+  gfx.setAddrWindow(area->x1, area->y1, w, h);
+  gfx.writePixels((uint16_t *) px_map, w * h, true);
+  gfx.endWrite();
 
-  lv_disp_flush_ready(disp);
+  lv_display_flush_ready(display);
 }
 
 static void event_handler(lv_event_t *e) {
