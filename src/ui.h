@@ -1,6 +1,8 @@
 #ifndef DCC_UI_H
 #define DCC_UI_H
 
+#include <lvgl.h>
+
 #define DCC_UI_PACKETS_SIZE 100
 
 enum dcc_ui_ModelTag {
@@ -14,10 +16,11 @@ struct dcc_ui_MonitorModel {
 };
 
 struct dcc_ui_Model {
+  lv_indev_t *buttonsIndev;
   enum dcc_ui_ModelTag tag;
   union {
     struct dcc_ui_MonitorModel monitorModel;
-  };
+  } model;
 };
 
 enum dcc_ui_ViewTag {
@@ -36,15 +39,23 @@ struct dcc_ui_Message {
   enum dcc_ui_MessageTag tag;
 };
 
-struct dcc_ui_Model_Command {
-  struct dcc_ui_Model model;
-  // struct dcc_ui_Command command;
+enum dcc_ui_CommandTag {
+  dcc_ui_NoneCommandTag,
 };
 
-struct dcc_ui_Model_Command dcc_ui_init(void);
+struct dcc_ui_Command {
+  enum dcc_ui_CommandTag tag;
+};
+
+struct dcc_ui_Model_Command {
+  struct dcc_ui_Model model;
+  struct dcc_ui_Command command;
+};
+
+struct dcc_ui_Model_Command dcc_ui_init(lv_indev_t *buttonsIndev);
 
 void dcc_ui_view(struct dcc_ui_Model model);
 
-struct dcc_ui_Message dcc_ui_update(struct dcc_ui_Model model, struct dcc_ui_Message message);
+struct dcc_ui_Command dcc_ui_update(struct dcc_ui_Model model, struct dcc_ui_Message message);
 
 #endif

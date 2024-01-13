@@ -3,6 +3,7 @@ BUILD_DIR ?= .build
 
 ARDUINO_OUTS = sketch.ino.bin sketch.ino.bootloader.bin sketch.ino.elf sketch.ino.map sketch.ino.partitions.bin
 ARDUINO_OUT_PATHS = $(addprefix $(BUILD_DIR)/arduino-out/,$(ARDUINO_OUTS))
+ARDUINO_COMPILE_EXTRA_FLAGS = -DLV_CONF_INCLUDE_SIMPLE -Isketch
 
 LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
@@ -81,25 +82,17 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -Ilib/munit -c -o $@ $^
 
-$(ARDUINO_OUT_PATHS)&: sketch/sketch.ino sketch/sketch.yaml sketch/lv_conf.h
+$(ARDUINO_OUT_PATHS)&: sketch/sketch.ino sketch/sketch.yaml sketch/lv_conf.h src/dcc.c src/dcc.h src/okdcc.h src/ui.c src/ui.h
 	arduino-cli\
 	  compile\
 	  --build-path $(BUILD_DIR)/arduino\
 	  --build-cache-path $(BUILD_DIR)/arduino-cache\
 	  --output-dir $(BUILD_DIR)/arduino-out\
 	  --libraries lib\
-	  --build-property\
-	    compiler.c.extra_flags="\
-	      -DLV_CONF_INCLUDE_SIMPLE\
-	      -Isketch"\
-	  --build-property\
-	    compiler.cpp.extra_flags="\
-	      -DLV_CONF_INCLUDE_SIMPLE\
-	      -Isketch"\
-	  --build-property\
-	    compiler.S.extra_flags="\
-	      -DLV_CONF_INCLUDE_SIMPLE\
-	      -Isketch"\
+	  --library .\
+	  --build-property compiler.c.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
+	  --build-property compiler.cpp.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
+	  --build-property compiler.S.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
 	  sketch
 
 $(BUILD_DIR)/examples/cli: $(BUILD_DIR)/examples/cli.o $(BUILD_DIR)/dcc.o
@@ -114,10 +107,10 @@ $(BUILD_DIR)/mock/ui/x11/lvgl/%.o: $(LVGL_DIR)/src/%.c mock/ui/x11/lv_conf.h
 	@mkdir -p $(@D)
 	$(CC) -Imock/ui/x11 -DLV_CONF_INCLUDE_SIMPLE -c -o $@ $<
 
-$(BUILD_DIR)/ui.o: src/ui.c
+$(BUILD_DIR)/mock/ui/x11/ui.o: src/ui.c
 	@mkdir -p $(@D)
-	$(CC) -Ilib -c -o $@ $<
+	$(CC) -Ilib/lvgl -Imock/ui/x11 -DLV_CONF_INCLUDE_SIMPLE -c -o $@ $<
 
-$(BUILD_DIR)/ui/mock/x11: $(LVGL_MOCK_UI_X11_OBJECTS) $(BUILD_DIR)/ui.o mock/ui/x11/main.c
+$(BUILD_DIR)/ui/mock/x11: $(LVGL_MOCK_UI_X11_OBJECTS) $(BUILD_DIR)/mock/ui/x11/ui.o mock/ui/x11/main.c
 	@mkdir -p $(@D)
-	$(CC) -Ilib -Imock/ui/x11 -Isrc -lX11 -lpthread -lm -DLV_CONF_INCLUDE_SIMPLE -o $@ $^
+	$(CC) -Ilib/lvgl -Imock/ui/x11 -Isrc -lX11 -lpthread -lm -DLV_CONF_INCLUDE_SIMPLE -o $@ $^

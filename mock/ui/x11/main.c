@@ -1,23 +1,27 @@
-#define _DEFAULT_SOURCE // necessary for usleep()
+#define _DEFAULT_SOURCE  // necessary for usleep()
 
+#include <lvgl.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <unistd.h>
-
-#include <lvgl/lvgl.h>
 #include <ui.h>
+#include <unistd.h>
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
-static void view(void);
+void readKeys(lv_indev_t *indev, lv_indev_data_t *data);
 
 int main(void) {
   lv_init();
 
   lv_x11_window_create("OKDCC", SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  view();
+  lv_indev_t *keysIndev = lv_indev_create();
+  lv_indev_set_type(keysIndev, LV_INDEV_TYPE_KEYPAD);
+  lv_indev_set_read_cb(keysIndev, readKeys);
+
+  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(keysIndev);
+  dcc_ui_view(modelCommand.model);
 
   while (1) {
     lv_timer_handler();
@@ -27,34 +31,6 @@ int main(void) {
   return 0;
 }
 
-static void event_handler(lv_event_t *e) {
-  lv_event_code_t code = lv_event_get_code(e);
-
-  if (code == LV_EVENT_CLICKED) {
-    LV_LOG_USER("Clicked");
-  } else if (code == LV_EVENT_VALUE_CHANGED) {
-    LV_LOG_USER("Toggled");
-  }
-}
-
-static void view(void) {
-  lv_obj_t *buttonLabelsContainer = lv_obj_create(lv_scr_act());
-  lv_obj_set_size(buttonLabelsContainer, SCREEN_WIDTH, LV_SIZE_CONTENT);
-  lv_obj_align(buttonLabelsContainer, LV_ALIGN_BOTTOM_MID, 0, 0);
-  lv_obj_set_flex_flow(buttonLabelsContainer, LV_FLEX_FLOW_ROW);
-
-  lv_obj_t *leftButtonLabel = lv_label_create(buttonLabelsContainer);
-  lv_obj_set_flex_grow(leftButtonLabel, 1);
-  lv_label_set_text(leftButtonLabel, "Down");
-  lv_obj_set_style_text_align(leftButtonLabel, LV_TEXT_ALIGN_CENTER, 0);
-
-  lv_obj_t *centerButtonLabel = lv_label_create(buttonLabelsContainer);
-  lv_obj_set_flex_grow(centerButtonLabel, 1);
-  lv_label_set_text(centerButtonLabel, "Up");
-  lv_obj_set_style_text_align(centerButtonLabel, LV_TEXT_ALIGN_CENTER, 0);
-
-  lv_obj_t *rightButtonLabel = lv_label_create(buttonLabelsContainer);
-  lv_obj_set_flex_grow(rightButtonLabel, 1);
-  lv_label_set_text(rightButtonLabel, "Enter");
-  lv_obj_set_style_text_align(rightButtonLabel, LV_TEXT_ALIGN_CENTER, 0);
+void readKeys(lv_indev_t *indev, lv_indev_data_t *data) {
+  // TODO
 }
