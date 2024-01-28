@@ -35,7 +35,7 @@ test: $(BUILD_DIR)/test/unit
 	$(BUILD_DIR)/test/unit
 
 .PHONY: upload
-upload: build
+upload: build.sketch
 	arduino-cli upload --port $(PORT) --input-dir $(BUILD_DIR)/arduino-out sketch
 
 .PHONY: format
