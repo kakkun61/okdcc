@@ -1,9 +1,9 @@
+#ifndef DCC_H
+#define DCC_H
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#ifndef DCC_H
-#define DCC_H
 
 typedef unsigned long dcc_TimeMicroSec;
 
@@ -62,10 +62,12 @@ struct dcc_FactoryTestInstructionPacket {
 
 struct dcc_DecoderFlagsSetPacket {
   // 未実装
+  void *unimplemented;
 };
 
 struct dcc_AdvancedAddressingSetPacket {
   // 未実装
+  void *unimplemented;
 };
 
 struct dcc_DecoderAcknowledgementRequestPacket {
@@ -238,11 +240,11 @@ int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize, struct dcc_
 
 int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
 
-extern int (*dcc_debug_log)(char const *format, ...);
+extern int (*dcc_debug_log)(char const *const file, int const line, char const *format, ...);
 
 #define DCC_DEBUG_LOG(...)                         \
   {                                                \
-    if (dcc_debug_log) dcc_debug_log(__VA_ARGS__); \
+    if (dcc_debug_log) dcc_debug_log(__FILE__, __LINE__, __VA_ARGS__); \
   }
 
 #endif

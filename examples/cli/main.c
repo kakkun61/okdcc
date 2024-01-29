@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #define LINE_SIZE 1024
 #define SIGNAL_BUFFER_SIZE 256
@@ -18,8 +19,8 @@
     fprintf(stderr, "\n");                            \
   }
 
-int debug_log(char const *format, ...) {
-  fprintf(stderr, "%s (%d): ", __FILE__, __LINE__);
+int debug_log(char const *const file, int const line, char const *format, ...) {
+  fprintf(stderr, "%s (%d): ", file, line);
   va_list args;
   va_start(args, format);
   int const result = vfprintf(stderr, format, args);

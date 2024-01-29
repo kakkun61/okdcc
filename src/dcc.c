@@ -4,8 +4,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
 
-int (*dcc_debug_log)(char const *format, ...) = NULL;
+int (*dcc_debug_log)(char const *const file, int const line, char const *format, ...) = NULL;
 
 // `1` の半ビットの転送継続時間の最小値
 dcc_TimeMicroSec const dcc_minOneHalfBitSentPeriod = 55UL;
