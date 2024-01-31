@@ -25,7 +25,7 @@ void setup() {
   lv_log_register_print_cb(printLog);
 #endif
 
-  lv_tick_set_cb((lv_tick_get_cb_t)millis);
+  lv_tick_set_cb((lv_tick_get_cb_t) millis);
 
   lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
   static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10];
@@ -78,7 +78,7 @@ void readButtons(lv_indev_t *indev, lv_indev_data_t *data) {
 
 #if LV_USE_LOG
 void printLog(lv_log_level_t level, const char *buf) {
-  static const char * lvl_prefix[] = {"Trace", "Info", "Warn", "Error", "User"};
+  static const char *lvl_prefix[] = { "Trace", "Info", "Warn", "Error", "User" };
   Serial.printf("%s: %s\n", lvl_prefix[level], buf);
 }
 #endif
