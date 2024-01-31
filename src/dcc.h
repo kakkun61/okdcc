@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+#define BYTES_CAPACITY 8
 
 typedef unsigned long dcc_TimeMicroSec;
 
@@ -18,6 +21,12 @@ typedef bool dcc_Bit;
 enum dcc_Result {
   dcc_Failure = 0,
   dcc_Success = 1,
+};
+
+enum dcc_StreamParserResult {
+  dcc_StreamParserResult_Failure = 0,
+  dcc_StreamParserResult_Continue = 1,
+  dcc_StreamParserResult_Success = 2,
 };
 
 struct dcc_SignalBuffer {
@@ -116,6 +125,39 @@ struct dcc_Packet {
   };
 };
 
+struct dcc_SignalStreamParser {
+  dcc_TimeMicroSec signals[2];
+  size_t signalsSize;
+};
+
+enum dcc_BitStreamParserState {
+  dcc_BitStreamParserState_InPreamble,
+  dcc_BitStreamParserState_InByte,
+  dcc_BitStreamParserState_AfterByte,
+};
+
+struct dcc_BitStreamParser {
+  enum dcc_BitStreamParserState state;
+  union {
+    struct {
+      size_t oneBitsCount;
+    } inPreamble;
+    struct {
+      uint8_t byte;
+      size_t bitCount;
+    } inByte;
+  };
+  uint8_t bytes[BYTES_CAPACITY];
+  size_t bytesSize;
+};
+
+struct dcc_Decoder {
+  dcc_TimeMicroSec previousSignal;
+  struct dcc_SignalBuffer signalBuffer;
+  struct dcc_SignalStreamParser signalStreamParser;
+  struct dcc_BitStreamParser bitStreamParser;
+};
+
 // `1` の半ビットの転送継続時間の最小値
 extern dcc_TimeMicroSec const dcc_minOneHalfBitSentPeriod;
 
@@ -168,36 +210,27 @@ void dcc_readsSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroS
 enum dcc_Result dcc_decodeSignal(dcc_TimeMicroSec const period1, dcc_TimeMicroSec const period2, dcc_Bit *const bit);
 
 // 線路電圧の変化の時刻列をビット列に変換する。
-// `signals` は時刻列を表わす配列へのポインターである。
+// `signals` は時刻列を表す配列へのポインターである。
 // `signalsSize` は `signals` の要素数である。
 // `readSignalsSize` は読み込まれた `signals` の要素数である
 // `bits` は変換したビットを格納する配列へのポインターである。
-// `head` は `bits` の先頭のビットのインデックスである（`head` ビットには書き込まれない）。
+// `head` は `bits` の先頭のビットのインデックスである。
 // `bitsSize` は `bits` のビット数である。
 // `writtenBitsSize` は書き込まれた `bits` のビット数である。
-// 返り値はエラーなくデコードできたかどうかである。エラーがあった場合はそのビットをスキップしてデコードされる。
+// 返り値はエラーなくデコードできたかどうかである。エラーがあった場合はそれまでにデコードしたビットを捨ててその後デコードされたビットが結果となる。
 enum dcc_Result dcc_decodeSignals(dcc_TimeMicroSec const *const signals, size_t const signalsSize,
                                   size_t *const decodedSingalsSize, dcc_Bits32 *const bits, size_t const head,
                                   size_t const bitsSize, size_t *const writtenBitsSize);
 
-enum dcc_Result dcc_consumeThroughPreamble(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
-                                           size_t *const next);
+struct dcc_SignalStreamParser dcc_initializeSignalStreamParser(void);
 
-enum dcc_Result dcc_consumePacketStartBit(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
-                                          size_t *const next);
+enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const parser, dcc_TimeMicroSec const signal,
+                                           dcc_Bit *const bit);
 
-extern enum dcc_Result (*dcc_consumeAddress)(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
-                                             dcc_Address *const address, size_t *const next);
+struct dcc_BitStreamParser dcc_initializeBitStreamParser(void);
 
-enum dcc_Result dcc_consumeByte(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
-                                uint8_t *const data, size_t *const next);
-
-enum dcc_Result dcc_consumePacketEndBit(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
-                                        size_t *const next);
-
-enum dcc_Result dcc_consumePacket(dcc_Bits32 const *const bits, size_t const head, size_t const bitsSize,
-                                  uint8_t *const bytes, size_t bytesSize, size_t *const writtenPacketSize,
-                                  size_t *const next);
+enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, uint8_t bytes[],
+                                        size_t *const bytesSize);
 
 bool dcc_validatePacket(uint8_t const *const bytes, size_t bytesSize, uint8_t const checksum);
 
@@ -223,10 +256,15 @@ enum dcc_Result dcc_parseFactoryTestInstructionPacket(uint8_t const *const bytes
 enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t const bytesSize,
                                               struct dcc_ConsistControlPacket *const packet);
 
-enum dcc_Result parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_t const bytesSize,
-                                               struct dcc_SpeedStep128ControlPacket *const packet);
+enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_t const bytesSize,
+                                                   struct dcc_SpeedStep128ControlPacket *const packet);
 
 enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
+
+struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, size_t const singalBufferSize);
+
+enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,
+                                       struct dcc_Packet *const packet);
 
 void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift);
 
@@ -240,11 +278,24 @@ int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize, struct dcc_
 
 int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
 
+// エラー時に呼び出される関数を登録する。ログを出力し、終了や再起動もすべし。
+extern void (*dcc_error_log)(char const *const file, int const line, char const *format, ...);
+
+#define DCC_ERROR_LOG(...)                                                     \
+  {                                                                            \
+    if (dcc_error_log != NULL) dcc_error_log(__FILE__, __LINE__, __VA_ARGS__); \
+    exit(EXIT_FAILURE);                                                        \
+  }
+
 extern int (*dcc_debug_log)(char const *const file, int const line, char const *format, ...);
 
-#define DCC_DEBUG_LOG(...)                         \
-  {                                                \
-    if (dcc_debug_log) dcc_debug_log(__FILE__, __LINE__, __VA_ARGS__); \
+#define DCC_DEBUG_LOG(...) (dcc_debug_log == NULL ? 0 : dcc_debug_log(__FILE__, __LINE__, __VA_ARGS__))
+
+#define DCC_UNREACHABLE(...) DCC_ERROR_LOG("unreachable: "__VA_ARGS__)
+
+#define DCC_ASSERT(e)                                    \
+  {                                                      \
+    if (!(e)) DCC_ERROR_LOG("assertion failed: %s", #e); \
   }
 
 #endif
