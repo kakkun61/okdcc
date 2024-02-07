@@ -9,6 +9,8 @@ LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
 LVGL_MOCK_UI_X11_OBJECTS = $(patsubst $(LVGL_DIR)/src/%,$(BUILD_DIR)/mock/ui/x11/lvgl/%,$(LVGL_SOURCES:.c=.o))
 
+CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter
+
 .PHONY: all
 all: build
 
@@ -72,11 +74,11 @@ $(BUILD_DIR)/test/unit: $(BUILD_DIR)/munit/munit.o $(BUILD_DIR)/dcc.o $(BUILD_DI
 
 $(BUILD_DIR)/test/unit.o: test/unit/main.c
 	@mkdir -p $(@D)
-	$(CC) -Wall -Wextra -Wno-unused-parameter -Ilib/munit -Isrc -c -o $@ $^
+	$(CC) $(CC_OPTS) -Ilib/munit -Isrc -c -o $@ $^
 
 $(BUILD_DIR)/dcc.o: src/dcc.c
 	@mkdir -p $(@D)
-	$(CC) -Wall -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
+	$(CC) $(CC_OPTS) -Isrc -c -o $@ $^
 
 $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
@@ -101,7 +103,7 @@ $(BUILD_DIR)/examples/cli: $(BUILD_DIR)/examples/cli.o $(BUILD_DIR)/dcc.o
 
 $(BUILD_DIR)/examples/cli.o: examples/cli/main.c
 	@mkdir -p $(@D)
-	$(CC) -Wall -Wextra -Wconversion -Wdeprecated -Isrc -c -o $@ $^
+	$(CC) $(CC_OPTS) -Isrc -c -o $@ $^
 
 $(BUILD_DIR)/mock/ui/x11/lvgl/%.o: $(LVGL_DIR)/src/%.c mock/ui/x11/lv_conf.h
 	@mkdir -p $(@D)
@@ -109,8 +111,8 @@ $(BUILD_DIR)/mock/ui/x11/lvgl/%.o: $(LVGL_DIR)/src/%.c mock/ui/x11/lv_conf.h
 
 $(BUILD_DIR)/mock/ui/x11/ui.o: src/ui.c
 	@mkdir -p $(@D)
-	$(CC) -Wall -Wextra -Wconversion -Wdeprecated -Ilib/lvgl -Imock/ui/x11 -DLV_CONF_INCLUDE_SIMPLE -c -o $@ $<
+	$(CC) $(CC_OPTS) -Ilib/lvgl -Imock/ui/x11 -DLV_CONF_INCLUDE_SIMPLE -c -o $@ $<
 
 $(BUILD_DIR)/ui/mock/x11: $(LVGL_MOCK_UI_X11_OBJECTS) $(BUILD_DIR)/mock/ui/x11/ui.o mock/ui/x11/main.c
 	@mkdir -p $(@D)
-	$(CC) -Wall -Wextra -Wconversion -Wdeprecated -Ilib/lvgl -Imock/ui/x11 -Isrc -lX11 -lpthread -lm -DLV_CONF_INCLUDE_SIMPLE -o $@ $^
+	$(CC) $(CC_OPTS) -Ilib/lvgl -Imock/ui/x11 -Isrc -lX11 -lpthread -lm -DLV_CONF_INCLUDE_SIMPLE -o $@ $^

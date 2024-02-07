@@ -16,8 +16,6 @@ typedef uint32_t dcc_Bits32;
 
 typedef bool dcc_Bit;
 
-#define DCC_BIT_C(n) (n)
-
 enum dcc_Result {
   dcc_Failure = 0,
   dcc_Success = 1,
@@ -199,28 +197,9 @@ struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *array, size
 
 enum dcc_Result dcc_writeSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const signal);
 
-void dcc_writesSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const *const signals,
-                            size_t const signalsSize, size_t *const writtenSize);
-
 enum dcc_Result dcc_readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal);
 
-void dcc_readsSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signals,
-                           size_t const signalsSize, size_t *const readSize);
-
 enum dcc_Result dcc_decodeSignal(dcc_TimeMicroSec const period1, dcc_TimeMicroSec const period2, dcc_Bit *const bit);
-
-// 線路電圧の変化の時刻列をビット列に変換する。
-// `signals` は時刻列を表す配列へのポインターである。
-// `signalsSize` は `signals` の要素数である。
-// `readSignalsSize` は読み込まれた `signals` の要素数である
-// `bits` は変換したビットを格納する配列へのポインターである。
-// `head` は `bits` の先頭のビットのインデックスである。
-// `bitsSize` は `bits` のビット数である。
-// `writtenBitsSize` は書き込まれた `bits` のビット数である。
-// 返り値はエラーなくデコードできたかどうかである。エラーがあった場合はそれまでにデコードしたビットを捨ててその後デコードされたビットが結果となる。
-enum dcc_Result dcc_decodeSignals(dcc_TimeMicroSec const *const signals, size_t const signalsSize,
-                                  size_t *const decodedSingalsSize, dcc_Bits32 *const bits, size_t const head,
-                                  size_t const bitsSize, size_t *const writtenBitsSize);
 
 struct dcc_SignalStreamParser dcc_initializeSignalStreamParser(void);
 
@@ -232,7 +211,7 @@ struct dcc_BitStreamParser dcc_initializeBitStreamParser(void);
 enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, uint8_t bytes[],
                                         size_t *const bytesSize);
 
-bool dcc_validatePacket(uint8_t const *const bytes, size_t bytesSize, uint8_t const checksum);
+enum dcc_Result dcc_validatePacket(uint8_t const *const bytes, size_t bytesSize, uint8_t const checksum);
 
 enum dcc_Result dcc_parseSpeedAndDirectionPacket(uint8_t const *const bytes, size_t const bytesSize,
                                                  struct dcc_SpeedAndDirectionPacket *const packet);
@@ -266,6 +245,7 @@ struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, s
 enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,
                                        struct dcc_Packet *const packet);
 
+// `bits` の内容を `shift` ビットだけ右にシフトする（負の数なら左にシフトする）。
 void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift);
 
 int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer);

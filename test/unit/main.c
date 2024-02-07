@@ -5,7 +5,7 @@
 static MunitResult test_decodeSignal_58_58_is_1(MunitParameter const params[], void *fixture) {
   dcc_Bit bit;
   munit_assert_int(dcc_Success, ==, dcc_decodeSignal(58UL, 58UL, &bit));
-  munit_assert_uint32(DCC_BITS32_C(1), ==, bit);
+  munit_assert_uint32(1, ==, bit);
   return MUNIT_OK;
 }
 
@@ -18,97 +18,7 @@ static MunitResult test_decodeSignal_51_58_is_failure(MunitParameter const param
 static MunitResult test_decodeSignal_100_9000_is_0(MunitParameter const params[], void *fixture) {
   dcc_Bit bit;
   munit_assert_int(dcc_Success, ==, dcc_decodeSignal(100UL, 9000UL, &bit));
-  munit_assert_uint32(DCC_BITS32_C(0), ==, bit);
-  return MUNIT_OK;
-}
-
-static MunitResult test_decodeSignals_1_58_116_is_1(MunitParameter const params[], void *fixture) {
-  dcc_TimeMicroSec const signals[] = { DCC_BITS32_C(1), DCC_BITS32_C(58), DCC_BITS32_C(116) };
-  dcc_Bits32 bits[1];
-  size_t readSignalsSize;
-  size_t writtenBitsSize;
-  enum dcc_Result const result = dcc_decodeSignals(signals, 3, &readSignalsSize, bits, 0, 32, &writtenBitsSize);
-  munit_assert_int(dcc_Success, ==, result);
-  munit_assert_size(2, ==, readSignalsSize);
-  munit_assert_size(1, ==, writtenBitsSize);
-  dcc_Bits32 one = DCC_BITS32_C(1);
-  munit_assert_uint32(one << 31, ==, bits[0] & (one << 31));
-  return MUNIT_OK;
-}
-
-static MunitResult test_decodeSignals_1_58_116_174_232_is_1_1(MunitParameter const params[], void *fixture) {
-  dcc_TimeMicroSec const signals[] = { DCC_BITS32_C(1), DCC_BITS32_C(58), DCC_BITS32_C(116), DCC_BITS32_C(174),
-                                       DCC_BITS32_C(232) };
-  dcc_Bits32 bits[1];
-  size_t readSignalsSize;
-  size_t writtenBitsSize;
-  enum dcc_Result const result = dcc_decodeSignals(signals, 5, &readSignalsSize, bits, 0, 32, &writtenBitsSize);
-  munit_assert_int(dcc_Success, ==, result);
-  munit_assert_size(4, ==, readSignalsSize);
-  munit_assert_size(2, ==, writtenBitsSize);
-  dcc_Bits32 one = DCC_BITS32_C(1);
-  munit_assert_uint32(one << 31, ==, bits[0] & (one << 31));
-  munit_assert_uint32(one << 30, ==, bits[0] & (one << 30));
-  return MUNIT_OK;
-}
-
-static MunitResult test_decodeSignals_1_52_110_is_failure(MunitParameter const params[], void *fixture) {
-  dcc_TimeMicroSec const signals[] = { DCC_BITS32_C(1), DCC_BITS32_C(52), DCC_BITS32_C(110) };
-  dcc_Bits32 bits[1];
-  size_t readSignalsSize;
-  size_t writtenBitsSize;
-  enum dcc_Result const result = dcc_decodeSignals(signals, 3, &readSignalsSize, bits, 0, 32, &writtenBitsSize);
-  munit_assert_int(dcc_Failure, ==, result);
-  munit_assert_size(2, ==, readSignalsSize);
-  munit_assert_size(0, ==, writtenBitsSize);
-  dcc_Bits32 one = DCC_BITS32_C(1);
-  munit_assert_uint32(0, ==, bits[0] & (one << 31));
-  return MUNIT_OK;
-}
-
-static MunitResult test_consumeThroughPreamble_empty_is_failure(MunitParameter const params[], void *fixture) {
-  dcc_Bits32 const bits[0];
-  size_t next;
-  enum dcc_Result const result = dcc_consumeThroughPreamble(bits, 0, 0, &next);
-  munit_assert_int(dcc_Failure, ==, result);
-  return MUNIT_OK;
-}
-
-static MunitResult test_consumeThroughPreamble_1_1_1_1_1_1_1_1_1_1_1_1_is_failure(MunitParameter const params[],
-                                                                                  void *fixture) {
-  dcc_Bits32 const bits[1] = { ~DCC_BITS32_C(0) };
-  size_t next;
-  enum dcc_Result const result = dcc_consumeThroughPreamble(bits, 0, 12, &next);
-  munit_assert_int(dcc_Failure, ==, result);
-  return MUNIT_OK;
-}
-
-static MunitResult test_consumeThroughPreamble_1_1_1_1_1_1_1_1_1_1_1_1_1_is_success(MunitParameter const params[],
-                                                                                    void *fixture) {
-  dcc_Bits32 const bits[1] = { ~DCC_BITS32_C(0) };
-  size_t next;
-  enum dcc_Result const result = dcc_consumeThroughPreamble(bits, 0, 13, &next);
-  munit_assert_int(dcc_Success, ==, result);
-  munit_assert_size(13, ==, next);
-  return MUNIT_OK;
-}
-
-static MunitResult test_consumeThroughPreamble_X_1_1_1_1_1_1_1_1_1_1_1_1_is_failure(MunitParameter const params[],
-                                                                                    void *fixture) {
-  dcc_Bits32 const bits[1] = { ~DCC_BITS32_C(0) };
-  size_t next;
-  enum dcc_Result const result = dcc_consumeThroughPreamble(bits, 1, 13, &next);
-  munit_assert_int(dcc_Failure, ==, result);
-  return MUNIT_OK;
-}
-
-static MunitResult test_consumeThroughPreamble_X_1_1_1_1_1_1_1_1_1_1_1_1_1_1_is_success(MunitParameter const params[],
-                                                                                        void *fixture) {
-  dcc_Bits32 const bits[1] = { ~DCC_BITS32_C(0) };
-  size_t next;
-  enum dcc_Result const result = dcc_consumeThroughPreamble(bits, 1, 14, &next);
-  munit_assert_int(dcc_Success, ==, result);
-  munit_assert_size(14, ==, next);
+  munit_assert_uint32(0, ==, bit);
   return MUNIT_OK;
 }
 
@@ -191,29 +101,6 @@ static MunitSuite const suite = {
         { "(58, 58) is 1", test_decodeSignal_58_58_is_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(100, 9000) is 0", test_decodeSignal_100_9000_is_0, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(51, 58) is falure", test_decodeSignal_51_58_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
-    { "/dcc_decodeSignals",
-      (MunitTest[]){
-        { "([1, 58, 116]) is [1]", test_decodeSignals_1_58_116_is_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "([1, 58, 116, 174, 232]) is [1, 1]", test_decodeSignals_1_58_116_174_232_is_1_1, NULL, NULL,
-          MUNIT_TEST_OPTION_NONE, NULL },
-        { "([1, 52, 110]) is failure", test_decodeSignals_1_52_110_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE,
-          NULL },
-        { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
-    { "/dcc_consumeThroughPreamble",
-      (MunitTest[]){
-        { "([]) is failure", test_consumeThroughPreamble_empty_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) is failure",
-          test_consumeThroughPreamble_1_1_1_1_1_1_1_1_1_1_1_1_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) is success",
-          test_consumeThroughPreamble_1_1_1_1_1_1_1_1_1_1_1_1_1_is_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "([X, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) is failure",
-          test_consumeThroughPreamble_X_1_1_1_1_1_1_1_1_1_1_1_1_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "([X, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) is success",
-          test_consumeThroughPreamble_X_1_1_1_1_1_1_1_1_1_1_1_1_1_1_is_success, NULL, NULL, MUNIT_TEST_OPTION_NONE,
-          NULL },
         { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
       NULL, 1, MUNIT_SUITE_OPTION_NONE },
     { "/dcc_validatePacket",

@@ -78,24 +78,12 @@ enum dcc_Result dcc_writeSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc
   return dcc_Success;
 }
 
-void dcc_writesSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const *const signals,
-                            size_t const signalsSize, size_t *const writtenSize) {
-  for (*writtenSize = 0; *writtenSize < signalsSize; (*writtenSize)++)
-    if (dcc_writeSignalBuffer(buffer, signals[*writtenSize]) == dcc_Failure) break;
-}
-
 enum dcc_Result dcc_readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
   if (buffer->readAt == buffer->writeAt) return dcc_Failure;
   *signal = *buffer->readAt;
   *buffer->readAt = 0;
   buffer->readAt = nextSignalBufferPointer(*buffer, buffer->readAt);
   return dcc_Success;
-}
-
-void dcc_readsSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signals,
-                           size_t const signalsSize, size_t *const readSize) {
-  for (*readSize = 0; *readSize < signalsSize; (*readSize)++)
-    if (dcc_readSignalBuffer(buffer, signals + *readSize) == dcc_Failure) break;
 }
 
 struct dcc_SignalStreamParser dcc_initializeSignalStreamParser(void) {
@@ -112,8 +100,8 @@ enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const 
       parser->signals[parser->signalsSize] = signal;
       parser->signalsSize++;
       return dcc_StreamParserResult_Continue;
-    case 2:
-      enum dcc_Result result =
+    case 2: {
+      enum dcc_Result const result =
         dcc_decodeSignal(parser->signals[1] - parser->signals[0], signal - parser->signals[1], bit);
       parser->signals[0] = signal;
       parser->signalsSize = 1;
@@ -125,6 +113,7 @@ enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const 
         default:
           DCC_UNREACHABLE("result: %d", result);
       }
+    }
     default:
       DCC_UNREACHABLE("signalsSize: %d", parser->signalsSize);
   }
@@ -158,7 +147,7 @@ enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser
       parser->inByte.bitCount = 0;
       return dcc_StreamParserResult_Continue;
     case dcc_BitStreamParserState_InByte:
-      parser->inByte.byte = parser->inByte.byte | (bit << (7 - parser->inByte.bitCount));
+      parser->inByte.byte |= (bit << (7 - parser->inByte.bitCount));
       parser->inByte.bitCount++;
       if (parser->inByte.bitCount < 8) return dcc_StreamParserResult_Continue;
       parser->bytes[parser->bytesSize] = parser->inByte.byte;
@@ -186,47 +175,23 @@ enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser
 enum dcc_Result dcc_decodeSignal(dcc_TimeMicroSec const period1, dcc_TimeMicroSec const period2, dcc_Bit *const bit) {
   if (period1 >= dcc_minOneHalfBitReceivedPeriod && period1 <= dcc_maxOneHalfBitReceivedPeriod &&
       uldiff(period1, period2) <= dcc_maxOneHalfBitReceivedPeriodDiff) {
-    *bit = DCC_BIT_C(1);
+    *bit = 1;
     return dcc_Success;
   }
   if (period1 >= dcc_minZeroHalfBitReceivedPeriod && period1 <= dcc_maxZeroHalfBitReceivedPeriod &&
       period2 >= dcc_minZeroHalfBitReceivedPeriod && period2 <= dcc_maxZeroHalfBitReceivedPeriod &&
       period1 + period2 <= dcc_maxStretchedZeroBitPeriod) {
-    *bit = DCC_BIT_C(0);
+    *bit = 0;
     return dcc_Success;
   }
   return dcc_Failure;
 }
 
-enum dcc_Result dcc_decodeSignals(dcc_TimeMicroSec const *const signals, size_t const signalsSize,
-                                  size_t *const decodedSingalsSize, dcc_Bits32 *const bits, size_t const head,
-                                  size_t const bitsSize, size_t *const writtenBitsSize) {
-  *decodedSingalsSize = 0;
-  *writtenBitsSize = 0;
-  if (signalsSize < 3) return dcc_Success;
-  size_t signalsIndex = 0;
-  *writtenBitsSize = 0;
-  enum dcc_Result result = dcc_Success;
-  while (2 * signalsIndex + 2 < signalsSize && head + *writtenBitsSize < bitsSize) {
-    dcc_Bit bit;
-    if (dcc_decodeSignal(signals[2 * signalsIndex + 1] - signals[2 * signalsIndex],
-                         signals[2 * signalsIndex + 2] - signals[2 * signalsIndex + 1], &bit)) {
-      dcc_setBit(bits, head + *writtenBitsSize, bit);
-      (*writtenBitsSize)++;
-    } else {
-      result = dcc_Failure;
-      *writtenBitsSize = 0;
-    }
-    signalsIndex++;
-  }
-  *decodedSingalsSize = 2 * signalsIndex;
-  return result;
-}
-
-bool dcc_validatePacket(uint8_t const *const bytes, size_t bytesSize, uint8_t const checksum) {
+enum dcc_Result dcc_validatePacket(uint8_t const *const bytes, size_t bytesSize, uint8_t const checksum) {
   uint8_t sum = 0;
   for (size_t i = 0; i < bytesSize; i++) sum ^= bytes[i];
-  return sum == checksum;
+  if (sum == checksum) return dcc_Success;
+  return dcc_Failure;
 }
 
 enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet) {
@@ -273,7 +238,6 @@ enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSi
 enum dcc_Result dcc_parseSpeedAndDirectionPacket(uint8_t const *const bytes, size_t const bytesSize,
                                                  struct dcc_SpeedAndDirectionPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   if ((bytes[1] & 0xC0) != 0x40) return dcc_Failure;  // check packet identifier
   if (bytes[0] & 0x80) return dcc_Failure;
   packet->address = (dcc_Address)(bytes[0] & 0x7F);
@@ -284,14 +248,12 @@ enum dcc_Result dcc_parseSpeedAndDirectionPacket(uint8_t const *const bytes, siz
 
 enum dcc_Result dcc_parseAllDecoderResetPacket(uint8_t const *const bytes, size_t const bytesSize) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   if (bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0) return dcc_Success;
   return dcc_Failure;
 }
 
 enum dcc_Result dcc_parseAllDecoderIdlePacket(uint8_t const *const bytes, size_t const bytesSize) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   if (bytes[0] == 0xFF && bytes[1] == 0 && bytes[2] == 0xFF) return dcc_Success;
   return dcc_Failure;
 }
@@ -313,7 +275,6 @@ static enum dcc_Result dcc_parseMultiFunctionDecoderAddress(uint8_t const *const
 enum dcc_Result dcc_parseDecoderResetPacket(uint8_t const *const bytes, size_t const bytesSize,
                                             struct dcc_DecoderResetPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   size_t addressSize;
   if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
     return dcc_Failure;
@@ -326,7 +287,6 @@ enum dcc_Result dcc_parseDecoderResetPacket(uint8_t const *const bytes, size_t c
 enum dcc_Result dcc_parseHardResetPacket(uint8_t const *const bytes, size_t const bytesSize,
                                          struct dcc_HardResetPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   size_t addressSize;
   if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
     return dcc_Failure;
@@ -339,7 +299,6 @@ enum dcc_Result dcc_parseHardResetPacket(uint8_t const *const bytes, size_t cons
 enum dcc_Result dcc_parseDecoderAcknowledgementRequestPacket(
   uint8_t const *const bytes, size_t const bytesSize, struct dcc_DecoderAcknowledgementRequestPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   size_t addressSize;
   if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
     return dcc_Failure;
@@ -352,7 +311,6 @@ enum dcc_Result dcc_parseDecoderAcknowledgementRequestPacket(
 enum dcc_Result dcc_parseFactoryTestInstructionPacket(uint8_t const *const bytes, size_t const bytesSize,
                                                       struct dcc_FactoryTestInstructionPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   size_t addressSize;
   if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
     return dcc_Failure;
@@ -374,7 +332,6 @@ enum dcc_Result dcc_parseFactoryTestInstructionPacket(uint8_t const *const bytes
 enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t const bytesSize,
                                               struct dcc_ConsistControlPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   size_t addressSize;
   if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
     return dcc_Failure;
@@ -398,7 +355,6 @@ enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t
 enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_t const bytesSize,
                                                    struct dcc_SpeedStep128ControlPacket *const packet) {
   if (bytesSize < 3) return dcc_Failure;
-  assert(dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1]));
   size_t addressSize;
   if (dcc_Failure == dcc_parseMultiFunctionDecoderAddress(bytes, bytesSize, &packet->address, &addressSize)) {
     return dcc_Failure;
@@ -482,7 +438,7 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
         DCC_UNREACHABLE("result: %d", result);
     }
   }
-  if (!dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1])) {
+  if (dcc_Failure == dcc_validatePacket(bytes, bytesSize - 1, bytes[bytesSize - 1])) {
     DCC_DEBUG_LOG("dcc_validatePacket failed");
     return dcc_StreamParserResult_Failure;
   }
@@ -500,7 +456,6 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
   }
 }
 
-// `bits` の内容を `shift` ビットだけ右にシフトする（負の数なら左にシフトする）。
 void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift) {
   if (shift == 0) return;
   if (shift > 0) {
