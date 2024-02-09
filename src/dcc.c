@@ -93,7 +93,6 @@ struct dcc_SignalStreamParser dcc_initializeSignalStreamParser(void) {
 enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const parser, dcc_TimeMicroSec const signal,
                                            dcc_Bit *const bit) {
   DCC_DEBUG_LOG("dcc_feedSignal(parser: %p, signal: %lu, bit: %p)", parser, signal, bit);
-  DCC_DEBUG_LOG("parser->signalsSize: %zu", parser->signalsSize);
   switch (parser->signalsSize) {
     case 0:
     case 1:
