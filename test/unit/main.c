@@ -49,7 +49,7 @@ static MunitResult test_parseSpeedAndDirectionPacket_0b00000001_0b01101010_0b011
   struct dcc_SpeedAndDirectionPacket packet;
   enum dcc_Result const result = dcc_parseSpeedAndDirectionPacket(bytes, 3, &packet);
   munit_assert_int(dcc_Success, ==, result);
-  munit_assert_uint8(1, ==, packet.address);
+  munit_assert_uint16(1, ==, packet.address);
   munit_assert_int(dcc_Forward, ==, packet.direction);
   munit_assert_uint8(20, ==, packet.speed);
   return MUNIT_OK;
