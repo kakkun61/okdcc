@@ -38,7 +38,7 @@ test: $(BUILD_DIR)/test/unit
 
 .PHONY: upload
 upload: build.sketch
-	arduino-cli upload --port $(PORT) --input-dir $(BUILD_DIR)/arduino-out sketch
+	arduino-cli --config-file ./arduino-cli.yaml upload --port $(PORT) --input-dir $(BUILD_DIR)/arduino-out sketch
 
 .PHONY: format
 format: format.c format.nix
@@ -53,14 +53,14 @@ format.nix:
 
 .PHONY: setup
 setup:
-	# first `arduino-cli config init`
-	arduino-cli config add board_manager.additional_urls https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
-	arduino-cli core install m5stack:esp32
-	arduino-cli lib install M5Stack M5GFX
+	arduino-cli --config-file ./arduino-cli.yaml core install esp32:esp32
+	arduino-cli --config-file ./arduino-cli.yaml lib install M5Stack M5GFX
+# ↓ のエラーが出る。謎。ビルドはできる。
+# Error initializing instance: Loading index file: loading json index file .build/arduino-data/package_m5stack_index.json: open .build/arduino-data/package_m5stack_index.json: no such file or directory
 
 .PHONY: clean
 clean:
-	-rm -rf $(BUILD_DIR) debug_custom.json debug.cfg esp32.svd
+	-rm -rf $(BUILD_DIR)
 
 $(out)/%: $(out)/arduino-out/%
 	install -D $< $@
@@ -86,6 +86,7 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 
 $(ARDUINO_OUT_PATHS)&: sketch/sketch.ino sketch/sketch.yaml sketch/lv_conf.h src/dcc.c src/dcc.h src/okdcc.h src/ui.c src/ui.h
 	arduino-cli\
+	  --config-file ./arduino-cli.yaml\
 	  compile\
 	  --build-path $(BUILD_DIR)/arduino\
 	  --build-cache-path $(BUILD_DIR)/arduino-cache\
