@@ -400,7 +400,7 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
   {
     enum dcc_StreamParserResult const result = dcc_feedSignal(&decoder->signalStreamParser, signal, &bit);
     switch (result) {
-      case dcc_StreamParserResult_Failure:
+      case dcc_StreamParserResult_Failure: {
         DCC_DEBUG_LOG("dcc_feedSignal failed");
         // ずらしてためす
         decoder->signalStreamParser = dcc_initializeSignalStreamParser();
@@ -412,6 +412,7 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
         DCC_ASSERT(result3 == dcc_StreamParserResult_Continue);
         decoder->previousSignal = signal;
         return result3;
+      }
       case dcc_StreamParserResult_Continue:
         return dcc_StreamParserResult_Continue;
       case dcc_StreamParserResult_Success:
