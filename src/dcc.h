@@ -10,10 +10,6 @@
 
 typedef unsigned long dcc_TimeMicroSec;
 
-typedef uint32_t dcc_Bits32;
-
-#define DCC_BITS32_C(n) UINT32_C(n)
-
 typedef bool dcc_Bit;
 
 enum dcc_Result {
@@ -189,10 +185,6 @@ extern dcc_TimeMicroSec const dcc_maxOneHalfBitSentPeriodDiff;
 // 受信した `1` の半ビットの時間の差の最大値
 extern dcc_TimeMicroSec const dcc_maxOneHalfBitReceivedPeriodDiff;
 
-dcc_Bit dcc_getBit(dcc_Bits32 const *const bits, size_t const index);
-
-void dcc_setBit(dcc_Bits32 *const bits, size_t const index, dcc_Bit const bit);
-
 struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *array, size_t const size);
 
 enum dcc_Result dcc_writeSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const signal);
@@ -244,9 +236,6 @@ struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, s
 
 enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,
                                        struct dcc_Packet *const packet);
-
-// `bits` の内容を `shift` ビットだけ右にシフトする（負の数なら左にシフトする）。
-void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift);
 
 int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer);
 

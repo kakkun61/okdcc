@@ -48,18 +48,6 @@ dcc_TimeMicroSec const dcc_maxOneHalfBitReceivedPeriodDiff = 6UL;
 
 static unsigned long uldiff(unsigned long const a, unsigned long const b) { return a > b ? a - b : b - a; }
 
-dcc_Bit dcc_getBit(dcc_Bits32 const *const bits, size_t const index) {
-  return (dcc_Bit)((bits[index / 32] >> (31 - index % 32)) & 1);
-}
-
-void dcc_setBit(dcc_Bits32 *const bits, size_t const index, dcc_Bit const bit) {
-  if (bit == 0) {
-    bits[index / 32] &= ~(DCC_BITS32_C(1) << (31 - index % 32));
-  } else {
-    bits[index / 32] |= DCC_BITS32_C(1) << (31 - index % 32);
-  }
-}
-
 struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *array, size_t const size) {
   return (struct dcc_SignalBuffer){ array, array + size, array, array };
 }
@@ -454,22 +442,6 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
         DCC_UNREACHABLE("result: %d", result);
     }
   }
-}
-
-void shiftBits(dcc_Bits32 *const bits, size_t const bitsSize, int const shift) {
-  if (shift == 0) return;
-  if (shift > 0) {
-    size_t i;
-    for (i = 0; i < bitsSize / 32 - 1; i++) {
-      bits[i] = (bits[i] << shift) | (bits[i + 1] >> (32 - shift));
-    }
-    bits[i] = bits[i] << shift;
-    return;
-  }
-  for (size_t i = bitsSize / 32 - 1; i > 0; i--) {
-    bits[i] = (bits[i] >> -shift) | (bits[i - 1] << (32 + shift));
-  }
-  bits[0] = bits[0] >> -shift;
 }
 
 int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer) {
