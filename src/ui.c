@@ -57,7 +57,7 @@ void dcc_ui_view(struct dcc_ui_Model model) {
         lv_obj_set_flex_grow(packetList, 1);
 
         lv_group_t *group = lv_group_create();
-        lv_indev_set_group(model.buttonsIndev, group);
+        if (model.buttonsIndev != NULL) lv_indev_set_group(model.buttonsIndev, group);
 
         lv_obj_t *packet1Button = lv_list_add_button(packetList, NULL, "Packet 1");
         lv_group_add_obj(group, packet1Button);

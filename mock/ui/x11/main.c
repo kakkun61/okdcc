@@ -14,13 +14,10 @@ void readKeys(lv_indev_t *indev, lv_indev_data_t *data);
 int main(void) {
   lv_init();
 
-  lv_x11_window_create("OKDCC", SCREEN_WIDTH, SCREEN_HEIGHT);
+  lv_display_t const *display = lv_x11_window_create("OKDCC", SCREEN_WIDTH, SCREEN_HEIGHT);
+  lv_x11_inputs_create(display, NULL);
 
-  lv_indev_t *keysIndev = lv_indev_create();
-  lv_indev_set_type(keysIndev, LV_INDEV_TYPE_KEYPAD);
-  lv_indev_set_read_cb(keysIndev, readKeys);
-
-  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(keysIndev);
+  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(NULL);
   dcc_ui_view(modelCommand.model);
 
   while (1) {
@@ -29,8 +26,4 @@ int main(void) {
   }
 
   return 0;
-}
-
-void readKeys(lv_indev_t *indev, lv_indev_data_t *data) {
-  // TODO
 }
