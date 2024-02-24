@@ -1,0 +1,3 @@
+## Dependencies
+
+- KiCad 7
