@@ -6,3 +6,5 @@ esp32.svd
 .direnv
 result
 ~*
+*-backups
+\#*#
