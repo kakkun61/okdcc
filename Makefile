@@ -1,9 +1,12 @@
 PORT ?= /dev/ttyUSB0
 BUILD_DIR ?= .build
 
-ARDUINO_OUTS = sketch.ino.bin sketch.ino.bootloader.bin sketch.ino.elf sketch.ino.map sketch.ino.partitions.bin
+ARDUINO_OUT_EXTS = ino.bin ino.bootloader.bin ino.elf ino.map ino.partitions.bin
+ARDUINO_OUTS = $(addprefix sketch.,$(ARDUINO_OUT_EXTS))
 ARDUINO_OUT_PATHS = $(addprefix $(BUILD_DIR)/arduino-out/,$(ARDUINO_OUTS))
 ARDUINO_COMPILE_EXTRA_FLAGS = -DLV_CONF_INCLUDE_SIMPLE -Isketch
+
+APP_MONITOR_OUT_PATHS = $(addprefix $(BUILD_DIR)/app/monitor/arduino-out/,$(ARDUINO_OUTS))
 
 LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
@@ -19,6 +22,9 @@ build: build.sketch build.test build.example.cli build.ui.mock.x11
 
 .PHONY: build.sketch
 build.sketch: $(ARDUINO_OUT_PATHS)
+
+.PHONY: build.app.monitor
+build.app.monitor: $(APP_MONITOR_OUT_PATHS)
 
 .PHONY: build.ui.mock.x11
 build.ui.mock.x11: $(BUILD_DIR)/ui/mock/x11
@@ -97,6 +103,20 @@ $(ARDUINO_OUT_PATHS)&: sketch/sketch.ino sketch/sketch.yaml sketch/lv_conf.h src
 	  --build-property compiler.cpp.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
 	  --build-property compiler.S.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
 	  sketch
+
+$(APP_MONITOR_OUT_PATHS)&: app/monitor/sketch/sketch.ino app/monitor/sketch/sketch.yaml app/monitor/sketch/lv_conf.h src/dcc.c src/dcc.h src/okdcc.h src/ui.c src/ui.h
+	arduino-cli\
+	  --config-file ./arduino-cli.yaml\
+	  compile\
+	  --build-path $(BUILD_DIR)/app/monitor/build\
+	  --build-cache-path $(BUILD_DIR)/app/monitor/cache\
+	  --output-dir $(BUILD_DIR)/app/monitor/out\
+	  --libraries lib\
+	  --library .\
+	  --build-property compiler.c.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
+	  --build-property compiler.cpp.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
+	  --build-property compiler.S.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
+	  app/monitor/sketch
 
 $(BUILD_DIR)/examples/cli: $(BUILD_DIR)/examples/cli.o $(BUILD_DIR)/dcc.o
 	@mkdir -p $(@D)
