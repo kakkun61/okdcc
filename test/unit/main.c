@@ -22,6 +22,49 @@ static MunitResult test_decodeSignal_100_9000_is_0(MunitParameter const params[]
   return MUNIT_OK;
 }
 
+static MunitResult test_feedSignal_0_is_continue(MunitParameter const params[], void *fixture) {
+  struct dcc_SignalStreamParser parser = dcc_initializeSignalStreamParser();
+  dcc_Bit bit;
+  enum dcc_StreamParserResult const result = dcc_feedSignal(&parser, 0, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result);
+  return MUNIT_OK;
+}
+
+static MunitResult test_feedSignal_0_1_is_continue(MunitParameter const params[], void *fixture) {
+  struct dcc_SignalStreamParser parser = dcc_initializeSignalStreamParser();
+  dcc_Bit bit;
+  enum dcc_StreamParserResult const result1 = dcc_feedSignal(&parser, 0, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result1);
+  enum dcc_StreamParserResult const result2 = dcc_feedSignal(&parser, 1, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result2);
+  return MUNIT_OK;
+}
+
+static MunitResult test_feedSignal_0_1_2_is_failure(MunitParameter const params[], void *fixture) {
+  struct dcc_SignalStreamParser parser = dcc_initializeSignalStreamParser();
+  dcc_Bit bit;
+  enum dcc_StreamParserResult const result1 = dcc_feedSignal(&parser, 0, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result1);
+  enum dcc_StreamParserResult const result2 = dcc_feedSignal(&parser, 1, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result2);
+  enum dcc_StreamParserResult const result3 = dcc_feedSignal(&parser, 2, &bit);
+  munit_assert_int(dcc_StreamParserResult_Failure, ==, result3);
+  return MUNIT_OK;
+}
+
+static MunitResult test_feedSignal_0_57_114_is_1(MunitParameter const params[], void *fixture) {
+  struct dcc_SignalStreamParser parser = dcc_initializeSignalStreamParser();
+  dcc_Bit bit;
+  enum dcc_StreamParserResult const result1 = dcc_feedSignal(&parser, 0, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result1);
+  enum dcc_StreamParserResult const result2 = dcc_feedSignal(&parser, 57, &bit);
+  munit_assert_int(dcc_StreamParserResult_Continue, ==, result2);
+  enum dcc_StreamParserResult const result3 = dcc_feedSignal(&parser, 114, &bit);
+  munit_assert_int(dcc_StreamParserResult_Success, ==, result3);
+  munit_assert_int(1, ==, bit);
+  return MUNIT_OK;
+}
+
 static MunitResult test_validatePacket_0x00_0x00_is_success(MunitParameter const params[], void *fixture) {
   uint8_t const bits[1] = { 0 };
   enum dcc_Result const result = dcc_validatePacket(bits, 1, UINT8_C(0));
@@ -101,6 +144,14 @@ static MunitSuite const suite = {
         { "(58, 58) is 1", test_decodeSignal_58_58_is_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(100, 9000) is 0", test_decodeSignal_100_9000_is_0, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(51, 58) is falure", test_decodeSignal_51_58_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+        { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
+      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+    { "/dcc_feedSignal",
+      (MunitTest[]){
+        { "([0]) is continue", test_feedSignal_0_is_continue, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+        { "([0, 1]) is continue", test_feedSignal_0_1_is_continue, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+        { "([0, 1, 2]) is failure", test_feedSignal_0_1_2_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+        { "([0, 57, 114]) is success", test_feedSignal_0_57_114_is_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
       NULL, 1, MUNIT_SUITE_OPTION_NONE },
     { "/dcc_validatePacket",
