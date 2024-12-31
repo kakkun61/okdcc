@@ -11,6 +11,11 @@ struct dcc_ui_Model_Command dcc_ui_init(lv_indev_t *buttonsIndev) {
     .buttonsIndev = buttonsIndev, .tag = dcc_ui_MonitorModelTag, .model.monitorModel.packets = { 0 } } };
 }
 
+void packetList_cb(lv_event_t *event) {
+  int value = (int) event->user_data;
+  LV_LOG_USER("Packet %d", value);
+}
+
 static void event_handler(lv_event_t *e) {
   lv_event_code_t code = lv_event_get_code(e);
 
@@ -60,6 +65,7 @@ void dcc_ui_view(struct dcc_ui_Model model) {
         if (model.buttonsIndev != NULL) lv_indev_set_group(model.buttonsIndev, group);
 
         lv_obj_t *packet1Button = lv_list_add_button(packetList, NULL, "Packet 1");
+        lv_obj_add_event_cb(packet1Button, packetList_cb, LV_EVENT_CLICKED, (void*) 1);
         lv_group_add_obj(group, packet1Button);
         lv_obj_t *packet2Button = lv_list_add_button(packetList, NULL, "Packet 2");
         lv_group_add_obj(group, packet2Button);
