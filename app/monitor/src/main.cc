@@ -8,6 +8,14 @@
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
+#define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
+
+void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map);
+void readButtons(lv_indev_t *indev, lv_indev_data_t *data);
+
+#if LV_USE_LOG
+void printLog(lv_log_level_t level, const char *buf);
+#endif
 
 static M5GFX gfx;
 
@@ -28,8 +36,8 @@ void setup() {
   lv_tick_set_cb((lv_tick_get_cb_t) millis);
 
   lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
-  static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10];
-  lv_display_set_draw_buffers(display, draw_buffer, NULL, SCREEN_WIDTH * SCREEN_HEIGHT / 10,
+  static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10 * BYTE_PER_PIXEL];
+  lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer),
                               LV_DISPLAY_RENDER_MODE_PARTIAL);
   lv_display_set_flush_cb(display, displayFlush);
 

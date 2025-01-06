@@ -9,7 +9,7 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 
-void readKeys(lv_indev_t *indev, lv_indev_data_t *data);
+// void readKeys(lv_indev_t *indev, lv_indev_data_t *data);
 
 int main(void) {
   lv_init();

@@ -53,7 +53,7 @@
 
 #if LV_USE_STDLIB_MALLOC == LV_STDLIB_BUILTIN
     /* Size of the memory available for `lv_malloc()` in bytes (>= 2kB)*/
-    #define LV_MEM_SIZE (256 * 1024U)          /* [bytes] */
+    #define LV_MEM_SIZE (64 * 1024U)          /* [bytes] */
 
     /* Size of the memory expand for `lv_malloc()` in bytes */
     #define LV_MEM_POOL_EXPAND_SIZE 0
@@ -287,7 +287,7 @@
 
     /* 1: Print the log with 'printf';
      * 0: User need to register a callback with `lv_log_register_print_cb()` */
-    #define LV_LOG_PRINTF 1
+    #define LV_LOG_PRINTF 0
 
     /* Set callback to print the logs.
      * E.g `my_print`. The prototype should be `void my_print(lv_log_level_t level, const char * buf)`
@@ -323,7 +323,7 @@
  * If LV_USE_LOG is enabled an error message will be printed on failure */
 #define LV_USE_ASSERT_NULL          1   /* Check if the parameter is NULL. (Very fast, recommended)*/
 #define LV_USE_ASSERT_MALLOC        1   /* Checks is the memory is successfully allocated or no. (Very fast, recommended)*/
-#define LV_USE_ASSERT_STYLE         1   /* Check if the styles are properly initialized. (Very fast, recommended)*/
+#define LV_USE_ASSERT_STYLE         0   /* Check if the styles are properly initialized. (Very fast, recommended)*/
 #define LV_USE_ASSERT_MEM_INTEGRITY 0   /* Check the integrity of `lv_mem` after critical operations. (Slow)*/
 #define LV_USE_ASSERT_OBJ           0   /* Check the object's type and existence (e.g. not deleted). (Slow)*/
 
@@ -968,7 +968,7 @@
 #endif
 
 /* Use X11 to open window on Linux desktop and handle mouse and keyboard */
-#define LV_USE_X11              1
+#define LV_USE_X11              0
 #if LV_USE_X11
     #define LV_X11_DIRECT_EXIT         1  /* Exit the application when all X11 windows have been closed */
     #define LV_X11_DOUBLE_BUFFER       1  /* Use double buffers for rendering */

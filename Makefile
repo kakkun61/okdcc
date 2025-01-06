@@ -1,12 +1,11 @@
 PORT ?= /dev/ttyUSB0
 BUILD_DIR ?= .build
 
-ARDUINO_OUT_EXTS = ino.bin ino.bootloader.bin ino.elf ino.map ino.partitions.bin
-ARDUINO_OUTS = $(addprefix sketch.,$(ARDUINO_OUT_EXTS))
-ARDUINO_OUT_PATHS = $(addprefix $(BUILD_DIR)/arduino-out/,$(ARDUINO_OUTS))
-ARDUINO_COMPILE_EXTRA_FLAGS = -DLV_CONF_INCLUDE_SIMPLE -Isketch
-
-APP_MONITOR_OUT_PATHS = $(addprefix $(BUILD_DIR)/app/monitor/arduino-out/,$(ARDUINO_OUTS))
+PLATFORMIO_ENVIRONMENT = debug
+PLATFORMIO_OUT_EXTS = bin elf map
+PLATFORMIO_OUTS = $(addprefix firmware.,$(PLATFORMIO_OUT_EXTS))
+APP_MONITOR_PLATFORMIO_OUT_DIR = $(BUILD_DIR)/monitor/build
+APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_PLATFORMIO_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
 
 LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
@@ -18,10 +17,7 @@ CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter
 all: build
 
 .PHONY: build
-build: build.sketch build.test build.example.cli build.ui.mock.x11
-
-.PHONY: build.sketch
-build.sketch: $(ARDUINO_OUT_PATHS)
+build: build.app.monitor build.test build.example.cli build.ui.mock.x11
 
 .PHONY: build.app.monitor
 build.app.monitor: $(APP_MONITOR_OUT_PATHS)
@@ -35,44 +31,28 @@ build.example.cli: $(BUILD_DIR)/examples/cli
 .PHONY: build.test
 build.test: $(BUILD_DIR)/test/unit
 
-.PHONY: install
-install: $(addprefix $(out)/,$(ARDUINO_OUTS)) $(out)/bin/test
-
 .PHONY: test
 test: $(BUILD_DIR)/test/unit
 	$(BUILD_DIR)/test/unit
 
 .PHONY: upload
 upload: build.sketch
-	arduino-cli --config-file ./arduino-cli.yaml upload --port $(PORT) --input-dir $(BUILD_DIR)/arduino-out sketch
+	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT) --target upload --upload-port $(PORT)
 
 .PHONY: format
 format: format.c format.nix
 
 .PHONY: format.c
 format.c:
-	clang-format --style=file -i $$(git ls-files | grep '.*\.\([ch]\|ino\)$$' | grep --invert-match '.*icon.*')
+	clang-format --style=file -i $$(git ls-files | grep '.*\.[ch]$$' | grep --invert-match '.*icon.*')
 
 .PHONY: format.nix
 format.nix:
 	nixpkgs-fmt $$(git ls-files | grep '.*\.nix$$')
 
-.PHONY: setup
-setup:
-	arduino-cli --config-file ./arduino-cli.yaml core install esp32:esp32
-	arduino-cli --config-file ./arduino-cli.yaml lib install M5Stack M5GFX
-# ↓ のエラーが出る。謎。ビルドはできる。
-# Error initializing instance: Loading index file: loading json index file .build/arduino-data/package_m5stack_index.json: open .build/arduino-data/package_m5stack_index.json: no such file or directory
-
 .PHONY: clean
 clean:
-	-rm -rf $(BUILD_DIR)
-
-$(out)/%: $(out)/arduino-out/%
-	install -D $< $@
-
-$(out)/bin/test-unit: $(BUILD_DIR)/test/unit
-	install -D --mode 755 $< $@
+	-$(RM) -r $(BUILD_DIR)
 
 $(BUILD_DIR)/test/unit: $(BUILD_DIR)/munit/munit.o $(BUILD_DIR)/dcc.o $(BUILD_DIR)/test/unit.o
 	@mkdir -p $(@D)
@@ -90,33 +70,8 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -Ilib/munit -c -o $@ $^
 
-$(ARDUINO_OUT_PATHS)&: sketch/sketch.ino sketch/sketch.yaml sketch/lv_conf.h src/dcc.c src/dcc.h src/okdcc.h src/ui.c src/ui.h
-	arduino-cli\
-	  --config-file ./arduino-cli.yaml\
-	  compile\
-	  --build-path $(BUILD_DIR)/arduino\
-	  --build-cache-path $(BUILD_DIR)/arduino-cache\
-	  --output-dir $(BUILD_DIR)/arduino-out\
-	  --libraries lib\
-	  --library .\
-	  --build-property compiler.c.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
-	  --build-property compiler.cpp.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
-	  --build-property compiler.S.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
-	  sketch
-
-$(APP_MONITOR_OUT_PATHS)&: app/monitor/sketch/sketch.ino app/monitor/sketch/sketch.yaml app/monitor/sketch/lv_conf.h src/dcc.c src/dcc.h src/okdcc.h src/ui.c src/ui.h
-	arduino-cli\
-	  --config-file ./arduino-cli.yaml\
-	  compile\
-	  --build-path $(BUILD_DIR)/app/monitor/build\
-	  --build-cache-path $(BUILD_DIR)/app/monitor/cache\
-	  --output-dir $(BUILD_DIR)/app/monitor/out\
-	  --libraries lib\
-	  --library .\
-	  --build-property compiler.c.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
-	  --build-property compiler.cpp.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
-	  --build-property compiler.S.extra_flags="$(ARDUINO_COMPILE_EXTRA_FLAGS)"\
-	  app/monitor/sketch
+$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini src/dcc.c src/dcc.h src/okdcc.h src/ui.c src/ui.h
+	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
 
 $(BUILD_DIR)/examples/cli: $(BUILD_DIR)/examples/cli.o $(BUILD_DIR)/dcc.o
 	@mkdir -p $(@D)

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
+  "name": "okdcc",
+  "version": "0.0",
+  "authors": {
+    "name": "岡本和樹",
+    "email": "kazuki.okamoto@kakkun61.com"
+  },
+  "keywords": [],
+  "homepage": "https://github.com/kakkun61/okdcc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kakkun61/okdcc.git"
+  },
+  "frameworks": "*",
+  "platforms": "*",
+  "dependencies": {
+    "lvgl/lvgl": "^9"
+  },
+  "headers": "okdcc.h",
+  "export": {
+    "include": ["src/*"]
+  },
+  "build": {
+    "includeDir": "src",
+    "srcDir": "src"
+  }
+}

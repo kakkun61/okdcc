@@ -12,7 +12,7 @@ struct dcc_ui_Model_Command dcc_ui_init(lv_indev_t *buttonsIndev) {
 }
 
 void packetList_cb(lv_event_t *event) {
-  int value = (int) event->user_data;
+  int value = (int) lv_event_get_user_data(event);
   LV_LOG_USER("Packet %d", value);
 }
 

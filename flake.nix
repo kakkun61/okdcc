@@ -10,13 +10,11 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            arduino-cli
+          packages = with pkgs; [
             clang
             glibc
             nixpkgs-fmt
-            python3
-            python310Packages.pyserial
+            platformio-core
             stdenv
             valgrind
             xorg.libX11
