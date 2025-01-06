@@ -1,4 +1,4 @@
-#include <dcc.h>
+#include <okdcc/logic.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>

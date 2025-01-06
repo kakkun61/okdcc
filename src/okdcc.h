@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 
-#include "dcc.h"
-#include "ui.h"
+#include "okdcc/logic.h"
+#include "okdcc/ui.h"
 
 #ifdef __cplusplus
 }

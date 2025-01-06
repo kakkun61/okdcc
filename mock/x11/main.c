@@ -3,7 +3,7 @@
 #include <lvgl.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <ui.h>
+#include <okdcc/ui.h>
 #include <unistd.h>
 
 #define SCREEN_WIDTH 320

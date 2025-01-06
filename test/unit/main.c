@@ -1,4 +1,4 @@
-#include <dcc.h>
+#include <okdcc/logic.h>
 #include <munit.h>
 #include <stdbool.h>
 
