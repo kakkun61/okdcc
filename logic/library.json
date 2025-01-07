@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
-  "name": "okdcc",
+  "name": "okdcc-logic",
   "version": "0.0",
   "authors": {
     "name": "岡本和樹",
@@ -14,32 +14,13 @@
   },
   "frameworks": "*",
   "platforms": "*",
-  "dependencies": {
-    "lvgl/lvgl": "^9"
-  },
+  "dependencies": {},
   "headers": "okdcc.h",
   "export": {
-    "include": [
-      "src/*",
-      "logic/src/*",
-      "electric/src/*",
-      "ui/src/*"
-    ]
+    "include": ["src/*"]
   },
   "build": {
-    "includeDir": ".",
-    "srcDir": ".",
-    "srcFilter": [
-      "+<src>",
-      "+<logic/src>",
-      "+<electric/src>",
-      "+<ui/src>"
-    ],
-    "flags": [
-      "-Isrc",
-      "-Ilogic/src",
-      "-Ielectric/src",
-      "-Iui/src"
-    ]
+    "includeDir": "src",
+    "srcDir": "src"
   }
 }

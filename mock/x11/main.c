@@ -14,7 +14,7 @@
 int main(void) {
   lv_init();
 
-  lv_display_t const *display = lv_x11_window_create("OKDCC", SCREEN_WIDTH, SCREEN_HEIGHT);
+  lv_display_t *display = lv_x11_window_create("OKDCC", SCREEN_WIDTH, SCREEN_HEIGHT);
   lv_x11_inputs_create(display, NULL);
 
   struct dcc_ui_Model_Command modelCommand = dcc_ui_init(NULL);
