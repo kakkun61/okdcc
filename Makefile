@@ -11,8 +11,10 @@ OKDCC_UI_MOCK_X11_OBJECTS = $(patsubst ui/src/%,$(BUILD_DIR)/mock/x11.d/%,$(OKDC
 PLATFORMIO_ENVIRONMENT = debug
 PLATFORMIO_OUT_EXTS = bin elf map
 PLATFORMIO_OUTS = $(addprefix firmware.,$(PLATFORMIO_OUT_EXTS))
-APP_MONITOR_PLATFORMIO_OUT_DIR = $(BUILD_DIR)/app/monitor/build
-APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_PLATFORMIO_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
+APP_MONITOR_OUT_DIR = $(BUILD_DIR)/app/monitor/build
+APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
+TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/test/electric/build
+TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
 
 LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
@@ -24,7 +26,7 @@ CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter
 all: build
 
 .PHONY: build
-build: build.app.monitor build.test build.example.cli build.mock.x11
+build: build.app.monitor build.test.unit build.test.electric build.example.cli build.mock.x11
 
 .PHONY: build.app.monitor
 build.app.monitor: $(APP_MONITOR_OUT_PATHS)
@@ -35,8 +37,11 @@ build.mock.x11: $(BUILD_DIR)/mock/x11
 .PHONY: build.example.cli
 build.example.cli: $(BUILD_DIR)/examples/cli
 
-.PHONY: build.test
-build.test: $(BUILD_DIR)/test/unit
+.PHONY: build.test.unit
+build.test.unit: $(BUILD_DIR)/test/unit
+
+.PHONY: build.test.electric
+build.test.electric: $(TEST_ELECTRIC_OUT_PATHS)
 
 .PHONY: test
 test: $(BUILD_DIR)/test/unit
@@ -83,6 +88,9 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 
 $(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
+
+$(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
+	pio run --project-dir test/electric --environment $(PLATFORMIO_ENVIRONMENT)
 
 $(BUILD_DIR)/examples/cli: $(BUILD_DIR)/examples/cli.o $(OKDCC_LOGIC_OBJECTS)
 	@mkdir -p $(@D)
