@@ -36,10 +36,10 @@
       "+<ui/src>"
     ],
     "flags": [
-      "-Isrc",
-      "-Ilogic/src",
-      "-Ielectric/src",
-      "-Iui/src"
+      "-I src",
+      "-I logic/src",
+      "-I electric/src",
+      "-I ui/src"
     ]
   }
 }

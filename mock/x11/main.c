@@ -1,9 +1,9 @@
 #define _DEFAULT_SOURCE  // necessary for usleep()
 
 #include <lvgl.h>
+#include <okdcc/ui.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <okdcc/ui.h>
 #include <unistd.h>
 
 #define SCREEN_WIDTH 320

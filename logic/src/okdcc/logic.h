@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define BYTES_CAPACITY 8
+#define DCC_BIT_STREAM_PARSER_BYTES_CAPACITY 8
 
 typedef unsigned long dcc_TimeMicroSec;
 
@@ -24,10 +24,11 @@ enum dcc_StreamParserResult {
 };
 
 struct dcc_SignalBuffer {
-  dcc_TimeMicroSec *const head;
-  dcc_TimeMicroSec *const last;
-  dcc_TimeMicroSec *writeAt;
-  dcc_TimeMicroSec *readAt;
+  dcc_TimeMicroSec *const buffer;
+  size_t const size;
+  size_t written;
+  size_t writeIndex;
+  size_t readIndex;
 };
 
 typedef uint16_t dcc_Address;
@@ -141,12 +142,11 @@ struct dcc_BitStreamParser {
       size_t bitCount;
     } inByte;
   };
-  uint8_t bytes[BYTES_CAPACITY];
+  uint8_t bytes[DCC_BIT_STREAM_PARSER_BYTES_CAPACITY];
   size_t bytesSize;
 };
 
 struct dcc_Decoder {
-  dcc_TimeMicroSec previousSignal;
   struct dcc_SignalBuffer signalBuffer;
   struct dcc_SignalStreamParser signalStreamParser;
   struct dcc_BitStreamParser bitStreamParser;
@@ -232,7 +232,7 @@ enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, s
 
 enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
 
-struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, size_t const singalBufferSize);
+struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, size_t const signalBufferSize);
 
 enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,
                                        struct dcc_Packet *const packet);
@@ -248,23 +248,8 @@ int dcc_showSpeedAndDirectionPacket(char *buffer, size_t bufferSize, struct dcc_
 int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
 
 // エラー時に呼び出される関数を登録する。ログを出力し、終了や再起動もすべし。
-extern void (*dcc_error_log)(char const *const file, int const line, char const *format, ...);
+extern void (*dcc_error_log)(char const *const file, int const line, char const *func, char const *format, ...);
 
-#define DCC_ERROR_LOG(...)                                                     \
-  {                                                                            \
-    if (dcc_error_log != NULL) dcc_error_log(__FILE__, __LINE__, __VA_ARGS__); \
-    exit(EXIT_FAILURE);                                                        \
-  }
-
-extern int (*dcc_debug_log)(char const *const file, int const line, char const *format, ...);
-
-#define DCC_DEBUG_LOG(...) (dcc_debug_log == NULL ? 0 : dcc_debug_log(__FILE__, __LINE__, __VA_ARGS__))
-
-#define DCC_UNREACHABLE(...) DCC_ERROR_LOG("unreachable: "__VA_ARGS__)
-
-#define DCC_ASSERT(e)                                    \
-  {                                                      \
-    if (!(e)) DCC_ERROR_LOG("assertion failed: %s", #e); \
-  }
+extern int (*dcc_debug_log)(char const *const file, int const line, char const *func, char const *format, ...);
 
 #endif

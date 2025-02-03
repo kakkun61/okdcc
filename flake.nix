@@ -1,3 +1,4 @@
+# spell-checker:words numtide pkgs stdenv
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";

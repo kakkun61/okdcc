@@ -7,8 +7,10 @@ struct view {
 };
 
 struct dcc_ui_Model_Command dcc_ui_init(lv_indev_t *buttonsIndev) {
-  return (struct dcc_ui_Model_Command){ (struct dcc_ui_Model){
-    .buttonsIndev = buttonsIndev, .tag = dcc_ui_MonitorModelTag, .model.monitorModel.packets = { 0 } } };
+  return (struct dcc_ui_Model_Command){ .model = (struct dcc_ui_Model){ .buttonsIndev = buttonsIndev,
+                                                                        .tag = dcc_ui_MonitorModelTag,
+                                                                        .model.monitorModel.packets = { { 0 } } },
+                                        .command = (struct dcc_ui_Command){ .tag = dcc_ui_NoneCommandTag } };
 }
 
 void packetList_cb(lv_event_t *event) {
@@ -65,7 +67,7 @@ void dcc_ui_view(struct dcc_ui_Model model) {
         if (model.buttonsIndev != NULL) lv_indev_set_group(model.buttonsIndev, group);
 
         lv_obj_t *packet1Button = lv_list_add_button(packetList, NULL, "Packet 1");
-        lv_obj_add_event_cb(packet1Button, packetList_cb, LV_EVENT_CLICKED, (void*) 1);
+        lv_obj_add_event_cb(packet1Button, packetList_cb, LV_EVENT_CLICKED, (void *) 1);
         lv_group_add_obj(group, packet1Button);
         lv_obj_t *packet2Button = lv_list_add_button(packetList, NULL, "Packet 2");
         lv_group_add_obj(group, packet2Button);
@@ -90,4 +92,6 @@ void dcc_ui_view(struct dcc_ui_Model model) {
   }
 }
 
-struct dcc_ui_Command dcc_ui_update(struct dcc_ui_Model model, struct dcc_ui_Message message) {}
+// struct dcc_ui_Command dcc_ui_update(struct dcc_ui_Model model, struct dcc_ui_Message message) {
+//   // TODO
+// }

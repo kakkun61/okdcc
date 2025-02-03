@@ -1,0 +1,29 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "cachix",
+    "espressif",
+    "esptool",
+    "lvgl",
+    "munit",
+    "nixos",
+    "nixpkgs",
+    "okdcc",
+    "pthread",
+    "valgrind",
+    "xorg"
+  ],
+  "flagWords": [],
+  "ignorePaths": [
+    ".build",
+    ".git",
+    ".vscode",
+    "lib",
+    ".gitmodules",
+    ".gitignore",
+    "COPYING",
+    "*.lock",
+    "cspell.json"
+  ]
+}

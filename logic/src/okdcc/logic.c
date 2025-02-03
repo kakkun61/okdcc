@@ -7,9 +7,24 @@
 #include <stdio.h>
 #include <string.h>
 
-void (*dcc_error_log)(char const *const file, int const line, char const *format, ...) = NULL;
+#define DCC_ERROR_LOG(...)                                                               \
+  do {                                                                                   \
+    if (dcc_error_log != NULL) dcc_error_log(__FILE__, __LINE__, __func__, __VA_ARGS__); \
+    exit(EXIT_FAILURE);                                                                  \
+  } while (0)
 
-int (*dcc_debug_log)(char const *const file, int const line, char const *format, ...) = NULL;
+#define DCC_DEBUG_LOG(...) (dcc_debug_log == NULL ? 0 : dcc_debug_log(__FILE__, __LINE__, __func__, __VA_ARGS__))
+
+#define DCC_UNREACHABLE(...) DCC_ERROR_LOG("unreachable: "__VA_ARGS__)
+
+#ifdef DCC_ASSERT
+#undef DCC_ASSERT
+#define DCC_ASSERT(e) assert(e)
+#endif
+
+void (*dcc_error_log)(char const *const file, int const line, char const *func, char const *format, ...) = NULL;
+
+int (*dcc_debug_log)(char const *const file, int const line, char const *func, char const *format, ...) = NULL;
 
 // `1` の半ビットの転送継続時間の最小値
 dcc_TimeMicroSec const dcc_minOneHalfBitSentPeriod = 55UL;
@@ -48,29 +63,25 @@ dcc_TimeMicroSec const dcc_maxOneHalfBitReceivedPeriodDiff = 6UL;
 
 static unsigned long uldiff(unsigned long const a, unsigned long const b) { return a > b ? a - b : b - a; }
 
-struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *array, size_t const size) {
-  return (struct dcc_SignalBuffer){ array, array + size, array, array };
-}
-
-dcc_TimeMicroSec *nextSignalBufferPointer(struct dcc_SignalBuffer const buffer, dcc_TimeMicroSec const *const pointer) {
-  dcc_TimeMicroSec const *const next = pointer + 1;
-  return next == buffer.last ? buffer.head : (dcc_TimeMicroSec *) next;
+struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *buffer, size_t const size) {
+  return (struct dcc_SignalBuffer){ .buffer = buffer, .size = size, .written = 0, .writeIndex = 0, .readIndex = 0 };
 }
 
 enum dcc_Result dcc_writeSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const signal) {
-  DCC_DEBUG_LOG("dcc_writeSignalBuffer(buffer: %p, signal: %d)", buffer, signal);
-  dcc_TimeMicroSec const *const nextWriteAt = nextSignalBufferPointer(*buffer, buffer->writeAt);
-  if (nextWriteAt == buffer->readAt) return dcc_Failure;
-  *buffer->writeAt = signal;
-  buffer->writeAt = (dcc_TimeMicroSec *) nextWriteAt;
+  DCC_DEBUG_LOG("dcc_writeSignalBuffer(buffer: %p, signal: %lu)", buffer, signal);
+  if (buffer->written == buffer->size) return dcc_Failure;
+  buffer->buffer[buffer->writeIndex] = signal;
+  buffer->written++;
+  buffer->writeIndex = (buffer->writeIndex + 1) % buffer->size;
   return dcc_Success;
 }
 
 enum dcc_Result dcc_readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
-  if (buffer->readAt == buffer->writeAt) return dcc_Failure;
-  *signal = *buffer->readAt;
-  *buffer->readAt = 0;
-  buffer->readAt = nextSignalBufferPointer(*buffer, buffer->readAt);
+  DCC_DEBUG_LOG("dcc_readSignalBuffer(buffer: %p, signal: %p)", buffer, signal);
+  if (buffer->written == 0) return dcc_Failure;
+  *signal = buffer->buffer[buffer->readIndex];
+  buffer->written--;
+  buffer->readIndex = (buffer->readIndex + 1) % buffer->size;
   return dcc_Success;
 }
 
@@ -90,12 +101,14 @@ enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const 
     case 2: {
       enum dcc_Result const result =
         dcc_decodeSignal(parser->signals[1] - parser->signals[0], signal - parser->signals[1], bit);
-      parser->signals[0] = signal;
-      parser->signalsSize = 1;
       switch (result) {
         case dcc_Failure:
+          parser->signals[0] = parser->signals[1];
+          parser->signals[1] = signal;
           return dcc_StreamParserResult_Failure;
         case dcc_Success:
+          parser->signals[0] = signal;
+          parser->signalsSize = 1;
           return dcc_StreamParserResult_Success;
         default:
           DCC_UNREACHABLE("result: %d", result);
@@ -376,31 +389,23 @@ enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, s
   return dcc_Success;
 }
 
-struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, size_t const singalBufferSize) {
-  return (struct dcc_Decoder){ 0, dcc_initializeSignalBuffer(signalBufferValues, singalBufferSize),
-                               dcc_initializeSignalStreamParser(), dcc_initializeBitStreamParser() };
+struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, size_t const signalBufferSize) {
+  return (struct dcc_Decoder){ .signalBuffer = dcc_initializeSignalBuffer(signalBufferValues, signalBufferSize),
+                               .signalStreamParser = dcc_initializeSignalStreamParser(),
+                               .bitStreamParser = dcc_initializeBitStreamParser() };
 }
 
 enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,
                                        struct dcc_Packet *const packet) {
-  DCC_DEBUG_LOG("dcc_decode(decoder: %p, signal: %u, packet: %p)", decoder, signal, packet);
+  DCC_DEBUG_LOG("dcc_decode(decoder: %p, signal: %lu, packet: %p)", decoder, signal, packet);
   dcc_Bit bit;
   {
     enum dcc_StreamParserResult const result = dcc_feedSignal(&decoder->signalStreamParser, signal, &bit);
     switch (result) {
-      case dcc_StreamParserResult_Failure: {
-        DCC_DEBUG_LOG("dcc_feedSignal failed");
-        // ずらしてためす
-        decoder->signalStreamParser = dcc_initializeSignalStreamParser();
-        DCC_ASSERT(decoder->previousSignal != 0);
-        enum dcc_StreamParserResult const result2 =
-          dcc_feedSignal(&decoder->signalStreamParser, decoder->previousSignal, &bit);
-        DCC_ASSERT(result2 == dcc_StreamParserResult_Continue);
-        enum dcc_StreamParserResult const result3 = dcc_feedSignal(&decoder->signalStreamParser, signal, &bit);
-        DCC_ASSERT(result3 == dcc_StreamParserResult_Continue);
-        decoder->previousSignal = signal;
-        return result3;
-      }
+      case dcc_StreamParserResult_Failure:
+        // 直近の3つの信号の組ではビットにならなかった
+        // そのまま次の信号を待つ
+        return dcc_StreamParserResult_Continue;
       case dcc_StreamParserResult_Continue:
         return dcc_StreamParserResult_Continue;
       case dcc_StreamParserResult_Success:
@@ -409,7 +414,7 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
         DCC_UNREACHABLE("result: %d", result);
     }
   }
-  uint8_t bytes[BYTES_CAPACITY];
+  uint8_t bytes[DCC_BIT_STREAM_PARSER_BYTES_CAPACITY];
   size_t bytesSize;
   {
     enum dcc_StreamParserResult const result = dcc_feedBit(&decoder->bitStreamParser, bit, bytes, &bytesSize);
@@ -445,8 +450,9 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
 }
 
 int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer) {
-  return snprintf(buffer, bufferSize, "{\"head\":%p,\"last\":%p,\"readAt\":%p,\"writeAt\":%p}", signalBuffer.head,
-                  signalBuffer.last, signalBuffer.readAt, signalBuffer.writeAt);
+  return snprintf(
+    buffer, bufferSize, "{\"buffer\":%p,\"size\":%lu,\"written\":%lu,\"writeIndex\":%lu,\"readIndex\":%lu}",
+    signalBuffer.buffer, signalBuffer.size, signalBuffer.written, signalBuffer.writeIndex, signalBuffer.readIndex);
 }
 
 int dcc_showBytes(char *buffer, size_t bufferSize, uint8_t const *const packet, size_t const packetSize) {
