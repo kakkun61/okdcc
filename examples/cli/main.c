@@ -16,8 +16,8 @@
     fprintf(stderr, "\n");                                   \
   }
 
-int debug_log(char const *const file, int const line, char const *format, ...) {
-  fprintf(stderr, "DEBUG: %s (%d): ", file, line);
+int debug_log(char const *const file, int const line, char const* func, char const *format, ...) {
+  fprintf(stderr, "DEBUG: %s (%d) %s: ", file, line, func);
   va_list args;
   va_start(args, format);
   int const result = vfprintf(stderr, format, args);
@@ -26,8 +26,8 @@ int debug_log(char const *const file, int const line, char const *format, ...) {
   return result;
 }
 
-void error_log(char const *const file, int const line, char const *format, ...) {
-  fprintf(stderr, "ERROR: %s (%d):", file, line);
+void error_log(char const *const file, int const line, char const* func, char const *format, ...) {
+  fprintf(stderr, "ERROR: %s (%d) %s:", file, line, func);
   va_list args;
   va_start(args, format);
   vfprintf(stderr, format, args);

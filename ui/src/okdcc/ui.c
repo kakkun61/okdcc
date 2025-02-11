@@ -18,15 +18,15 @@ void packetList_cb(lv_event_t *event) {
   LV_LOG_USER("Packet %d", value);
 }
 
-static void event_handler(lv_event_t *e) {
-  lv_event_code_t code = lv_event_get_code(e);
+// static void event_handler(lv_event_t *e) {
+//   lv_event_code_t code = lv_event_get_code(e);
 
-  if (code == LV_EVENT_CLICKED) {
-    LV_LOG_USER("Clicked");
-  } else if (code == LV_EVENT_VALUE_CHANGED) {
-    LV_LOG_USER("Toggled");
-  }
-}
+//   if (code == LV_EVENT_CLICKED) {
+//     LV_LOG_USER("Clicked");
+//   } else if (code == LV_EVENT_VALUE_CHANGED) {
+//     LV_LOG_USER("Toggled");
+//   }
+// }
 
 void dcc_ui_view(struct dcc_ui_Model model) {
   switch (model.tag) {

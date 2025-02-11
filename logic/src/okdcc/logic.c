@@ -1,3 +1,5 @@
+// spell-checker:words uldiff
+
 #include "logic.h"
 
 #include <assert.h>
@@ -369,7 +371,7 @@ enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, s
       packet->direction = dcc_Forward;
       break;
     default:
-      assert(false);
+      DCC_UNREACHABLE("direction: %u", bytes[addressSize + 1] & 0x80);
   }
   dcc_Speed const speed = (dcc_Speed)(bytes[addressSize + 1] & 0x7F);
   switch (speed) {
@@ -451,7 +453,7 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
 
 int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer) {
   return snprintf(
-    buffer, bufferSize, "{\"buffer\":%p,\"size\":%lu,\"written\":%lu,\"writeIndex\":%lu,\"readIndex\":%lu}",
+    buffer, bufferSize, "{\"buffer\":%p,\"size\":%zu,\"written\":%zu,\"writeIndex\":%zu,\"readIndex\":%zu}",
     signalBuffer.buffer, signalBuffer.size, signalBuffer.written, signalBuffer.writeIndex, signalBuffer.readIndex);
 }
 

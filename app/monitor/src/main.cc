@@ -15,7 +15,7 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
 #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
-#define SIGNAL_BUFFER_SIZE 256
+#define SIGNAL_BUFFER_SIZE 1024
 #define LOG_STREAM_BUFFER_SIZE 512
 #define VOLTAGE_GPIO 5
 #define STACK_SIZE 4096
@@ -115,7 +115,7 @@ void loop() {
           LOG("decode error");
           continue;
         case dcc_StreamParserResult_Continue:
-          LOG("decode continue");
+          // LOG("decode continue");
           continue;
         case dcc_StreamParserResult_Success: {
           char buffer[512] = { 0 };
@@ -126,7 +126,6 @@ void loop() {
       }
     }
   }
-  delay(1000 / 60);
 }
 
 void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
@@ -166,32 +165,24 @@ enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_Time
 }
 
 void onVoltageChange() {
-  static unsigned long last = 0;
   unsigned long const now = micros();
-  if (now - last < 10) return;
-  last = now;
-  if (dcc_Failure == dcc_writeSignalBuffer(&decoder.signalBuffer, micros()))
+  if (dcc_Failure == dcc_writeSignalBuffer(&decoder.signalBuffer, now))
     LOG("Failed to write signal buffer");
 }
 
 void errorLoop(void) {
   while (true) {
-    delay(1000);
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
 void printLogTask(void *parameters) {
   char buffer[LOG_STREAM_BUFFER_SIZE + 1] = { 0 }; // 終端ヌル文字の1文字分を余分に確保する
   while (true) {
-    if (logStreamBuffer == NULL) {
-      vTaskDelay(pdMS_TO_TICKS(1000 / 60));
-      continue;
-    }
+    assert(logStreamBuffer != NULL);
     size_t const read = xStreamBufferReceive(logStreamBuffer, buffer, LOG_STREAM_BUFFER_SIZE, portMAX_DELAY);
-    Serial.printf("printLogTask: read: %u\n", read);
     buffer[read] = '\0';
     Serial.print(buffer);
-    vTaskDelay(pdMS_TO_TICKS(1000 / 60));
   }
   vTaskDelete(NULL);
 }

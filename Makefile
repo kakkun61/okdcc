@@ -11,9 +11,9 @@ OKDCC_UI_MOCK_X11_OBJECTS = $(patsubst ui/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/%,
 PLATFORMIO_ENVIRONMENT = debug
 PLATFORMIO_OUT_EXTS = bin elf map
 PLATFORMIO_OUTS = $(addprefix firmware.,$(PLATFORMIO_OUT_EXTS))
-APP_MONITOR_OUT_DIR = $(BUILD_DIR)/app/monitor/build
+APP_MONITOR_OUT_DIR = $(BUILD_DIR)/okdcc/app/monitor/build
 APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
-TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/test/electric/build
+TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/okdcc/test/electric/build
 TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
 
 LVGL_DIR = lib/lvgl
@@ -39,7 +39,7 @@ build.logic.test: $(BUILD_DIR)/logic/test/unit
 build.app.monitor: $(APP_MONITOR_OUT_PATHS)
 
 .PHONY: build.mock.x11
-build.mock.x11: $(BUILD_DIR)/mock/x11
+build.mock.x11: $(BUILD_DIR)/okdcc/mock/x11
 
 .PHONY: build.example.cli
 build.example.cli: $(BUILD_DIR)/examples/cli
