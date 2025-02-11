@@ -367,7 +367,7 @@ enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, s
     case 0:
       packet->direction = dcc_Backward;
       break;
-    case 1:
+    case 0x80:
       packet->direction = dcc_Forward;
       break;
     default:
