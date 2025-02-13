@@ -14,9 +14,9 @@ struct buttonInterrupt {
 };
 
 struct buttonInterrupt const buttonInterrupts[3] = {
-  {39, onButtonARising},
-  {38, onButtonBRising},
-  {37, onButtonCRising},
+  { 39, onButtonARising },
+  { 38, onButtonBRising },
+  { 37, onButtonCRising },
 };
 
 void setup() {
@@ -32,9 +32,7 @@ void setup() {
   }
 }
 
-void loop() {
-  M5.update();
-}
+void loop() { M5.update(); }
 
 void onButtonARising() {
   unsigned long static previousMillis = 0;

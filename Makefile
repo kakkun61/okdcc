@@ -60,7 +60,7 @@ format: format.c format.nix
 
 .PHONY: format.c
 format.c:
-	clang-format --style=file -i $$(git ls-files | grep '.*\.[ch]$$' | grep --invert-match '.*icon.*')
+	clang-format --style=file -i $$(git ls-files | grep -G '.*\.\(c\|cc\|h\)$$' | grep --invert-match '.*icon.*')
 
 .PHONY: format.nix
 format.nix:

@@ -18,7 +18,7 @@ static MunitResult test_writeSignalBuffer_1_2_is_failure(MunitParameter const pa
 }
 
 static MunitResult test_SignalBuffer_1_read_is_failure(MunitParameter const params[], void *fixture) {
-  dcc_TimeMicroSec array[1] = { 0};
+  dcc_TimeMicroSec array[1] = { 0 };
   struct dcc_SignalBuffer buffer = dcc_initializeSignalBuffer(array, 1);
   dcc_TimeMicroSec signal;
   munit_assert_int(dcc_Failure, ==, dcc_readSignalBuffer(&buffer, &signal));
@@ -38,7 +38,8 @@ static MunitResult test_SignalBuffer_1_write_read_write_read_is_success(MunitPar
   return MUNIT_OK;
 }
 
-static MunitResult test_SignalBuffer_1_write_write_read_is_failure_once_and_success(MunitParameter const params[], void *fixture) {
+static MunitResult test_SignalBuffer_1_write_write_read_is_failure_once_and_success(MunitParameter const params[],
+                                                                                    void *fixture) {
   dcc_TimeMicroSec array[1] = { 0 };
   struct dcc_SignalBuffer buffer = dcc_initializeSignalBuffer(array, 1);
   munit_assert_int(dcc_Success, ==, dcc_writeSignalBuffer(&buffer, 1));
@@ -186,18 +187,18 @@ static MunitSuite const suite = {
   (MunitSuite[]){
     { // name, tests, suites, iterations, options
       "/SignalBuffer",
-      (MunitTest[]) {
+      (MunitTest[]){
         { "(1)/write is success", test_writeSignalBuffer_1_is_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(1)/read is failure", test_SignalBuffer_1_read_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "(1)/write write is failure", test_writeSignalBuffer_1_2_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "(1)/write read write read is success", test_SignalBuffer_1_write_read_write_read_is_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "(1)/write write read is failure once and success", test_SignalBuffer_1_write_write_read_is_failure_once_and_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
-      },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE
-    },
-    {
-      "/dcc_decodeSignal",
+        { "(1)/write write is failure", test_writeSignalBuffer_1_2_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE,
+          NULL },
+        { "(1)/write read write read is success", test_SignalBuffer_1_write_read_write_read_is_success, NULL, NULL,
+          MUNIT_TEST_OPTION_NONE, NULL },
+        { "(1)/write write read is failure once and success",
+          test_SignalBuffer_1_write_write_read_is_failure_once_and_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+        { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
+      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+    { "/dcc_decodeSignal",
       (MunitTest[]){
         // name, test, setup, tear down, options, parameters
         { "(58, 58) is 1", test_decodeSignal_58_58_is_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
