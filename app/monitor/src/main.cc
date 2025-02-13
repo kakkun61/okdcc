@@ -15,7 +15,7 @@
 #define SCREEN_HEIGHT 240
 #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
 #define SIGNAL_BUFFER_SIZE 1024
-#define LOG_STREAM_BUFFER_SIZE 512
+#define LOG_STREAM_BUFFER_SIZE (4 * 1024)
 #define VOLTAGE_GPIO GPIO_NUM_5
 
 #define LOG(...)                                                \
@@ -111,7 +111,7 @@ void app_main(void) {
   {
     TaskHandle_t printLogTaskHandle = NULL;
     BaseType_t printLogTaskCreationResult =
-      xTaskCreate(printLogTask, "printLogTask", /* stack size */ 4096, NULL, 2, &printLogTaskHandle);
+      xTaskCreate(printLogTask, "printLogTask", /* stack size */ 8 * 1096, NULL, 2, &printLogTaskHandle);
     if (pdPASS != printLogTaskCreationResult) {
       LOG("Failed to create \"printLogTask\" task");
       errorLoop();
@@ -251,6 +251,7 @@ void printLog(char const *const level, char const *const file, int const line, c
 
 void printLogVa(char const *const level, char const *const file, int const line, char const *func, char const *format,
                 va_list vlist) {
+  if (logStreamBuffer == NULL) return;
   size_t const lineBufferSize = 216;
   char lineBuffer[lineBufferSize] = { 0 };
   {
@@ -273,12 +274,13 @@ void printLogVa(char const *const level, char const *const file, int const line,
     }
   }
   if (xPortInIsrContext()) {
-    if (logStreamBuffer == NULL) return;
     BaseType_t higherPriorityTaskWoken = pdFALSE;
     xStreamBufferSendFromISR(logStreamBuffer, lineBuffer, strlen(lineBuffer),
                              &higherPriorityTaskWoken);  // 終端ヌル文字は送信しない
     portYIELD_FROM_ISR(higherPriorityTaskWoken);
-  } else
-    printf(lineBuffer);
+  } else {
+    xStreamBufferSend(logStreamBuffer, lineBuffer, strlen(lineBuffer), 0);  // 終端ヌル文字は送信しない
+    portYIELD();
+  }
   return;
 }
