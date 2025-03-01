@@ -66,6 +66,12 @@ format.c:
 format.nix:
 	nixpkgs-fmt $$(git ls-files | grep '.*\.nix$$')
 
+.PHONY: doc
+doc:
+	@mkdir -p $(BUILD_DIR)/doc
+	(cd doc && doxygen)
+	(cd doc && sphinx-build --builder html . ../$(BUILD_DIR)/doc/sphinx)
+
 .PHONY: clean
 clean:
 	-$(RM) -r $(BUILD_DIR)

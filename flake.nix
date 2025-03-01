@@ -19,6 +19,7 @@
             platformio-core
             python312
             python312Packages.breathe
+            python312Packages.sphinx_rtd_theme
             sphinx
             stdenv
             valgrind
