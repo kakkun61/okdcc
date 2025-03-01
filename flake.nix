@@ -13,9 +13,13 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             clang
+            doxygen
             glibc
             nixpkgs-fmt
             platformio-core
+            python312
+            python312Packages.breathe
+            sphinx
             stdenv
             valgrind
             xorg.libX11
