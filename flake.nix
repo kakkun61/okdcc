@@ -14,6 +14,7 @@
           packages = with pkgs; [
             clang
             doxygen
+            gettext
             glibc
             nixpkgs-fmt
             platformio-core

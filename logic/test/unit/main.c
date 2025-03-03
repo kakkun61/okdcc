@@ -1,5 +1,5 @@
 #include <munit.h>
-#include <okdcc/logic.h>
+#include <okdcc/logic_internal.h>
 #include <stdbool.h>
 
 static MunitResult test_writeSignalBuffer_1_is_success(MunitParameter const params[], void *fixture) {

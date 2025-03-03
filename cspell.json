@@ -3,6 +3,7 @@
   "language": "en",
   "words": [
     "cachix",
+    "doxyfile",
     "espressif",
     "esptool",
     "lvgl",
@@ -25,6 +26,6 @@
     "COPYING",
     "*.lock",
     "cspell.json",
-    "Doxyfile"
+    "Doxyfile*"
   ]
 }

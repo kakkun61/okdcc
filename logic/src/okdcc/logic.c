@@ -1,6 +1,6 @@
 // spell-checker:words uldiff
 
-#include "logic.h"
+#include "logic_internal.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -101,6 +101,7 @@ enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const 
       parser->signalsSize++;
       return dcc_StreamParserResult_Continue;
     case 2: {
+      // TODO signal がオーバーフローした場合の処理が必要
       enum dcc_Result const result =
         dcc_decodeSignal(parser->signals[1] - parser->signals[0], signal - parser->signals[1], bit);
       switch (result) {
@@ -130,7 +131,7 @@ struct dcc_BitStreamParser dcc_initializeBitStreamParser(void) {
   };
 }
 
-enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, uint8_t bytes[],
+enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, uint8_t *const bytes,
                                         size_t *const bytesSize) {
   DCC_DEBUG_LOG("dcc_feedBit(parser: %p, bit: %d, bytes: %p, bytesSize: %p)", parser, bit, bytes, bytesSize);
   switch (parser->state) {

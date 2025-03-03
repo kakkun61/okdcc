@@ -21,7 +21,7 @@ LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
 LVGL_MOCK_X11_OBJECTS = $(patsubst $(LVGL_DIR)/src/%,$(ABS_BUILD_DIR)/okdcc/mock/x11.d/lvgl/%,$(LVGL_SOURCES:.c=.o))
 
-# spell-checker:words Wextra Wconversion Wdeprecated
+# spell-checker:ignore Wextra Wconversion Wdeprecated
 CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter -D DCC_ASSERT
 
 .PHONY: all
@@ -68,10 +68,19 @@ format.nix:
 	nixpkgs-fmt $$(git ls-files | grep '.*\.nix$$')
 
 .PHONY: doc
-doc:
-	@mkdir -p $(ABS_BUILD_DIR)/doc
+doc: doc.en doc.ja
+
+.PHONY: doc.en
+doc.en:
+	@mkdir -p $(ABS_BUILD_DIR)/doc/doxygen/en
 	(cd doc && doxygen)
-	(cd doc && sphinx-build --builder html . $(ABS_BUILD_DIR)/doc/sphinx)
+	(cd doc && sphinx-build -M html . $(ABS_BUILD_DIR)/doc/sphinx/en)
+
+.PHONY: doc.ja
+doc.ja: doc/locales/ja/html/LC_MESSAGES/index.mo
+	@mkdir -p $(ABS_BUILD_DIR)/doc/doxygen/ja
+	(cd doc && doxygen Doxyfile.ja)
+	(cd doc && sphinx-build -M html --define language=ja --define breathe_projects.okdcc=$(ABS_BUILD_DIR)/doc/doxygen/ja/xml . $(ABS_BUILD_DIR)/doc/sphinx/ja)
 
 .PHONY: clean
 clean:
@@ -122,3 +131,16 @@ $(ABS_BUILD_DIR)/okdcc/mock/x11.d/okdcc/%.o: ui/src/okdcc/%.c
 $(ABS_BUILD_DIR)/okdcc/mock/x11: $(LVGL_MOCK_X11_OBJECTS) $(OKDCC_UI_MOCK_X11_OBJECTS) mock/x11/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I lib/lvgl -I mock/x11 -I ui/src -l X11 -l pthread -l m -D LV_CONF_INCLUDE_SIMPLE -o $@ $^
+
+# spellchecker:ignore msgfmt
+doc/locales/ja/html/LC_MESSAGES/index.mo: doc/locales/ja/html/LC_MESSAGES/index.po
+	@mkdir -p $(@D)
+	msgfmt -o $@ $<
+
+# spellchecker:ignore msgmerge
+doc/locales/ja/html/LC_MESSAGES/index.po: $(ABS_BUILD_DIR)/doc/sphinx/gettext/index.pot
+	@mkdir -p $(@D)
+	if [[ -f $@ ]]; then msgmerge --update $@ $<; else cp $< $@; fi
+
+$(ABS_BUILD_DIR)/doc/sphinx/gettext/index.pot: doc/conf.py doc/index.rst
+	(cd doc && sphinx-build -M gettext . $(ABS_BUILD_DIR)/doc/sphinx)
