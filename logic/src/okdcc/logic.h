@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define DCC_BIT_STREAM_PARSER_BYTES_CAPACITY 8
+
 /// \~english
 /// \brief A type that represents the time in microseconds.
 /// \~japanese
@@ -41,7 +43,17 @@ enum dcc_StreamParserResult {
   dcc_StreamParserResult_Success = 2,
 };
 
-struct dcc_SignalBuffer;
+/// \~english
+/// \brief A structure that records the time of voltage changes.
+/// \~japanese
+/// \brief 電圧変化の時刻を記録する構造体。
+struct dcc_SignalBuffer {
+  dcc_TimeMicroSec *const buffer;
+  size_t const size;
+  size_t written;
+  size_t writeIndex;
+  size_t readIndex;
+};
 
 /// \~english
 /// \brief A type that represents a decoder's address.
@@ -152,11 +164,49 @@ struct dcc_Packet {
   };
 };
 
-struct dcc_SignalStreamParser;
+/// \~english
+/// \brief A structure that holds the state of the parser that parses the time of voltage changes and gets the bit.
+/// \~japanese
+/// \brief 電圧変化の時刻の列をパースしビットを取得するパーサーの状態を保持する構造体。
+struct dcc_SignalStreamParser {
+  dcc_TimeMicroSec signals[2];
+  size_t signalsSize;
+};
 
-struct dcc_BitStreamParser;
+enum dcc_BitStreamParserState {
+  dcc_BitStreamParserState_InPreamble,
+  dcc_BitStreamParserState_InByte,
+  dcc_BitStreamParserState_AfterByte,
+};
 
-struct dcc_Decoder;
+/// \~english
+/// \brief A structure that holds the state of the parser that parses the bit sequence and gets the byte of the data part.
+/// \~japanese
+/// \brief ビット列をパースしデータ部分のバイトを取得するパーサーの状態を保持する構造体。
+struct dcc_BitStreamParser {
+  enum dcc_BitStreamParserState state;
+  union {
+    struct {
+      size_t oneBitsCount;
+    } inPreamble;
+    struct {
+      uint8_t byte;
+      size_t bitCount;
+    } inByte;
+  };
+  uint8_t bytes[DCC_BIT_STREAM_PARSER_BYTES_CAPACITY];
+  size_t bytesSize;
+};
+
+/// \~english
+/// \brief A structure that holds the state of the decoder.
+/// \~japanese
+/// \brief デコーダーの状態を保持する構造体。
+struct dcc_Decoder {
+  struct dcc_SignalBuffer signalBuffer;
+  struct dcc_SignalStreamParser signalStreamParser;
+  struct dcc_BitStreamParser bitStreamParser;
+};
 
 /// \~english
 /// \brief The minimum value of the duration of a half bit of `1` sent.
