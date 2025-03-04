@@ -1,0 +1,14 @@
+version: "2"
+
+build:
+  os: "ubuntu-lts-latest"
+  tools:
+    python: "3.12"
+  apt_packages:
+    - gettext
+  jobs:
+    install:
+      - pip install -r doc/requirements.txt
+    build:
+      html:
+        - make doc.rtd

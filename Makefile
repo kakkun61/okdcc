@@ -82,6 +82,15 @@ doc.ja: doc/locales/ja/html/LC_MESSAGES/index.mo
 	(cd doc && doxygen Doxyfile.ja)
 	(cd doc && sphinx-build -M html --define language=ja --define breathe_projects.okdcc=$(ABS_BUILD_DIR)/doc/doxygen/ja/xml . $(ABS_BUILD_DIR)/doc/sphinx/ja)
 
+# On Read the Docs CI
+.PHONY: doc.rtd
+doc.rtd: doc/locales/ja/html/LC_MESSAGES/index.mo
+	@mkdir -p "$(ABS_BUILD_DIR)/doc/doxygen/$$READTHEDOCS_LANGUAGE"
+	@mkdir -p "$$READTHEDOCS_OUTPUT/html"
+	(cd doc && ln -s Doxyfile Doxyfile.en)
+	(cd doc && doxygen "Doxyfile.$$READTHEDOCS_LANGUAGE")
+	(cd doc && sphinx-build -M html --define "language=$$READTHEDOCS_LANGUAGE" --define "breathe_projects.okdcc=$(ABS_BUILD_DIR)/doc/doxygen/$$READTHEDOCS_LANGUAGE/xml" . "$$READTHEDOCS_OUTPUT/html")
+
 .PHONY: clean
 clean:
 	-$(RM) -r $(ABS_BUILD_DIR)
@@ -140,7 +149,7 @@ doc/locales/ja/html/LC_MESSAGES/index.mo: doc/locales/ja/html/LC_MESSAGES/index.
 # spellchecker:ignore msgmerge
 doc/locales/ja/html/LC_MESSAGES/index.po: $(ABS_BUILD_DIR)/doc/sphinx/gettext/index.pot
 	@mkdir -p $(@D)
-	if [[ -f $@ ]]; then msgmerge --update $@ $<; else cp $< $@; fi
+	if [ -f $@ ]; then msgmerge --update $@ $<; else cp $< $@; fi
 
 $(ABS_BUILD_DIR)/doc/sphinx/gettext/index.pot: doc/conf.py doc/index.rst
 	(cd doc && sphinx-build -M gettext . $(ABS_BUILD_DIR)/doc/sphinx)
