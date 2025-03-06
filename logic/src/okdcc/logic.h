@@ -63,9 +63,11 @@ typedef uint16_t dcc_Address;
 
 /// \~english
 /// \brief A type that represents a consist address.
+///
 /// Only the lower 7 bits are used.
 /// \~japanese
 /// \brief 重連時のアドレスを表す型。
+///
 /// 下位7ビットしか使用しない。
 typedef uint8_t dcc_ConsistAddress;
 
@@ -349,6 +351,8 @@ struct dcc_BitStreamParser dcc_initializeBitStreamParser(void);
 
 /// \~english
 /// \brief To input a bit to a `dcc_BitStreamParser` and get a byte.
+///
+/// The state of the `parser` is initialized when the result is `dcc_StreamParserResult_Failure`.
 /// \param parser The place to store the state.
 /// \param bit The bit.
 /// \param bytes The byte (output). If it is not successful, the value will not change.
@@ -356,6 +360,8 @@ struct dcc_BitStreamParser dcc_initializeBitStreamParser(void);
 /// \return Success or failure of the parsing.
 /// \~japanese
 /// \brief `dcc_BitStreamParser` にビットを入力し、バイトを取得する。
+///
+/// 結果が `dcc_StreamParserResult_Failure` の場合、`parser` の状態は初期化される。
 /// \param parser 状態を保持する場所。
 /// \param bit ビット。
 /// \param bytes バイト（出力）。成功でない場合は値が変更されない。
