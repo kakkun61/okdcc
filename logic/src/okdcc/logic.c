@@ -142,7 +142,7 @@ enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser
       }
       if (parser->inPreamble.oneBitsCount <= 12) {
         DCC_DEBUG_LOG("too short preamble: one bits count: %d", parser->inPreamble.oneBitsCount);
-        parser->inPreamble.oneBitsCount = 0;
+        *parser = dcc_initializeBitStreamParser();
         return dcc_StreamParserResult_Failure;
       }
       parser->state = dcc_BitStreamParserState_InByte;
@@ -424,7 +424,6 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
     switch (result) {
       case dcc_StreamParserResult_Failure:
         DCC_DEBUG_LOG("dcc_feedBit failed");
-        decoder->bitStreamParser = dcc_initializeBitStreamParser();
         return dcc_StreamParserResult_Failure;
       case dcc_StreamParserResult_Continue:
         return dcc_StreamParserResult_Continue;
