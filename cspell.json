@@ -19,14 +19,14 @@
   "ignorePaths": [
     ".build",
     ".git",
-    ".vscode",
-    "lib",
-    ".gitmodules",
     ".gitignore",
-    "COPYING",
+    ".gitmodules",
+    ".vscode",
+    "*.kicad_*",
     "*.lock",
+    "copying",
     "cspell.json",
-    "Doxyfile*",
-    "*.kicad_*"
+    "doxyfile*",
+    "lib"
   ]
 }
