@@ -26,6 +26,7 @@
     "COPYING",
     "*.lock",
     "cspell.json",
-    "Doxyfile*"
+    "Doxyfile*",
+    "*.kicad_*"
   ]
 }
