@@ -134,22 +134,40 @@ static MunitResult test_validatePacket_0x00_0x01_0x01_is_success(MunitParameter 
   return MUNIT_OK;
 }
 
-static MunitResult test_parseSpeedAndDirectionPacket_0b00000001_0b01101010_0b01101011_is_1_forward_20(
+static MunitResult test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_20(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x01), UINT8_C(0x6A), UINT8_C(0x6B) };
-  struct dcc_SpeedAndDirectionPacket packet;
-  enum dcc_Result const result = dcc_parseSpeedAndDirectionPacket(bytes, 3, &packet);
+  struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders packet;
+  enum dcc_Result const result = dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders(bytes, 3, false, &packet);
   munit_assert_int(dcc_Success, ==, result);
   munit_assert_uint16(1, ==, packet.address);
   munit_assert_int(dcc_Forward, ==, packet.direction);
-  munit_assert_uint8(20, ==, packet.speed);
+  munit_assert_uint8(false, ==, packet.emergencyStop);
+  munit_assert_uint8(false, ==, packet.flControl);
+  munit_assert_uint8(17, ==, packet.speed5Bit);
+  munit_assert_int(false, ==, packet.directionMayBeIgnored);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_9_off(
+  MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x01), UINT8_C(0x6A), UINT8_C(0x6B) };
+  struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders packet;
+  enum dcc_Result const result = dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders(bytes, 3, true, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_uint16(1, ==, packet.address);
+  munit_assert_int(dcc_Forward, ==, packet.direction);
+  munit_assert_uint8(false, ==, packet.emergencyStop);
+  munit_assert_uint8(true, ==, packet.flControl);
+  munit_assert_uint8(9, ==, packet.speed4Bit);
+  munit_assert_int(false, ==, packet.fl);
   return MUNIT_OK;
 }
 
 static MunitResult test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000000_is_success(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x00), UINT8_C(0x00), UINT8_C(0x00) };
-  enum dcc_Result const result = dcc_parseAllDecoderResetPacket(bytes, 3);
+  enum dcc_Result const result = dcc_parseResetPacketForAllDecoders(bytes, 3);
   munit_assert_int(dcc_Success, ==, result);
   return MUNIT_OK;
 }
@@ -157,7 +175,7 @@ static MunitResult test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000
 static MunitResult test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b11111111_is_success(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0xFF), UINT8_C(0x00), UINT8_C(0xFF) };
-  enum dcc_Result const result = dcc_parseAllDecoderIdlePacket(bytes, 3);
+  enum dcc_Result const result = dcc_parseIdlePacketForAllDecoders(bytes, 3);
   munit_assert_int(dcc_Success, ==, result);
   return MUNIT_OK;
 }
@@ -165,8 +183,8 @@ static MunitResult test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b111111
 static MunitResult test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_is_3(MunitParameter const params[],
                                                                                      void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x00), UINT8_C(0x03) };
-  struct dcc_DecoderResetPacket packet;
-  enum dcc_Result const result = dcc_parseDecoderResetPacket(bytes, 3, &packet);
+  struct dcc_DecoderResetPacketForMultiFunctionDecoders packet;
+  enum dcc_Result const result = dcc_parseResetPacketForMultiFunctionDecoders(bytes, 3, &packet);
   munit_assert_int(dcc_Success, ==, result);
   munit_assert_uint16(3, ==, packet.address);
   return MUNIT_OK;
@@ -175,15 +193,15 @@ static MunitResult test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_
 static MunitResult test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0b11000011_is_768(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[4] = { UINT8_C(0xC3), UINT8_C(0x00), UINT8_C(0x00), UINT8_C(0xC3) };
-  struct dcc_DecoderResetPacket packet;
-  enum dcc_Result const result = dcc_parseDecoderResetPacket(bytes, 4, &packet);
+  struct dcc_DecoderResetPacketForMultiFunctionDecoders packet;
+  enum dcc_Result const result = dcc_parseResetPacketForMultiFunctionDecoders(bytes, 4, &packet);
   munit_assert_int(dcc_Success, ==, result);
   munit_assert_uint16(768, ==, packet.address);
   return MUNIT_OK;
 }
 
 static MunitSuite const suite = {
-  "/m5-dcc", NULL,
+  "/okdcc", NULL,
   (MunitSuite[]){
     { // name, tests, suites, iterations, options
       "/SignalBuffer",
@@ -223,25 +241,27 @@ static MunitSuite const suite = {
                        MUNIT_TEST_OPTION_NONE, NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
       NULL, 1, MUNIT_SUITE_OPTION_NONE },
-    { "/dcc_parseSpeedAndDirectionPacket",
-      (MunitTest[]){ { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, speed = 20 }",
-                       test_parseSpeedAndDirectionPacket_0b00000001_0b01101010_0b01101011_is_1_forward_20, NULL, NULL,
+    { "/dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders",
+      (MunitTest[]){ { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, emergencyStop = false, flControl = false, speed5Step = 17, directionMayBeIgnored = false }",
+                       test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_20, NULL, NULL,
                        MUNIT_TEST_OPTION_NONE, NULL },
+                      { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, emergencyStop = false, flControl = true, speed4Step = 9, fl = false }",
+                        test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_9_off, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
       NULL, 1, MUNIT_SUITE_OPTION_NONE },
-    { "/dcc_parseAllDecoderResetPacket",
+    { "/dcc_parseResetPacketForAllDecoders",
       (MunitTest[]){ { "([0b00000000, 0b00000000, 0b00000000]) is success",
                        test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000000_is_success, NULL, NULL,
                        MUNIT_TEST_OPTION_NONE, NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
       NULL, 1, MUNIT_SUITE_OPTION_NONE },
-    { "/dcc_parseAllDecoderIdlePacket",
+    { "/dcc_parseIdlePacketForAllDecoders",
       (MunitTest[]){ { "([0b11111111, 0b00000000, 0b11111111]) is success",
                        test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b11111111_is_success, NULL, NULL,
                        MUNIT_TEST_OPTION_NONE, NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
       NULL, 1, MUNIT_SUITE_OPTION_NONE },
-    { "/dcc_parseDecoderResetPacket",
+    { "/dcc_parseResetPacketForMultiFunctionDecoders",
       (MunitTest[]){ { "([0b00000110, 0b0000000, 0b00000110]) is { address = 3 }",
                        test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_is_3, NULL, NULL,
                        MUNIT_TEST_OPTION_NONE, NULL },

@@ -19,4 +19,4 @@ gettext_compact = False
 
 # Options for breath extension
 breathe_default_project = "okdcc"
-breathe_projects = {"okdcc": "../.build/doc/doxygen/en/xml"}
+breathe_projects = {"okdcc": "../.build/okdcc/doc/doxygen/en/xml"}

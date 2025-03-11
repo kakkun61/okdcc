@@ -31,7 +31,7 @@ Decode
 .. doxygenfunction:: dcc_readSignalBuffer
 
 .. doxygenfunction:: dcc_parsePacket
-.. doxygenfunction:: dcc_parseSpeedAndDirectionPacket
+.. doxygenfunction:: dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders
 .. doxygenfunction:: dcc_parseAllDecoderResetPacket
 .. doxygenfunction:: dcc_parseAllDecoderIdlePacket
 .. doxygenfunction:: dcc_parseDecoderResetPacket
@@ -46,40 +46,62 @@ Data
 
 .. doxygentypedef:: dcc_TimeMicroSec
 .. doxygentypedef:: dcc_Bit
+.. doxygentypedef:: dcc_Byte
 .. doxygenenum:: dcc_Result
 .. doxygenenum:: dcc_StreamParserResult
-.. doxygentypedef:: dcc_Address
+.. doxygentypedef:: dcc_AddressForBaselinePacket
+.. doxygentypedef:: dcc_AddressForExtendedPacket
 .. doxygentypedef:: dcc_ConsistAddress
 .. doxygenenum:: dcc_Direction
-.. doxygentypedef:: dcc_Speed
-.. doxygenstruct:: dcc_SpeedAndDirectionPacket
+.. doxygentypedef:: dcc_Speed4Bit
+.. doxygentypedef:: dcc_Speed5Bit
+.. doxygentypedef:: dcc_Speed7Bit
+.. doxygenenum:: dcc_PacketTag
+.. doxygenstruct:: dcc_SpeedAndDirectionPacketForLocomotiveDecoders
    :members:
    :undoc-members:
-.. doxygenstruct:: dcc_DecoderResetPacket
+.. doxygenstruct:: dcc_BroadcastStopPacketForAllDecoders
    :members:
    :undoc-members:
-.. doxygenstruct:: dcc_HardResetPacket
+.. doxygenstruct:: dcc_DecoderResetPacketForMultiFunctionDecoders
    :members:
    :undoc-members:
-.. doxygenstruct:: dcc_FactoryTestInstructionPacket
+.. doxygenstruct:: dcc_HardResetPacketForMultiFunctionDecoders
    :members:
    :undoc-members:
-.. doxygenstruct:: dcc_DecoderFlagsSetPacket
+.. doxygenstruct:: dcc_FactoryTestInstructionPacketForMultiFunctionDecoders
    :members:
    :undoc-members:
+.. doxygenstruct:: dcc_DecoderFlagsSetPacketForMultiFunctionDecoders
+   :members:
+   :undoc-members:
+.. doxygenenum:: dcc_DecoderFlagsInstruction
+.. doxygenstruct:: dcc_ConsistControlPacketForMultiFunctionDecoders
+   :members:
+   :undoc-members:
+.. doxygenstruct:: dcc_SpeedStep128ControlPacketForMultiFunctionDecoders
+   :members:
+   :undoc-members:
+.. doxygenstruct:: dcc_RestrictedSpeedStepPacketForMultiFunctionDecoders
+   :members:
+   :undoc-members:
+.. doxygenstruct:: dcc_AnalogFunctionPacketForMultiFunctionDecoders
+   :members:
+   :undoc-members:
+.. doxygenstruct:: dcc_SpeedAndDirectionPacketForMultiFunctionDecoders
+   :members:
+   :undoc-members:
+.. doxygenstruct:: dcc_FunctionGroup1PacketForMultiFunctionDecoders
+  :members:
+  :undoc-members:
+
+
 .. doxygenstruct:: dcc_AdvancedAddressingSetPacket
    :members:
    :undoc-members:
 .. doxygenstruct:: dcc_DecoderAcknowledgementRequestPacket
    :members:
    :undoc-members:
-.. doxygenstruct:: dcc_ConsistControlPacket
-   :members:
-   :undoc-members:
-.. doxygenstruct:: dcc_SpeedStep128ControlPacket
-   :members:
-   :undoc-members:
-.. doxygenenum:: dcc_PacketTag
 .. doxygenstruct:: dcc_Packet
    :members:
    :undoc-members:
@@ -97,7 +119,7 @@ Data
 .. doxygenfunction:: dcc_showSignalBuffer
 .. doxygenfunction:: dcc_showBytes
 .. doxygenfunction:: dcc_showDirection
-.. doxygenfunction:: dcc_showSpeedAndDirectionPacket
+.. doxygenfunction:: dcc_showSpeedAndDirectionPacketForLocomotiveDecoders
 .. doxygenfunction:: dcc_showPacket
 .. doxygenvariable:: dcc_error_log
 .. doxygenvariable:: dcc_debug_log

@@ -34,7 +34,7 @@ build: build.logic build.app.monitor build.logic.test build.electric.test build.
 build.logic: $(OKDCC_LOGIC_OBJECTS)
 
 .PHONY: build.logic.test
-build.logic.test: $(ABS_BUILD_DIR)/logic/test/unit
+build.logic.test: $(ABS_BUILD_DIR)/okdcc/logic/test/unit
 
 .PHONY: build.app.monitor
 build.app.monitor: $(APP_MONITOR_OUT_PATHS)
@@ -43,14 +43,14 @@ build.app.monitor: $(APP_MONITOR_OUT_PATHS)
 build.mock.x11: $(ABS_BUILD_DIR)/okdcc/mock/x11
 
 .PHONY: build.example.cli
-build.example.cli: $(ABS_BUILD_DIR)/examples/cli
+build.example.cli: $(ABS_BUILD_DIR)/okdcc/examples/cli
 
 .PHONY: build.electric.test
 build.electric.test: $(TEST_ELECTRIC_OUT_PATHS)
 
 .PHONY: test
-test: $(ABS_BUILD_DIR)/logic/test/unit
-	$(ABS_BUILD_DIR)/logic/test/unit
+test: $(ABS_BUILD_DIR)/okdcc/logic/test/unit
+	$(ABS_BUILD_DIR)/okdcc/logic/test/unit
 
 .PHONY: upload.app.monitor
 upload.app.monitor: build.app.monitor
@@ -72,34 +72,34 @@ doc: doc.en doc.ja
 
 .PHONY: doc.en
 doc.en:
-	@mkdir -p $(ABS_BUILD_DIR)/doc/doxygen/en
+	@mkdir -p $(ABS_BUILD_DIR)/okdcc/doc/doxygen/en
 	(cd doc && doxygen)
-	(cd doc && sphinx-build -M html . $(ABS_BUILD_DIR)/doc/sphinx/en)
+	(cd doc && sphinx-build -M html . $(ABS_BUILD_DIR)/okdcc/doc/sphinx/en)
 
 .PHONY: doc.ja
 doc.ja: doc/locales/ja/html/LC_MESSAGES/index.mo
-	@mkdir -p $(ABS_BUILD_DIR)/doc/doxygen/ja
+	@mkdir -p $(ABS_BUILD_DIR)/okdcc/doc/doxygen/ja
 	(cd doc && doxygen Doxyfile.ja)
-	(cd doc && sphinx-build -M html --define language=ja --define breathe_projects.okdcc=$(ABS_BUILD_DIR)/doc/doxygen/ja/xml . $(ABS_BUILD_DIR)/doc/sphinx/ja)
+	(cd doc && sphinx-build -M html --define language=ja --define breathe_projects.okdcc=$(ABS_BUILD_DIR)/okdcc/doc/doxygen/ja/xml . $(ABS_BUILD_DIR)/okdcc/doc/sphinx/ja)
 
 # On Read the Docs CI
 .PHONY: doc.rtd
 doc.rtd: doc/locales/ja/html/LC_MESSAGES/index.mo
-	@mkdir -p "$(ABS_BUILD_DIR)/doc/doxygen/$$READTHEDOCS_LANGUAGE"
+	@mkdir -p "$(ABS_BUILD_DIR)/okdcc/doc/doxygen/$$READTHEDOCS_LANGUAGE"
 	@mkdir -p "$$READTHEDOCS_OUTPUT/html"
 	(cd doc && ln -s Doxyfile Doxyfile.en)
 	(cd doc && doxygen "Doxyfile.$$READTHEDOCS_LANGUAGE")
-	(cd doc && sphinx-build -M html --define "language=$$READTHEDOCS_LANGUAGE" --define "breathe_projects.okdcc=$(ABS_BUILD_DIR)/doc/doxygen/$$READTHEDOCS_LANGUAGE/xml" . "$$READTHEDOCS_OUTPUT/html")
+	(cd doc && sphinx-build -M html --define "language=$$READTHEDOCS_LANGUAGE" --define "breathe_projects.okdcc=$(ABS_BUILD_DIR)/okdcc/doc/doxygen/$$READTHEDOCS_LANGUAGE/xml" . "$$READTHEDOCS_OUTPUT/html")
 
 .PHONY: clean
 clean:
 	-$(RM) -r $(ABS_BUILD_DIR)
 
-$(ABS_BUILD_DIR)/logic/test/unit: $(ABS_BUILD_DIR)/munit/munit.o $(OKDCC_LOGIC_OBJECTS) $(ABS_BUILD_DIR)/logic/test/unit.o
+$(ABS_BUILD_DIR)/okdcc/logic/test/unit: $(ABS_BUILD_DIR)/munit/munit.o $(OKDCC_LOGIC_OBJECTS) $(ABS_BUILD_DIR)/okdcc/logic/test/unit.o
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -o $@ $^
 
-$(ABS_BUILD_DIR)/logic/test/unit.o: logic/test/unit/main.c
+$(ABS_BUILD_DIR)/okdcc/logic/test/unit.o: logic/test/unit/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I lib/munit -I logic/src -c -o $@ $^
 
@@ -121,11 +121,11 @@ $(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app
 $(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
 	pio run --project-dir test/electric --environment $(PLATFORMIO_ENVIRONMENT)
 
-$(ABS_BUILD_DIR)/examples/cli: $(ABS_BUILD_DIR)/examples/cli.o $(OKDCC_LOGIC_OBJECTS)
+$(ABS_BUILD_DIR)/okdcc/examples/cli: $(ABS_BUILD_DIR)/okdcc/examples/cli.o $(OKDCC_LOGIC_OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $^
 
-$(ABS_BUILD_DIR)/examples/cli.o: examples/cli/main.c
+$(ABS_BUILD_DIR)/okdcc/examples/cli.o: examples/cli/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I logic/src -c -o $@ $^
 
@@ -147,9 +147,9 @@ doc/locales/ja/html/LC_MESSAGES/index.mo: doc/locales/ja/html/LC_MESSAGES/index.
 	msgfmt -o $@ $<
 
 # spellchecker:ignore msgmerge
-doc/locales/ja/html/LC_MESSAGES/index.po: $(ABS_BUILD_DIR)/doc/sphinx/gettext/index.pot
+doc/locales/ja/html/LC_MESSAGES/index.po: $(ABS_BUILD_DIR)/okdcc/doc/sphinx/gettext/index.pot
 	@mkdir -p $(@D)
 	if [ -f $@ ]; then msgmerge --update $@ $<; else cp $< $@; fi
 
-$(ABS_BUILD_DIR)/doc/sphinx/gettext/index.pot: doc/conf.py doc/index.rst
-	(cd doc && sphinx-build -M gettext . $(ABS_BUILD_DIR)/doc/sphinx)
+$(ABS_BUILD_DIR)/okdcc/doc/sphinx/gettext/index.pot: doc/conf.py doc/index.rst
+	(cd doc && sphinx-build -M gettext . $(ABS_BUILD_DIR)/okdcc/doc/sphinx)
