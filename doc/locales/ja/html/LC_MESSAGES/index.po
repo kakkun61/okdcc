@@ -17,18 +17,42 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../../../doc/index.rst:5 faf82447227646edb7ada2ba23d6cc50
+#: ../../../../doc/index.rst:5 28f35564085146399b66a8a1299a747e
 msgid "Okdcc Documentation"
 msgstr "Okdcc ドキュメント"
 
-#: ../../../../doc/index.rst:11 3664860d2f8c4bef9050ad5358616f37
+#: ../../../../doc/index.rst:11 a3c2a152ab0c4d5c84db66b6711fac72
 msgid "Logic"
 msgstr "ロジック"
 
-#: ../../../../doc/index.rst:14 7a969199cef54eb687db107d8c8e6bf0
+#: ../../../../doc/index.rst:14 6720d480f4244455b30ec8859d381ca1
 msgid "Decode"
 msgstr "デコード"
 
-#: ../../../../doc/index.rst:45 9b6c29647af94095bace1c59d5cd8986
+#: ../../../../doc/index.rst:0 89300ab8983845298d2613a19d6781cd
+#: 3f826076d9824870be6782cc84066375 6b132df79a8948d6b6aed97b32426dca
+#: 64087d09fc944489ae63cbc3d9341254 067fbac387104351a2d15a2699aced1f
+#: 82e815ca8a68489997cbfba51181d915 c5c5e37cfd914cedb4d6cdd07687a5b8
+msgid "Parameters"
+msgstr ""
+
+#: ../../../../doc/index.rst:0 5a04e220c2e84fb49271c662853c038f
+#: 5df16127187a41babb08e9e350d811fa 517533f2bd0c4543a4db15a681da4b2d
+#: abbd46ae49d7406d82d1ac7d4c836665 be33d4bef99943fea793fe2dbe81e19a
+#: 05ca2850b27d414a950b3cbd8ce94d88 ce361b9cf3fe4af88541c9fc6a8172b3
+#: e3261f2cd3cb4361bd558f2378edf2a7 f5a78b7766c44d3e8d6fa029fb65fdf1
+msgid "Returns"
+msgstr ""
+
+#: ../../../../doc/index.rst:45 68e13b0280ea4db9a56e21b779a7b7eb
 msgid "Data"
 msgstr "データ"
+
+#: ../../../../doc/index.rst:0 3902bde56e5e43bdae7b86e4c6919499
+#: 07a2732840ca4aac93ac2e1a0b222c16 b67fd446144c451aaea52748a677ad63
+#: a45b9148386e4adb887bd4ae79605b4d e74a3c5d0e034927aeb74e271117602a
+#: 59677154b2ac4e69ba5a08cd6bdab52c 2a54f6df700f42bd957cf002bbd20fc6
+#: 3edaf341a7b44677bccc9d82aab8878b 43de331211484d09a688feb3cca3cf23
+#: 3ca44bb9f05c4c0ca03195c678275cdf
+msgid "Public Members"
+msgstr ""

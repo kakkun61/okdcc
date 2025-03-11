@@ -10,18 +10,21 @@
 
 /// \~english
 /// \brief A type that represents the time in microseconds.
+///
 /// \~japanese
 /// \brief マイクロ秒単位の時間を表す型。
 typedef unsigned long dcc_TimeMicroSec;
 
 /// \~english
 /// \brief A type that represents a bit.
+///
 /// \~japanese
 /// \brief ビットを表す型。
 typedef bool dcc_Bit;
 
 /// \~english
 /// \brief A type that represents success or failure.
+///
 /// \~japanese
 /// \brief 成功か失敗を表す型。
 enum dcc_Result {
@@ -31,12 +34,14 @@ enum dcc_Result {
 
 /// \~english
 /// \brief A type that represents the result of a stream parser.
+///
 /// \~japanese
 /// \brief ストリームパーサーの結果を表す型。
 enum dcc_StreamParserResult {
   dcc_StreamParserResult_Failure = 0,
   /// \~english
   /// \brief Parsing has not failed, but additional input is required to return a result.
+  ///
   /// \~japanese
   /// \brief パースは失敗していないが結果を返すには追加の入力が要求されることを示す。
   dcc_StreamParserResult_Continue = 1,
@@ -45,6 +50,7 @@ enum dcc_StreamParserResult {
 
 /// \~english
 /// \brief A structure that records the time of voltage changes.
+///
 /// \~japanese
 /// \brief 電圧変化の時刻を記録する構造体。
 struct dcc_SignalBuffer {
@@ -57,6 +63,7 @@ struct dcc_SignalBuffer {
 
 /// \~english
 /// \brief A type that represents a decoder's address.
+///
 /// \~japanese
 /// \brief デコーダーのアドレスを表す型。
 typedef uint16_t dcc_Address;
@@ -65,6 +72,7 @@ typedef uint16_t dcc_Address;
 /// \brief A type that represents a consist address.
 ///
 /// Only the lower 7 bits are used.
+///
 /// \~japanese
 /// \brief 重連時のアドレスを表す型。
 ///
@@ -73,6 +81,7 @@ typedef uint8_t dcc_ConsistAddress;
 
 /// \~english
 /// \brief A type that represents the direction of the locomotive.
+///
 /// \~japanese
 /// \brief 機関車の進行方向を表す型。
 enum dcc_Direction {
@@ -84,17 +93,31 @@ enum dcc_Direction {
 /// \brief A type that represents the speed of the locomotive.
 ///
 /// Only the lower 5 bits are used.
+///
 /// \~japanese
 /// \brief 機関車の速度を表す型。
 ///
 /// 下位5ビットしか使用しない。
 typedef uint8_t dcc_Speed;
 
+/// \~english
+/// \brief [S-9.2 &gt; B: Baseline Packets &gt; Speed and Direction Packet For Locomotive Decoders][spec-en-speed-and-direction-packet-for-locomotive-decoders]
+///
+/// [spec-en-speed-and-direction-packet-for-locomotive-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#speed-and-direction-packet-for-locomotive-decoders
+///
+/// \~japanese
+/// \brief [S-9.2 &gt; B: 基本パケット &gt; 機関車デコーダー用速度・方向パケット][spec-ja-speed-and-direction-packet-for-locomotive-decoders]
+///
+/// [spec-ja-speed-and-direction-packet-for-locomotive-decoders]: https://kakkun61.com/nmra-ja/ja/S-9.2-dcc-communications-standard.html#speed-and-direction-packet-for-locomotive-decoders
 struct dcc_SpeedAndDirectionPacket {
   dcc_Address address;
   enum dcc_Direction direction;
   dcc_Speed speed;
 };
+
+// no structure for Digital Decoder Reset Packet For All Decoders
+
+// no structure for Digital Decoder idle Packet For All Decoders
 
 struct dcc_DecoderResetPacket {
   dcc_Address address;
@@ -110,9 +133,30 @@ struct dcc_FactoryTestInstructionPacket {
   size_t dataSize;
 };
 
+enum dcc_DecoderFlagsInstruction {
+  dcc_Disable111Instructions = 0,
+  dcc_DisableDecoderAcknowledgementRequestInstruction = 4,
+  dcc_ActivateBiDirectionalCommunications = 5,
+  dcc_setBiDirectionalCommunications = 8,
+  dcc_Set111Instruction = 9,
+  dcc_Accept111Instructions = 0xf
+};
+
 struct dcc_DecoderFlagsSetPacket {
-  // 未実装
-  void *unimplemented;
+  dcc_Address address;
+  /// \~english
+  /// Only the lower 3 bits are used.
+  ///
+  /// \~japanese
+  /// 下位3ビットしか使用しない。
+  uint8_t subaddress;
+  enum dcc_DecoderFlagsInstruction instruction;
+  /// \~english
+  /// If this instruction is sent to the consist address and when `effect` is `0`, this instruction has effect only on the consist address, and when `1`, it has no effect.
+  ///
+  /// \~japanese
+  /// 編成アドレスに送信された場合、`effect` が `0` であればこの命令は編成アドレスにのみ効果があり、`1` であればこの命令は効果がない。
+  dcc_Bit effect;
 };
 
 struct dcc_AdvancedAddressingSetPacket {
@@ -139,8 +183,50 @@ struct dcc_SpeedStep128ControlPacket {
 
 enum dcc_PacketTag {
   dcc_SpeedAndDirectionPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Speed and Direction Packet For Locomotive Decoders][spec-en-digital-decoder-reset-packet-for-all-decoders]
+  ///
+  /// There is no structure for Digital Decoder idle Packet For All Decoders because it has no fields.
+  ///
+  /// [spec-en-digital-decoder-reset-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-reset-packet-for-all-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B: 基本パケット &gt; 全デコーダー用デジタルデコーダーリセットパケット][[spec-ja-digital-decoder-reset-packet-for-all-decoders]
+  ///
+  /// 全デコーダー用デジタルデコーダーリセットパケットにはフィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-digital-decoder-reset-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-reset-packet-for-all-decoders
   dcc_AllDecoderResetPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Digital Decoder idle Packet For All Decoders][spec-en-digital-decoder-idle-packet-for-all-decoders]
+  ///
+  /// There is no structure for Digital Decoder idle Packet For All Decoders because it has no fields.
+  ///
+  /// [spec-en-digital-decoder-idle-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-idle-packet-for-all-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B: 基本パケット &gt; 全デコーダー用デジタルデコーダーアイドルパケット][[spec-ja-digital-decoder-idle-packet-for-all-decoders]
+  ///
+  /// 全デコーダー用デジタルデコーダーアイドルパケットにはフィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-digital-decoder-idle-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-idle-packet-for-all-decoders
   dcc_AllDecoderIdlePacketTag,
+
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Digital Decoder Broadcast Stop Packet for All Decoders][spec-en-digital-decoder-broadcast-stop-packets-for-all-decoders]
+  ///
+  /// There is no structure for Digital Decoder Broadcast Stop Packet for All Decoders because it has no fields.
+  ///
+  /// [spec-en-digital-decoder-broadcast-stop-packets-for-all-decoders] https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#spec-en-digital-decoder-broadcast-stop-packets-for-all-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B: 基本パケット &gt; 全デコーダー用デジタルデコーダーブロードキャスト停止パケット][[spec-ja-digital-decoder-broadcast-stop-packets-for-all-decoders]
+  ///
+  /// 全デコーダー用デジタルデコーダーブロードキャスト停止パケットにはフィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-digital-decoder-broadcast-stop-packets-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-broadcast-stop-packets-for-all-decoders
   dcc_DecoderResetPacketTag,
   dcc_HardResetPacketTag,
   dcc_FactoryTestInstructionPacketTag,
