@@ -46,13 +46,18 @@ Data
 
 .. doxygentypedef:: dcc_TimeMicroSec
 .. doxygentypedef:: dcc_Bit
+.. doxygentypedef:: dcc_Byte
 .. doxygenenum:: dcc_Result
 .. doxygenenum:: dcc_StreamParserResult
 .. doxygentypedef:: dcc_Address
 .. doxygentypedef:: dcc_ConsistAddress
 .. doxygenenum:: dcc_Direction
 .. doxygentypedef:: dcc_Speed
+.. doxygenenum:: dcc_PacketTag
 .. doxygenstruct:: dcc_SpeedAndDirectionPacket
+   :members:
+   :undoc-members:
+.. doxygenstruct:: dcc_AllDecoderBroadcastStopPacket
    :members:
    :undoc-members:
 .. doxygenstruct:: dcc_DecoderResetPacket
@@ -67,6 +72,7 @@ Data
 .. doxygenstruct:: dcc_DecoderFlagsSetPacket
    :members:
    :undoc-members:
+.. doxygenenum:: dcc_DecoderFlagsInstruction
 .. doxygenstruct:: dcc_AdvancedAddressingSetPacket
    :members:
    :undoc-members:
@@ -79,7 +85,6 @@ Data
 .. doxygenstruct:: dcc_SpeedStep128ControlPacket
    :members:
    :undoc-members:
-.. doxygenenum:: dcc_PacketTag
 .. doxygenstruct:: dcc_Packet
    :members:
    :undoc-members:

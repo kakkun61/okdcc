@@ -10,18 +10,28 @@
 
 /// \~english
 /// \brief A type that represents the time in microseconds.
+///
 /// \~japanese
 /// \brief マイクロ秒単位の時間を表す型。
 typedef unsigned long dcc_TimeMicroSec;
 
 /// \~english
 /// \brief A type that represents a bit.
+///
 /// \~japanese
 /// \brief ビットを表す型。
 typedef bool dcc_Bit;
 
 /// \~english
+/// \brief A type that represents a byte.
+///
+/// \~japanese
+/// \brief バイトを表す型。
+typedef uint_least8_t dcc_Byte;
+
+/// \~english
 /// \brief A type that represents success or failure.
+///
 /// \~japanese
 /// \brief 成功か失敗を表す型。
 enum dcc_Result {
@@ -31,12 +41,14 @@ enum dcc_Result {
 
 /// \~english
 /// \brief A type that represents the result of a stream parser.
+///
 /// \~japanese
 /// \brief ストリームパーサーの結果を表す型。
 enum dcc_StreamParserResult {
   dcc_StreamParserResult_Failure = 0,
   /// \~english
   /// \brief Parsing has not failed, but additional input is required to return a result.
+  ///
   /// \~japanese
   /// \brief パースは失敗していないが結果を返すには追加の入力が要求されることを示す。
   dcc_StreamParserResult_Continue = 1,
@@ -45,6 +57,7 @@ enum dcc_StreamParserResult {
 
 /// \~english
 /// \brief A structure that records the time of voltage changes.
+///
 /// \~japanese
 /// \brief 電圧変化の時刻を記録する構造体。
 struct dcc_SignalBuffer {
@@ -57,6 +70,7 @@ struct dcc_SignalBuffer {
 
 /// \~english
 /// \brief A type that represents a decoder's address.
+///
 /// \~japanese
 /// \brief デコーダーのアドレスを表す型。
 typedef uint16_t dcc_Address;
@@ -65,14 +79,16 @@ typedef uint16_t dcc_Address;
 /// \brief A type that represents a consist address.
 ///
 /// Only the lower 7 bits are used.
+///
 /// \~japanese
 /// \brief 重連時のアドレスを表す型。
 ///
 /// 下位7ビットしか使用しない。
-typedef uint8_t dcc_ConsistAddress;
+typedef uint_least8_t dcc_ConsistAddress;
 
 /// \~english
 /// \brief A type that represents the direction of the locomotive.
+///
 /// \~japanese
 /// \brief 機関車の進行方向を表す型。
 enum dcc_Direction {
@@ -84,36 +100,165 @@ enum dcc_Direction {
 /// \brief A type that represents the speed of the locomotive.
 ///
 /// Only the lower 5 bits are used.
+///
 /// \~japanese
 /// \brief 機関車の速度を表す型。
 ///
 /// 下位5ビットしか使用しない。
-typedef uint8_t dcc_Speed;
+typedef uint_least8_t dcc_Speed;
 
+/// \~english
+/// See `dcc_SpeedAndDirectionPacketTag`.
+///
+/// \~japanese
+/// `dcc_SpeedAndDirectionPacketTag` を参照。
 struct dcc_SpeedAndDirectionPacket {
   dcc_Address address;
   enum dcc_Direction direction;
   dcc_Speed speed;
 };
 
+// no structure for Digital Decoder Reset Packet For All Decoders
+
+// no structure for Digital Decoder idle Packet For All Decoders
+
+/// \~english
+/// See `dcc_AllDecoderBroadcastStopPacketTag`.
+///
+/// \~japanese
+/// `dcc_AllDecoderBroadcastStopPacketTag` を参照。
+struct dcc_AllDecoderBroadcastStopPacket {
+  /// \~english
+  /// Only the lower 1 bit is used. Upon `0`, digital decoders intended to control a locomotive's motor shall bring the locomotive to a stop. Upon `1`, digital decoders intended to control a locomotive's motor shall stop delivering energy to the motor.
+  ///
+  /// \~japanese
+  /// 下位1ビットしか使用しない。`0` の場合、機関車のモーターを制御することを意図したデジタルデコーダーは機関車を停止させなければいけない。`1` の場合、機関車のモーターを制御することを意図したデジタルデコーダーはモーターへのエネルギー供給を停止させなければいけない。
+  uint_least8_t kind;
+  /// \~english
+  /// Only the lower 1 bit is used. If `1`, the `direction` may optionally be ignored for all direction sensitive functions.
+  ///
+  /// \~japanese
+  /// 下位1ビットしか使用しない。`1` の場合、`direction` は方向に影響する機能に対して任意に無視することができる。
+  uint_least8_t ignoreDirection;
+  enum dcc_Direction direction;
+};
+
+/// \~english
+/// See `dcc_DecoderResetPacketTag`.
+///
+/// \~japanese
+/// `dcc_DecoderResetPacketTag` を参照。
 struct dcc_DecoderResetPacket {
   dcc_Address address;
 };
 
+/// \~english
+/// See `dcc_HardResetPacketTag`.
+///
+/// \~japanese
+/// `dcc_HardResetPacketTag` を参照。
 struct dcc_HardResetPacket {
   dcc_Address address;
 };
 
+/// \~english
+/// See `dcc_FactoryTestInstructionPacketTag`.
+///
+/// \~japanese
+/// `dcc_FactoryTestInstructionPacketTag` を参照。
 struct dcc_FactoryTestInstructionPacket {
   dcc_Address address;
-  uint8_t data[2];
+  dcc_Byte data[2];
   size_t dataSize;
 };
 
-struct dcc_DecoderFlagsSetPacket {
-  // 未実装
-  void *unimplemented;
+enum dcc_DecoderFlagsInstruction {
+  dcc_Disable111Instructions = 0,
+  dcc_DisableDecoderAcknowledgementRequestInstruction = 4,
+  dcc_ActivateBiDirectionalCommunications = 5,
+  dcc_setBiDirectionalCommunications = 8,
+  dcc_Set111Instruction = 9,
+  dcc_Accept111Instructions = 0xf
 };
+
+/// \~english
+/// See `dcc_DecoderFlagsSetPacketTag`.
+///
+/// \~japanese
+/// `dcc_DecoderFlagsSetPacketTag` を参照。
+struct dcc_DecoderFlagsSetPacket {
+  dcc_Address address;
+  /// \~english
+  /// Only the lower 3 bits are used.
+  ///
+  /// \~japanese
+  /// 下位3ビットしか使用しない。
+  uint_least8_t subaddress;
+  enum dcc_DecoderFlagsInstruction instruction;
+  /// \~english
+  /// If this instruction is sent to the consist address and when `effect` is `0`, this instruction has effect only on the consist address, and when `1`, it has no effect.
+  ///
+  /// \~japanese
+  /// 編成アドレスに送信された場合、`effect` が `0` であればこの命令は編成アドレスにのみ効果があり、`1` であればこの命令は効果がない。
+  dcc_Bit effect;
+};
+
+/// \~english
+/// See `dcc_ConsistControlPacketTag`.
+///
+/// \~japanese
+/// `dcc_ConsistControlPacketTag` を参照。
+struct dcc_ConsistControlPacket {
+  dcc_Address address;
+  enum dcc_Direction direction;
+  /// \~english
+  /// An address of the consists, but `0` means disabling of consists. Only the lower 7 bits are used.
+  ///
+  /// \~japanese
+  /// 編成のアドレス、ただし `0` は編成の無効化を意味する。下位7ビットしか使用しない。
+  dcc_ConsistAddress consistAddress;
+};
+
+/// \~english
+/// See `dcc_SpeedStep128ControlPacketTag`.
+///
+/// \~japanese
+/// `dcc_SpeedStep128ControlPacketTag` を参照。
+struct dcc_SpeedStep128ControlPacket {
+  dcc_Address address;
+  enum dcc_Direction direction;
+  bool emergencyStop;
+  dcc_Speed speed;
+};
+
+/// \~english
+/// See `dcc_RestrictedSpeedStepPacketTag`.
+///
+/// \~japanese
+/// `dcc_RestrictedSpeedStepPacketTag` を参照。
+struct dcc_RestrictedSpeedStepPacket {
+  dcc_Address address;
+  bool enabled;
+  /// \~english
+  /// Only the lower 6 bits are used.
+  ///
+  /// \~japanese
+  /// 下位6ビットしか使用しない。
+  dcc_Speed speed;
+};
+
+/// \~english
+/// See `dcc_AnalogFunctionPacketTag`.
+///
+/// \~japanese
+/// `dcc_AnalogFunctionPacketTag` を参照。
+struct AnalogFunctionPacket {
+  dcc_Address address;
+  dcc_Byte data;
+};
+
+
+
 
 struct dcc_AdvancedAddressingSetPacket {
   // 未実装
@@ -124,31 +269,191 @@ struct dcc_DecoderAcknowledgementRequestPacket {
   dcc_Address address;
 };
 
-struct dcc_ConsistControlPacket {
-  dcc_Address address;
-  enum dcc_Direction direction;
-  dcc_ConsistAddress consistAddress;
-};
-
-struct dcc_SpeedStep128ControlPacket {
-  dcc_Address address;
-  enum dcc_Direction direction;
-  bool emergencyStop;
-  dcc_Speed speed;
-};
-
 enum dcc_PacketTag {
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Speed and Direction Packet For Locomotive Decoders][spec-en-speed-and-direction-packet-for-locomotive-decoders]
+  ///
+  /// See `dcc_SpeedAndDirectionPacket`.
+  ///
+  /// [spec-en-speed-and-direction-packet-for-locomotive-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#speed-and-direction-packet-for-locomotive-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B：基本パケット &gt; 機関車デコーダー用速度・方向パケット][spec-ja-speed-and-direction-packet-for-locomotive-decoders]
+  ///
+  /// `dcc_SpeedAndDirectionPacket` を参照。
+  ///
+  /// [spec-ja-speed-and-direction-packet-for-locomotive-decoders]: https://kakkun61.com/nmra-ja/ja/S-9.2-dcc-communications-standard.html#speed-and-direction-packet-for-locomotive-decoders
   dcc_SpeedAndDirectionPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Speed and Direction Packet For Locomotive Decoders][spec-en-digital-decoder-reset-packet-for-all-decoders]
+  ///
+  /// There is no corresponding structure because it has no fields.
+  ///
+  /// [spec-en-digital-decoder-reset-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-reset-packet-for-all-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B：基本パケット &gt; 全デコーダー用デジタルデコーダーリセットパケット][spec-ja-digital-decoder-reset-packet-for-all-decoders]
+  ///
+  /// フィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-digital-decoder-reset-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/ja/S-9.2-dcc-communications-standard.html#digital-decoder-reset-packet-for-all-decoders
   dcc_AllDecoderResetPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Digital Decoder idle Packet For All Decoders][spec-en-digital-decoder-idle-packet-for-all-decoders]
+  ///
+  /// There is no corresponding structure because it has no fields.
+  ///
+  /// [spec-en-digital-decoder-idle-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-idle-packet-for-all-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B：基本パケット &gt; 全デコーダー用デジタルデコーダーアイドルパケット][spec-ja-digital-decoder-idle-packet-for-all-decoders]
+  ///
+  /// フィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-digital-decoder-idle-packet-for-all-decoders]: https://kakkun61.com/nmra-ja/ja/S-9.2-dcc-communications-standard.html#digital-decoder-idle-packet-for-all-decoders
   dcc_AllDecoderIdlePacketTag,
+
+  /// \~english
+  /// \brief [S-9.2 &gt; B: Baseline Packets &gt; Digital Decoder Broadcast Stop Packet for All Decoders][spec-en-digital-decoder-broadcast-stop-packets-for-all-decoders]
+  ///
+  /// See `dcc_AllDecoderBroadcastStopPacket`.
+  ///
+  /// [spec-en-digital-decoder-broadcast-stop-packets-for-all-decoders]: https://kakkun61.com/nmra-ja/en/S-9.2-dcc-communications-standard.html#digital-decoder-broadcast-stop-packets-for-all-decoders
+  ///
+  /// \~japanese
+  /// \brief [S-9.2 &gt; B：基本パケット &gt; 全デコーダー用デジタルデコーダーブロードキャスト停止パケット][spec-ja-digital-decoder-broadcast-stop-packets-for-all-decoders]
+  ///
+  /// `dcc_AllDecoderBroadcastStopPacket` を参照。
+  ///
+  /// [spec-ja-digital-decoder-broadcast-stop-packets-for-all-decoders]: https://kakkun61.com/nmra-ja/ja/S-9.2-dcc-communications-standard.html#digital-decoder-broadcast-stop-packets-for-all-decoders
+  dcc_AllDecoderBroadcastStopPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Decoder and Consist Control Instruction &gt; Decoder Control &gt; Digital Decoder Reset][spec-en-digital-decoder-reset]
+  ///
+  /// There is no corresponding structure because it has no fields.
+  ///
+  /// [spec-en-digital-decoder-reset]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#digital-decoder-reset
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; デコーダー制御 &gt; デジタルデコーダーリセット][spec-ja-digital-decoder-reset]
+  ///
+  /// フィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-digital-decoder-reset]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#digital-decoder-reset
   dcc_DecoderResetPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Decoder and Consist Control Instruction &gt; Decoder Control &gt; Hard Reset][spec-en-hard-reset]
+  ///
+  /// There is no corresponding structure because it has no fields.
+  ///
+  /// [spec-en-hard-reset]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#herd-reset
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; デコーダー制御 &gt; 強制リセット][spec-ja-hard-reset]
+  ///
+  /// フィールドが存在しないため対応する構造体はない。
+  ///
+  /// [spec-ja-hard-reset]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#hard-reset
   dcc_HardResetPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Decoder and Consist Control Instruction &gt; Decoder Control &gt; Factory Test Instruction][spec-en-factory-test-instruction]
+  ///
+  /// See `dcc_FactoryTestInstructionPacket`.
+  ///
+  /// [spec-en-factory-test-instruction]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#factory-test-instruction
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; デコーダー制御 &gt; 工場試験命令][spec-ja-factory-test-instruction]
+  ///
+  /// `dcc_FactoryTestInstructionPacket` を参照。
+  ///
+  /// [spec-ja-factory-test-instruction]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#factory-test-instruction
   dcc_FactoryTestInstructionPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Decoder and Consist Control Instruction &gt; Decoder Control &gt; Set Decoder Flags][spec-en-set-decoder-flags]
+  ///
+  /// See `dcc_DecoderFlagsSetPacket`.
+  ///
+  /// [spec-en-set-decoder-flags]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#set-decoder-flags
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; デコーダー制御 &gt; デコーダーフラグの設定][spec-ja-set-decoder-flags]
+  ///
+  /// `dcc_DecoderFlagsSetPacket` を参照。
+  ///
+  /// [spec-ja-set-decoder-flags]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#set-decoder-flags
   dcc_DecoderFlagsSetPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Decoder and Consist Control Instruction &gt; Consist Control][spec-en-consist-control]
+  ///
+  /// See `dcc_ConsistControlPacket`.
+  ///
+  /// [spec-en-consist-control]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#consist-control
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; 編成制御][spec-ja-consist-control]
+  ///
+  /// `dcc_ConsistControlPacket` を参照。
+  ///
+  /// [spec-ja-consist-control]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#consist-control
+  dcc_ConsistControlPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Advanced Operations Instructions &gt; 128 Speed Step Control][spec-en-128-speed-step-control]
+  ///
+  /// See `dcc_SpeedStep128ControlPacket`.
+  ///
+  /// [spec-en-128-speed-step-control]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#128-speed-step-control
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; 発展的制御命令 &gt; 128段階速度制御][spec-ja-128-speed-step-control]
+  ///
+  /// `dcc_SpeedStep128ControlPacket` を参照。
+  ///
+  /// [spec-ja-128-speed-step-control]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#128-speed-step-control
+  dcc_SpeedStep128ControlPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Advanced Operations Instructions &gt; Restricted Speed Step Instruction][spec-en-restricted-speed-step-instruction]
+  ///
+  /// See `dcc_RestrictedSpeedStepPacket`.
+  ///
+  /// [spec-en-restricted-speed-step-instruction]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#restricted-speed-step-instruction
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; 発展的制御命令 &gt; 制限された速度制御命令][spec-ja-restricted-speed-step-instruction]
+  ///
+  /// `dcc_RestrictedSpeedStepPacket` を参照。
+  ///
+  /// [spec-ja-restricted-speed-step-instruction]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#restricted-speed-step-instruction
+  dcc_RestrictedSpeedStepPacketTag,
+
+  /// \~english
+  /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Advanced Operations Instructions &gt; Analog Function Group][spec-en-analog-function-group]
+  ///
+  /// See `AnalogFunctionPacket`.
+  ///
+  /// [spec-en-analog-function-group]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#analog-function-group
+  ///
+  /// \~japanese
+  /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; 発展的制御命令 &gt; アナログ機能群][spec-ja-analog-function-group]
+  ///
+  /// `AnalogFunctionPacket` を参照。
+  ///
+  /// [spec-ja-analog-function-group]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#analog-function-group
+  dcc_AnalogFunctionPacketTag,
+
+
+
+
   dcc_AdvancedAddressingSetPacketTag,
   dcc_DecoderAcknowledgementRequestPacketTag,
-  dcc_ConsistControlPacketTag,
-  dcc_SpeedStep128ControlPacketTag,
 };
 
 struct dcc_Packet {
@@ -192,11 +497,11 @@ struct dcc_BitStreamParser {
       size_t oneBitsCount;
     } inPreamble;
     struct {
-      uint8_t byte;
+      dcc_Byte byte;
       size_t bitCount;
     } inByte;
   };
-  uint8_t bytes[DCC_BIT_STREAM_PARSER_BYTES_CAPACITY];
+  dcc_Byte bytes[DCC_BIT_STREAM_PARSER_BYTES_CAPACITY];
   size_t bytesSize;
 };
 
@@ -367,35 +672,35 @@ struct dcc_BitStreamParser dcc_initializeBitStreamParser(void);
 /// \param bytes バイト（出力）。成功でない場合は値が変更されない。
 /// \param bytesSize バイトのサイズ（出力）。成功でない場合は値が変更されない。
 /// \return パースの成否。
-enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, uint8_t *const bytes,
+enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, dcc_Byte *const bytes,
                                         size_t *const bytesSize);
 
-enum dcc_Result dcc_parseSpeedAndDirectionPacket(uint8_t const *const bytes, size_t const bytesSize,
+enum dcc_Result dcc_parseSpeedAndDirectionPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                                  struct dcc_SpeedAndDirectionPacket *const packet);
 
-enum dcc_Result dcc_parseAllDecoderResetPacket(uint8_t const *const bytes, size_t const bytesSize);
+enum dcc_Result dcc_parseAllDecoderResetPacket(dcc_Byte const *const bytes, size_t const bytesSize);
 
-enum dcc_Result dcc_parseAllDecoderIdlePacket(uint8_t const *const bytes, size_t const bytesSize);
+enum dcc_Result dcc_parseAllDecoderIdlePacket(dcc_Byte const *const bytes, size_t const bytesSize);
 
-enum dcc_Result dcc_parseDecoderResetPacket(uint8_t const *const bytes, size_t const bytesSize,
+enum dcc_Result dcc_parseDecoderResetPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                             struct dcc_DecoderResetPacket *const packet);
 
-enum dcc_Result dcc_parseHardResetPacket(uint8_t const *const bytes, size_t const bytesSize,
+enum dcc_Result dcc_parseHardResetPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                          struct dcc_HardResetPacket *const packet);
 
 enum dcc_Result dcc_parseDecoderAcknowledgementRequestPacket(
-  uint8_t const *const bytes, size_t const bytesSize, struct dcc_DecoderAcknowledgementRequestPacket *const packet);
+  dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_DecoderAcknowledgementRequestPacket *const packet);
 
-enum dcc_Result dcc_parseFactoryTestInstructionPacket(uint8_t const *const bytes, size_t const bytesSize,
+enum dcc_Result dcc_parseFactoryTestInstructionPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                                       struct dcc_FactoryTestInstructionPacket *const packet);
 
-enum dcc_Result dcc_parseConsistControlPacket(uint8_t const *const bytes, size_t const bytesSize,
+enum dcc_Result dcc_parseConsistControlPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                               struct dcc_ConsistControlPacket *const packet);
 
-enum dcc_Result dcc_parseSpeedStep128ControlPacket(uint8_t const *const bytes, size_t const bytesSize,
+enum dcc_Result dcc_parseSpeedStep128ControlPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                                    struct dcc_SpeedStep128ControlPacket *const packet);
 
-enum dcc_Result dcc_parsePacket(uint8_t const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
+enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
 
 /// \~english
 /// \brief To initialize a `dcc_Decoder`.
@@ -426,7 +731,7 @@ enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_Ti
 
 int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer);
 
-int dcc_showBytes(char *buffer, size_t bufferSize, uint8_t const *const bytes, size_t const bytesSize);
+int dcc_showBytes(char *buffer, size_t bufferSize, dcc_Byte const *const bytes, size_t const bytesSize);
 
 int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const direction);
 
