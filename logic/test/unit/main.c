@@ -134,7 +134,8 @@ static MunitResult test_validatePacket_0x00_0x01_0x01_is_success(MunitParameter 
   return MUNIT_OK;
 }
 
-static MunitResult test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_20(
+static MunitResult
+test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_20(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x01), UINT8_C(0x6A), UINT8_C(0x6B) };
   struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders packet;
@@ -149,7 +150,8 @@ static MunitResult test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b0000
   return MUNIT_OK;
 }
 
-static MunitResult test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_9_off(
+static MunitResult
+test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_9_off(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x01), UINT8_C(0x6A), UINT8_C(0x6B) };
   struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders packet;
@@ -201,21 +203,36 @@ static MunitResult test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0
 }
 
 static MunitSuite const suite = {
-  "/okdcc", NULL,
+  "/okdcc",
+  NULL,
   (MunitSuite[]){
     { // name, tests, suites, iterations, options
       "/SignalBuffer",
       (MunitTest[]){
         { "(1)/write is success", test_writeSignalBuffer_1_is_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(1)/read is failure", test_SignalBuffer_1_read_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-        { "(1)/write write is failure", test_writeSignalBuffer_1_2_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE,
+        { "(1)/write write is failure",
+          test_writeSignalBuffer_1_2_is_failure,
+          NULL,
+          NULL,
+          MUNIT_TEST_OPTION_NONE,
           NULL },
-        { "(1)/write read write read is success", test_SignalBuffer_1_write_read_write_read_is_success, NULL, NULL,
-          MUNIT_TEST_OPTION_NONE, NULL },
+        { "(1)/write read write read is success",
+          test_SignalBuffer_1_write_read_write_read_is_success,
+          NULL,
+          NULL,
+          MUNIT_TEST_OPTION_NONE,
+          NULL },
         { "(1)/write write read is failure once and success",
-          test_SignalBuffer_1_write_write_read_is_failure_once_and_success, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+          test_SignalBuffer_1_write_write_read_is_failure_once_and_success,
+          NULL,
+          NULL,
+          MUNIT_TEST_OPTION_NONE,
+          NULL },
         { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_decodeSignal",
       (MunitTest[]){
         // name, test, setup, tear down, options, parameters
@@ -223,7 +240,9 @@ static MunitSuite const suite = {
         { "(100, 9000) is 0", test_decodeSignal_100_9000_is_0, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "(51, 58) is failure", test_decodeSignal_51_58_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_feedSignal",
       (MunitTest[]){
         { "([0]) is continue", test_feedSignal_0_is_continue, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
@@ -231,47 +250,94 @@ static MunitSuite const suite = {
         { "([0, 1, 2]) is failure", test_feedSignal_0_1_2_is_failure, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { "([0, 57, 114]) is success", test_feedSignal_0_57_114_is_1, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
         { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_validatePacket",
-      (MunitTest[]){ { "([0x00], 0x00) is success", test_validatePacket_0x00_0x00_is_success, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
-                     { "([0x00], 0x01) is failure", test_validatePacket_0x00_0x01_is_failure, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
-                     { "([0x00, 0x01], 0x01) is success", test_validatePacket_0x00_0x01_0x01_is_success, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
+      (MunitTest[]){ { "([0x00], 0x00) is success",
+                       test_validatePacket_0x00_0x00_is_success,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
+                     { "([0x00], 0x01) is failure",
+                       test_validatePacket_0x00_0x01_is_failure,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
+                     { "([0x00, 0x01], 0x01) is success",
+                       test_validatePacket_0x00_0x01_0x01_is_success,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders",
-      (MunitTest[]){ { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, emergencyStop = false, flControl = false, speed5Step = 17, directionMayBeIgnored = false }",
-                       test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_20, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
-                      { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, emergencyStop = false, flControl = true, speed4Step = 9, fl = false }",
-                        test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_9_off, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-                     { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      (MunitTest[]){
+        { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, emergencyStop = false, "
+          "flControl = false, speed5Step = 17, directionMayBeIgnored = false }",
+          test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_20,
+          NULL,
+          NULL,
+          MUNIT_TEST_OPTION_NONE,
+          NULL },
+        { "([0b00000001, 0b01101010], 0b01101011) is { address = 1, direction = forward, emergencyStop = false, "
+          "flControl = true, speed4Step = 9, fl = false }",
+          test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b01101011_is_1_forward_9_off,
+          NULL,
+          NULL,
+          MUNIT_TEST_OPTION_NONE,
+          NULL },
+        { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseResetPacketForAllDecoders",
       (MunitTest[]){ { "([0b00000000, 0b00000000, 0b00000000]) is success",
-                       test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000000_is_success, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
+                       test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000000_is_success,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseIdlePacketForAllDecoders",
       (MunitTest[]){ { "([0b11111111, 0b00000000, 0b11111111]) is success",
-                       test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b11111111_is_success, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
+                       test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b11111111_is_success,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseResetPacketForMultiFunctionDecoders",
       (MunitTest[]){ { "([0b00000110, 0b0000000, 0b00000110]) is { address = 3 }",
-                       test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_is_3, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
+                       test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_is_3,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
                      { "([0b11000011, 0b0000000, 0b0000000, 0b11000011]) is { address = 768 }",
-                       test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0b11000011_is_768, NULL, NULL,
-                       MUNIT_TEST_OPTION_NONE, NULL },
+                       test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0b11000011_is_768,
+                       NULL,
+                       NULL,
+                       MUNIT_TEST_OPTION_NONE,
+                       NULL },
                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
-      NULL, 1, MUNIT_SUITE_OPTION_NONE },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
     { NULL, NULL, NULL, 0, MUNIT_SUITE_OPTION_NONE } },
-  1, MUNIT_SUITE_OPTION_NONE
+  1,
+  MUNIT_SUITE_OPTION_NONE
 };
 
 int main(int argc, char *const argv[]) { return munit_suite_main(&suite, NULL, argc, argv); }

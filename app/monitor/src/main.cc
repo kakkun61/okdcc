@@ -266,7 +266,13 @@ void printLogVa(char const *const level, char const *const file, int const line,
       assert(messageBuffer[result] == '\0');
     }
     {
-      int const result = snprintf(lineBuffer, lineBufferSize - 1, "%s: %s (%d) %s: %s\n", level, file, line, func,
+      int const result = snprintf(lineBuffer,
+                                  lineBufferSize - 1,
+                                  "%s: %s (%d) %s: %s\n",
+                                  level,
+                                  file,
+                                  line,
+                                  func,
                                   messageBuffer);  // 終端ヌル文字用に1文字開けておく
       if (result < 0) return;                      // 書き込みに失敗した
       // lineBufferSize ≦ result のときはバッファに書き込み切れなかった
@@ -275,7 +281,9 @@ void printLogVa(char const *const level, char const *const file, int const line,
   }
   if (xPortInIsrContext()) {
     BaseType_t higherPriorityTaskWoken = pdFALSE;
-    xStreamBufferSendFromISR(logStreamBuffer, lineBuffer, strlen(lineBuffer),
+    xStreamBufferSendFromISR(logStreamBuffer,
+                             lineBuffer,
+                             strlen(lineBuffer),
                              &higherPriorityTaskWoken);  // 終端ヌル文字は送信しない
     portYIELD_FROM_ISR(higherPriorityTaskWoken);
   } else {

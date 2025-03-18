@@ -469,7 +469,6 @@ struct dcc_BinaryStateControlShortFormPacket {
   bool state;
 };
 
-
 /// \~english
 /// See `dcc_FunctionControlF13F20PacketTag`.
 ///
@@ -815,10 +814,6 @@ enum dcc_PacketTag {
   /// [spec-ja-f21-f28-function-control]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#f21-f28-function-control
   dcc_FunctionControlF21F28PacketTag,
 
-
-
-
-
 };
 
 struct dcc_Packet {
@@ -827,10 +822,12 @@ struct dcc_Packet {
     struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders speedAndDirectionPacketForLocomotiveDecoders;
     struct dcc_DecoderResetPacketForMultiFunctionDecoders decoderResetPacketForMultiFunctionDecoders;
     struct dcc_HardResetPacketForMultiFunctionDecoders hardResetPacketForMultiFunctionDecoders;
-    struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders factoryTestInstructionPacketForMultiFunctionDecoders;
+    struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders
+      factoryTestInstructionPacketForMultiFunctionDecoders;
     struct dcc_SetDecoderFlagsPacketForMultiFunctionDecoders setDecoderFlagsPacketForMultiFunctionDecoders;
     struct dcc_SetExtendedAddressingPacketForMultiFunctionDecoders setExtendedAddressingPacketForMultiFunctionDecoders;
-    struct dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders decoderAcknowledgementRequestPacketForMultiFunctionDecoders;
+    struct dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders
+      decoderAcknowledgementRequestPacketForMultiFunctionDecoders;
     struct dcc_ConsistControlPacketForMultiFunctionDecoders consistControlPacketForMultiFunctionDecoders;
     struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders speedStep128ControlPacket;
   } packet;
@@ -1037,33 +1034,39 @@ struct dcc_BitStreamParser dcc_initializeBitStreamParser(void);
 /// \param bytes バイト（出力）。成功でない場合は値が変更されない。
 /// \param bytesSize バイトのサイズ（出力）。成功でない場合は値が変更されない。
 /// \return パースの成否。
-enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit, dcc_Byte *const bytes,
-                                        size_t *const bytesSize);
+enum dcc_StreamParserResult dcc_feedBit(struct dcc_BitStreamParser *const parser, dcc_Bit const bit,
+                                        dcc_Byte *const bytes, size_t *const bytesSize);
 
-enum dcc_Result dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders(dcc_Byte const *const bytes, size_t const bytesSize, bool flControl,
-                                                 struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders *const packet);
+enum dcc_Result dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize, bool flControl,
+  struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders *const packet);
 
 enum dcc_Result dcc_parseResetPacketForAllDecoders(dcc_Byte const *const bytes, size_t const bytesSize);
 
 enum dcc_Result dcc_parseIdlePacketForAllDecoders(dcc_Byte const *const bytes, size_t const bytesSize);
 
-enum dcc_Result dcc_parseResetPacketForMultiFunctionDecoders(dcc_Byte const *const bytes, size_t const bytesSize,
-                                            struct dcc_DecoderResetPacketForMultiFunctionDecoders *const packet);
+enum dcc_Result dcc_parseResetPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_DecoderResetPacketForMultiFunctionDecoders *const packet);
 
-enum dcc_Result dcc_parseHardResetPacketForMultiFunctionDecoders(dcc_Byte const *const bytes, size_t const bytesSize,
-                                         struct dcc_HardResetPacketForMultiFunctionDecoders *const packet);
+enum dcc_Result dcc_parseHardResetPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_HardResetPacketForMultiFunctionDecoders *const packet);
 
 enum dcc_Result dcc_parseDecoderAcknowledgementRequestPacket(
-  dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders *const packet);
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders *const packet);
 
-enum dcc_Result dcc_parseFactoryTestInstructionPacketForMultiFunctionDecoders(dcc_Byte const *const bytes, size_t const bytesSize,
-                                                      struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders *const packet);
+enum dcc_Result dcc_parseFactoryTestInstructionPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders *const packet);
 
 enum dcc_Result dcc_parseConsistControlPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                               struct dcc_ConsistControlPacketForMultiFunctionDecoders *const packet);
 
-enum dcc_Result dcc_parseSpeedStep128ControlPacket(dcc_Byte const *const bytes, size_t const bytesSize,
-                                                   struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders *const packet);
+enum dcc_Result dcc_parseSpeedStep128ControlPacket(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders *const packet);
 
 enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
 
@@ -1100,7 +1103,8 @@ int dcc_showBytes(char *buffer, size_t bufferSize, dcc_Byte const *const bytes, 
 
 int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const direction);
 
-int dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(char *buffer, size_t bufferSize, struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders const packet);
+int dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(
+  char *buffer, size_t bufferSize, struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders const packet);
 
 int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
 
