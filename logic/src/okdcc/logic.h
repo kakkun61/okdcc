@@ -216,7 +216,7 @@ struct dcc_BroadcastStopPacketForAllDecoders {
 ///
 /// \~japanese
 /// `dcc_ResetPacketForMultiFunctionDecodersTag` を参照。
-struct dcc_DecoderResetPacketForMultiFunctionDecoders {
+struct dcc_ResetPacketForMultiFunctionDecoders {
   dcc_AddressForExtendedPacket address;
 };
 
@@ -820,7 +820,8 @@ struct dcc_Packet {
   enum dcc_PacketTag tag;
   union {
     struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders speedAndDirectionPacketForLocomotiveDecoders;
-    struct dcc_DecoderResetPacketForMultiFunctionDecoders decoderResetPacketForMultiFunctionDecoders;
+    struct dcc_BroadcastStopPacketForAllDecoders broadcastStopPacketForAllDecoders;
+    struct dcc_ResetPacketForMultiFunctionDecoders decoderResetPacketForMultiFunctionDecoders;
     struct dcc_HardResetPacketForMultiFunctionDecoders hardResetPacketForMultiFunctionDecoders;
     struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders
       factoryTestInstructionPacketForMultiFunctionDecoders;
@@ -1045,9 +1046,13 @@ enum dcc_Result dcc_parseResetPacketForAllDecoders(dcc_Byte const *const bytes, 
 
 enum dcc_Result dcc_parseIdlePacketForAllDecoders(dcc_Byte const *const bytes, size_t const bytesSize);
 
+enum dcc_Result dcc_parseBroadcastStopPacketForAllDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_BroadcastStopPacketForAllDecoders *const packet);
+
 enum dcc_Result dcc_parseResetPacketForMultiFunctionDecoders(
   dcc_Byte const *const bytes, size_t const bytesSize,
-  struct dcc_DecoderResetPacketForMultiFunctionDecoders *const packet);
+  struct dcc_ResetPacketForMultiFunctionDecoders *const packet);
 
 enum dcc_Result dcc_parseHardResetPacketForMultiFunctionDecoders(
   dcc_Byte const *const bytes, size_t const bytesSize,

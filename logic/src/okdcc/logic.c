@@ -330,6 +330,17 @@ enum dcc_Result dcc_parseIdlePacketForAllDecoders(dcc_Byte const *const bytes, s
   return dcc_Failure;
 }
 
+enum dcc_Result dcc_parseBroadcastStopPacketForAllDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_BroadcastStopPacketForAllDecoders *const packet) {
+  if (bytesSize < 3) return dcc_Failure;
+  if (bytes[0] != 0 || (bytes[1] & 0xCE) != 0x40) return dcc_Failure;
+  packet->direction = bytes[1] & 0x20 ? dcc_Forward : dcc_Backward;
+  packet->directionMayBeIgnored = (bool)bytes[1] & 0x10;
+  packet->kind = (enum dcc_BroadcastStopKind) (bytes[1] & 1);
+  return dcc_Success;
+}
+
 static enum dcc_Result parseAddressForExtendedPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                                      dcc_AddressForExtendedPacket *const address,
                                                      size_t *const addressSize) {
@@ -347,7 +358,7 @@ static enum dcc_Result parseAddressForExtendedPacket(dcc_Byte const *const bytes
 
 enum dcc_Result dcc_parseResetPacketForMultiFunctionDecoders(
   dcc_Byte const *const bytes, size_t const bytesSize,
-  struct dcc_DecoderResetPacketForMultiFunctionDecoders *const packet) {
+  struct dcc_ResetPacketForMultiFunctionDecoders *const packet) {
   if (bytesSize < 3) return dcc_Failure;
   size_t addressSize;
   if (dcc_Failure == parseAddressForExtendedPacket(bytes, bytesSize, &packet->address, &addressSize)) {
@@ -609,8 +620,8 @@ int dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(
   return writtenSize;
 }
 
-int dcc_showDecoderResetPacket(char *buffer, size_t bufferSize,
-                               struct dcc_DecoderResetPacketForMultiFunctionDecoders const packet) {
+int dcc_showResetPacketForMultiFunctionDecoders(char *buffer, size_t bufferSize,
+                               struct dcc_ResetPacketForMultiFunctionDecoders const packet) {
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
@@ -686,7 +697,7 @@ int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const pack
       writtenSize += snprintf(buffer + writtenSize,
                               bufferSize - (size_t) writtenSize,
                               "{\"tag\":\"dcc_ResetPacketForMultiFunctionDecodersTag\",\"packet\":");
-      writtenSize += dcc_showDecoderResetPacket(buffer + writtenSize,
+      writtenSize += dcc_showResetPacketForMultiFunctionDecoders(buffer + writtenSize,
                                                 bufferSize - (size_t) writtenSize,
                                                 packet.packet.decoderResetPacketForMultiFunctionDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");

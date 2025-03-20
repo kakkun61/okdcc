@@ -166,7 +166,7 @@ test_parseSpeedAndDirectionPacketForLocomotiveDecoders_0b00000001_0b01101010_0b0
   return MUNIT_OK;
 }
 
-static MunitResult test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000000_is_success(
+static MunitResult test_parseResetPacketForAllDecoders_0b00000000_0b00000000_0b00000000_is_success(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x00), UINT8_C(0x00), UINT8_C(0x00) };
   enum dcc_Result const result = dcc_parseResetPacketForAllDecoders(bytes, 3);
@@ -174,7 +174,7 @@ static MunitResult test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000
   return MUNIT_OK;
 }
 
-static MunitResult test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b11111111_is_success(
+static MunitResult test_parseIdlePacketForAllDecoders_0b11111111_0b00000000_0b11111111_is_success(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0xFF), UINT8_C(0x00), UINT8_C(0xFF) };
   enum dcc_Result const result = dcc_parseIdlePacketForAllDecoders(bytes, 3);
@@ -182,20 +182,20 @@ static MunitResult test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b111111
   return MUNIT_OK;
 }
 
-static MunitResult test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_is_3(MunitParameter const params[],
+static MunitResult test_parseResetPacketForMultiFunctionDecoders_0b00000011_0b0000000_0b00000011_is_3(MunitParameter const params[],
                                                                                      void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x00), UINT8_C(0x03) };
-  struct dcc_DecoderResetPacketForMultiFunctionDecoders packet;
+  struct dcc_ResetPacketForMultiFunctionDecoders packet;
   enum dcc_Result const result = dcc_parseResetPacketForMultiFunctionDecoders(bytes, 3, &packet);
   munit_assert_int(dcc_Success, ==, result);
   munit_assert_uint16(3, ==, packet.address);
   return MUNIT_OK;
 }
 
-static MunitResult test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0b11000011_is_768(
+static MunitResult test_parseResetPacketForMultiFunctionDecoders_0b11000011_0b0000000_0b0000000_0b11000011_is_768(
   MunitParameter const params[], void *fixture) {
   uint8_t const bytes[4] = { UINT8_C(0xC3), UINT8_C(0x00), UINT8_C(0x00), UINT8_C(0xC3) };
-  struct dcc_DecoderResetPacketForMultiFunctionDecoders packet;
+  struct dcc_ResetPacketForMultiFunctionDecoders packet;
   enum dcc_Result const result = dcc_parseResetPacketForMultiFunctionDecoders(bytes, 4, &packet);
   munit_assert_int(dcc_Success, ==, result);
   munit_assert_uint16(768, ==, packet.address);
@@ -298,7 +298,7 @@ static MunitSuite const suite = {
       MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseResetPacketForAllDecoders",
       (MunitTest[]){ { "([0b00000000, 0b00000000, 0b00000000]) is success",
-                       test_parseAllDecoderResetPacket_0b00000000_0b00000000_0b00000000_is_success,
+                       test_parseResetPacketForAllDecoders_0b00000000_0b00000000_0b00000000_is_success,
                        NULL,
                        NULL,
                        MUNIT_TEST_OPTION_NONE,
@@ -309,7 +309,7 @@ static MunitSuite const suite = {
       MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseIdlePacketForAllDecoders",
       (MunitTest[]){ { "([0b11111111, 0b00000000, 0b11111111]) is success",
-                       test_parseAllDecoderIdlePacket_0b11111111_0b00000000_0b11111111_is_success,
+                       test_parseIdlePacketForAllDecoders_0b11111111_0b00000000_0b11111111_is_success,
                        NULL,
                        NULL,
                        MUNIT_TEST_OPTION_NONE,
@@ -320,13 +320,13 @@ static MunitSuite const suite = {
       MUNIT_SUITE_OPTION_NONE },
     { "/dcc_parseResetPacketForMultiFunctionDecoders",
       (MunitTest[]){ { "([0b00000110, 0b0000000, 0b00000110]) is { address = 3 }",
-                       test_parseDecoderResetPacket_0b00000011_0b0000000_0b00000011_is_3,
+                       test_parseResetPacketForMultiFunctionDecoders_0b00000011_0b0000000_0b00000011_is_3,
                        NULL,
                        NULL,
                        MUNIT_TEST_OPTION_NONE,
                        NULL },
                      { "([0b11000011, 0b0000000, 0b0000000, 0b11000011]) is { address = 768 }",
-                       test_parseDecoderResetPacket_0b11000011_0b0000000_0b0000000_0b11000011_is_768,
+                       test_parseResetPacketForMultiFunctionDecoders_0b11000011_0b0000000_0b0000000_0b11000011_is_768,
                        NULL,
                        NULL,
                        MUNIT_TEST_OPTION_NONE,
