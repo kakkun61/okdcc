@@ -32,8 +32,9 @@ Decode
 
 .. doxygenfunction:: dcc_parsePacket
 .. doxygenfunction:: dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders
-.. doxygenfunction:: dcc_parseAllDecoderResetPacket
-.. doxygenfunction:: dcc_parseAllDecoderIdlePacket
+.. doxygenfunction:: dcc_parseResetPacketForAllDecoders
+.. doxygenfunction:: dcc_parseIdlePacketForAllDecoders
+.. doxygenfunction:: dcc_parseBroadcastStopPacketForAllDecoders
 .. doxygenfunction:: dcc_parseDecoderResetPacket
 .. doxygenfunction:: dcc_parseHardResetPacket
 .. doxygenfunction:: dcc_parseDecoderAcknowledgementRequestPacket
