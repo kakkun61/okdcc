@@ -35,7 +35,7 @@ Decode
 .. doxygenfunction:: dcc_parseResetPacketForAllDecoders
 .. doxygenfunction:: dcc_parseIdlePacketForAllDecoders
 .. doxygenfunction:: dcc_parseBroadcastStopPacketForAllDecoders
-.. doxygenfunction:: dcc_parseDecoderResetPacket
+.. doxygenfunction:: dcc_parseResetPacketForMultiFunctionDecoders
 .. doxygenfunction:: dcc_parseHardResetPacket
 .. doxygenfunction:: dcc_parseDecoderAcknowledgementRequestPacket
 .. doxygenfunction:: dcc_parseFactoryTestInstructionPacket
@@ -64,7 +64,7 @@ Data
 .. doxygenstruct:: dcc_BroadcastStopPacketForAllDecoders
    :members:
    :undoc-members:
-.. doxygenstruct:: dcc_DecoderResetPacketForMultiFunctionDecoders
+.. doxygenstruct:: dcc_ResetPacketForMultiFunctionDecoders
    :members:
    :undoc-members:
 .. doxygenstruct:: dcc_HardResetPacketForMultiFunctionDecoders

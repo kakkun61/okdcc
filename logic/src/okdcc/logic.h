@@ -567,14 +567,14 @@ enum dcc_PacketTag {
   /// \~english
   /// \brief [S-9.2.1 &gt; C: Instruction Packets for Multi Function Digital Decoders &gt; Decoder and Consist Control Instruction &gt; Decoder Control &gt; Digital Decoder Reset][spec-en-digital-decoder-reset]
   ///
-  /// There is no corresponding structure because it has no fields.
+  /// See `dcc_ResetPacketForMultiFunctionDecoders`.
   ///
   /// [spec-en-digital-decoder-reset]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#digital-decoder-reset
   ///
   /// \~japanese
   /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; デコーダー制御 &gt; デジタルデコーダーリセット][spec-ja-digital-decoder-reset]
   ///
-  /// フィールドが存在しないため対応する構造体はない。
+  /// `dcc_ResetPacketForMultiFunctionDecoders` を参照。
   ///
   /// [spec-ja-digital-decoder-reset]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#digital-decoder-reset
   dcc_ResetPacketForMultiFunctionDecodersTag,
@@ -644,10 +644,14 @@ enum dcc_PacketTag {
   ///
   /// See `dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders`.
   ///
+  /// [spec-en-decoder-control]: https://kakkun61.com/nmra-ja/en/S-9.2.1-extended-packet-formats.html#decoder-control
+  ///
   /// \~japanese
   /// \brief [S-9.2.1 &gt; C：多機能デジタルデコーダー用命令パケット &gt; デコーダー制御命令と編成制御命令 &gt; デコーダー制御 &gt; デコーダー応答要求][spec-ja-decoder-control]
   ///
   /// `dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders` を参照。
+  ///
+  /// [spec-ja-decoder-control]: https://kakkun61.com/nmra-ja/ja/S-9.2.1-extended-packet-formats.html#decoder-control
   dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecodersTag,
 
   /// \~english
