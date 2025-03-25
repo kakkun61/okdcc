@@ -1106,16 +1106,22 @@ struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, s
 enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,
                                        struct dcc_Packet *const packet);
 
-int dcc_showSignalBuffer(char *buffer, size_t bufferSize, struct dcc_SignalBuffer const signalBuffer);
+int dcc_showSignalBuffer(char *buffer, size_t const bufferSize, struct dcc_SignalBuffer const signalBuffer);
 
-int dcc_showBytes(char *buffer, size_t bufferSize, dcc_Byte const *const bytes, size_t const bytesSize);
+int dcc_showBytes(char *buffer, size_t const bufferSize, dcc_Byte const *const bytes, size_t const bytesSize);
 
-int dcc_showDirection(char *buffer, size_t bufferSize, enum dcc_Direction const direction);
+int dcc_showDirection(char *buffer, size_t const bufferSize, enum dcc_Direction const direction);
+
+int dcc_showBroadcastStopKind(
+  char *buffer, size_t const bufferSize, enum dcc_BroadcastStopKind const broadcastStopKind);
 
 int dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(
-  char *buffer, size_t bufferSize, struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders const packet);
+  char *buffer, size_t const bufferSize, struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders const packet);
 
-int dcc_showPacket(char *buffer, size_t bufferSize, struct dcc_Packet const packet);
+int dcc_showBroadcastStopPacketForAllDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_BroadcastStopPacketForAllDecoders const packet);
+
+int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet const packet);
 
 /// \~english
 /// \brief A pointer to a function called when an error occurs.

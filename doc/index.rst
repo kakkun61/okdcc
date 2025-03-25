@@ -57,6 +57,7 @@ Data
 .. doxygentypedef:: dcc_Speed4Bit
 .. doxygentypedef:: dcc_Speed5Bit
 .. doxygentypedef:: dcc_Speed7Bit
+.. doxygenenum:: dcc_BroadcastStopKind
 .. doxygenenum:: dcc_PacketTag
 .. doxygenstruct:: dcc_SpeedAndDirectionPacketForLocomotiveDecoders
    :members:
@@ -120,7 +121,9 @@ Data
 .. doxygenfunction:: dcc_showSignalBuffer
 .. doxygenfunction:: dcc_showBytes
 .. doxygenfunction:: dcc_showDirection
+.. doxygenfunction:: dcc_showBroadcastStopKind
 .. doxygenfunction:: dcc_showSpeedAndDirectionPacketForLocomotiveDecoders
+.. doxygenfunction:: dcc_showBroadcastStopPacketForAllDecoders
 .. doxygenfunction:: dcc_showPacket
 .. doxygenvariable:: dcc_error_log
 .. doxygenvariable:: dcc_debug_log
