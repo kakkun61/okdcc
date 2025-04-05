@@ -190,7 +190,7 @@ enum dcc_Result dcc_decodeSignal(dcc_TimeMicroSec const period1, dcc_TimeMicroSe
   return dcc_Failure;
 }
 
-enum dcc_Result dcc_validatePacket(dcc_Byte const *const bytes, size_t bytesSize, dcc_Byte const checksum) {
+enum dcc_Result dcc_validatePacket(dcc_Byte const *const bytes, size_t const bytesSize, dcc_Byte const checksum) {
   dcc_Byte sum = 0;
   for (size_t i = 0; i < bytesSize; i++) sum ^= bytes[i];
   if (sum == checksum) return dcc_Success;
@@ -202,7 +202,7 @@ enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesS
                        bytes,
                        bytesSize,
                        false,  // TODO CV の実装ができたら書き換える
-                       &packet->packet.speedAndDirectionPacketForLocomotiveDecoders)) {
+                       &packet->speedAndDirectionPacketForLocomotiveDecoders)) {
     packet->tag = dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag;
     return dcc_Success;
   }
@@ -217,37 +217,37 @@ enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesS
   if (dcc_Success ==
       dcc_parseResetPacketForMultiFunctionDecoders(bytes,
                                                    bytesSize,
-                                                   &packet->packet.decoderResetPacketForMultiFunctionDecoders)) {
+                                                   &packet->decoderResetPacketForMultiFunctionDecoders)) {
     packet->tag = dcc_ResetPacketForMultiFunctionDecodersTag;
     return dcc_Success;
   }
   if (dcc_Success ==
       dcc_parseHardResetPacketForMultiFunctionDecoders(bytes,
                                                        bytesSize,
-                                                       &packet->packet.hardResetPacketForMultiFunctionDecoders)) {
+                                                       &packet->hardResetPacketForMultiFunctionDecoders)) {
     packet->tag = dcc_HardResetPacketForMultiFunctionDecodersTag;
     return dcc_Success;
   }
   if (dcc_Success == dcc_parseDecoderAcknowledgementRequestPacket(
                        bytes,
                        bytesSize,
-                       &packet->packet.decoderAcknowledgementRequestPacketForMultiFunctionDecoders)) {
+                       &packet->decoderAcknowledgementRequestPacketForMultiFunctionDecoders)) {
     packet->tag = dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecodersTag;
     return dcc_Success;
   }
   if (dcc_Success == dcc_parseFactoryTestInstructionPacketForMultiFunctionDecoders(
                        bytes,
                        bytesSize,
-                       &packet->packet.factoryTestInstructionPacketForMultiFunctionDecoders)) {
+                       &packet->factoryTestInstructionPacketForMultiFunctionDecoders)) {
     packet->tag = dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag;
     return dcc_Success;
   }
   if (dcc_Success ==
-      dcc_parseConsistControlPacket(bytes, bytesSize, &packet->packet.consistControlPacketForMultiFunctionDecoders)) {
+      dcc_parseConsistControlPacket(bytes, bytesSize, &packet->consistControlPacketForMultiFunctionDecoders)) {
     packet->tag = dcc_ConsistControlPacketForMultiFunctionDecodersTag;
     return dcc_Success;
   }
-  if (dcc_Success == dcc_parseSpeedStep128ControlPacket(bytes, bytesSize, &packet->packet.speedStep128ControlPacket)) {
+  if (dcc_Success == dcc_parseSpeedStep128ControlPacket(bytes, bytesSize, &packet->speedStep128ControlPacket)) {
     packet->tag = dcc_SpeedStep128ControlPacketForMultiFunctionDecodersTag;
     return dcc_Success;
   }
@@ -648,12 +648,12 @@ int dcc_showResetPacketForMultiFunctionDecoders(char *buffer, size_t const buffe
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
-int dcc_showHardResetPacket(char *buffer, size_t const bufferSize,
+int dcc_showHardResetPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
                             struct dcc_HardResetPacketForMultiFunctionDecoders const packet) {
   return snprintf(buffer, bufferSize, "{\"address\":%d}", packet.address);
 }
 
-int dcc_showFactoryTestInstructionPacket(char *buffer, size_t const bufferSize,
+int dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
                                          struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders const packet) {
   int writtenSize = 0;
   writtenSize += snprintf(buffer + writtenSize,
@@ -709,7 +709,7 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
       writtenSize += dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(
         buffer + writtenSize,
         bufferSize - (size_t) writtenSize,
-        packet.packet.speedAndDirectionPacketForLocomotiveDecoders);
+        packet.speedAndDirectionPacketForLocomotiveDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_ResetPacketForAllDecodersTag:
@@ -722,7 +722,7 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
                               "{\"tag\":\"dcc_BroadcastStopPacketForAllDecodersTag\",\"packet\":");
       writtenSize += dcc_showBroadcastStopPacketForAllDecoders(buffer + writtenSize,
                                                                bufferSize - (size_t) writtenSize,
-                                                               packet.packet.broadcastStopPacketForAllDecoders);
+                                                               packet.broadcastStopPacketForAllDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_ResetPacketForMultiFunctionDecodersTag:
@@ -731,16 +731,16 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
                               "{\"tag\":\"dcc_ResetPacketForMultiFunctionDecodersTag\",\"packet\":");
       writtenSize += dcc_showResetPacketForMultiFunctionDecoders(buffer + writtenSize,
                                                 bufferSize - (size_t) writtenSize,
-                                                packet.packet.decoderResetPacketForMultiFunctionDecoders);
+                                                packet.decoderResetPacketForMultiFunctionDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_HardResetPacketForMultiFunctionDecodersTag:
       writtenSize += snprintf(buffer + writtenSize,
                               bufferSize - (size_t) writtenSize,
                               "{\"tag\":\"dcc_HardResetPacketForMultiFunctionDecodersTag\",\"packet\":");
-      writtenSize += dcc_showHardResetPacket(buffer + writtenSize,
+      writtenSize += dcc_showHardResetPacketForMultiFunctionDecoders(buffer + writtenSize,
                                              bufferSize - (size_t) writtenSize,
-                                             packet.packet.hardResetPacketForMultiFunctionDecoders);
+                                             packet.hardResetPacketForMultiFunctionDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag:
@@ -748,9 +748,9 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
                               bufferSize - (size_t) writtenSize,
                               "{\"tag\":\"dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag\",\"packet\":");
       writtenSize +=
-        dcc_showFactoryTestInstructionPacket(buffer + writtenSize,
+        dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders(buffer + writtenSize,
                                              bufferSize - (size_t) writtenSize,
-                                             packet.packet.factoryTestInstructionPacketForMultiFunctionDecoders);
+                                             packet.factoryTestInstructionPacketForMultiFunctionDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_SetDecoderFlagsPacketForMultiFunctionDecodersTag:
@@ -767,7 +767,7 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
       writtenSize += dcc_showDecoderAcknowledgementRequestPacket(
         buffer + writtenSize,
         bufferSize - (size_t) writtenSize,
-        packet.packet.decoderAcknowledgementRequestPacketForMultiFunctionDecoders);
+        packet.decoderAcknowledgementRequestPacketForMultiFunctionDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_ConsistControlPacketForMultiFunctionDecodersTag:
@@ -776,7 +776,7 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
                               "{\"tag\":\"dcc_ConsistControlPacketForMultiFunctionDecodersTag\",\"packet\":");
       writtenSize += dcc_showConsistControlPacket(buffer + writtenSize,
                                                   bufferSize - (size_t) writtenSize,
-                                                  packet.packet.consistControlPacketForMultiFunctionDecoders);
+                                                  packet.consistControlPacketForMultiFunctionDecoders);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     case dcc_SpeedStep128ControlPacketForMultiFunctionDecodersTag:
@@ -785,7 +785,7 @@ int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet cons
                               "{\"tag\":\"dcc_SpeedStep128ControlPacketForMultiFunctionDecodersTag\",\"packet\":");
       writtenSize += dcc_showSpeedStep128ControlPacket(buffer + writtenSize,
                                                        bufferSize - (size_t) writtenSize,
-                                                       packet.packet.speedStep128ControlPacket);
+                                                       packet.speedStep128ControlPacket);
       writtenSize += snprintf(buffer + writtenSize, bufferSize - (size_t) writtenSize, "}");
       return writtenSize;
     default:

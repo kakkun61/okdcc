@@ -124,6 +124,9 @@ Data
 .. doxygenfunction:: dcc_showBroadcastStopKind
 .. doxygenfunction:: dcc_showSpeedAndDirectionPacketForLocomotiveDecoders
 .. doxygenfunction:: dcc_showBroadcastStopPacketForAllDecoders
+.. doxygenfunction:: dcc_showResetPacketForMultiFunctionDecoders
+.. doxygenfunction:: dcc_showHardResetPacketForMultiFunctionDecoders
+.. doxygenfunction:: dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders
 .. doxygenfunction:: dcc_showPacket
 .. doxygenvariable:: dcc_error_log
 .. doxygenvariable:: dcc_debug_log

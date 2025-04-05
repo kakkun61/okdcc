@@ -835,7 +835,7 @@ struct dcc_Packet {
       decoderAcknowledgementRequestPacketForMultiFunctionDecoders;
     struct dcc_ConsistControlPacketForMultiFunctionDecoders consistControlPacketForMultiFunctionDecoders;
     struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders speedStep128ControlPacket;
-  } packet;
+  };
 };
 
 /// \~english
@@ -1120,6 +1120,15 @@ int dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(
 
 int dcc_showBroadcastStopPacketForAllDecoders(
   char *buffer, size_t const bufferSize, struct dcc_BroadcastStopPacketForAllDecoders const packet);
+
+int dcc_showResetPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
+    struct dcc_ResetPacketForMultiFunctionDecoders const packet);
+
+int dcc_showHardResetPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
+ struct dcc_HardResetPacketForMultiFunctionDecoders const packet);
+
+int dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
+              struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders const packet);
 
 int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet const packet);
 

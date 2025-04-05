@@ -45,6 +45,9 @@ build.mock.x11: $(ABS_BUILD_DIR)/okdcc/mock/x11
 .PHONY: build.example.cli
 build.example.cli: $(ABS_BUILD_DIR)/okdcc/examples/cli
 
+.PHONY: build.example.show
+build.example.show: $(ABS_BUILD_DIR)/okdcc/examples/show
+
 .PHONY: build.electric.test
 build.electric.test: $(TEST_ELECTRIC_OUT_PATHS)
 
@@ -121,11 +124,11 @@ $(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app
 $(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
 	pio run --project-dir test/electric --environment $(PLATFORMIO_ENVIRONMENT)
 
-$(ABS_BUILD_DIR)/okdcc/examples/cli: $(ABS_BUILD_DIR)/okdcc/examples/cli.o $(OKDCC_LOGIC_OBJECTS)
+$(ABS_BUILD_DIR)/okdcc/examples/%: $(ABS_BUILD_DIR)/okdcc/examples/%.o $(OKDCC_LOGIC_OBJECTS)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $^
 
-$(ABS_BUILD_DIR)/okdcc/examples/cli.o: examples/cli/main.c
+$(ABS_BUILD_DIR)/okdcc/examples/%.o: examples/%/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I logic/src -c -o $@ $^
 
