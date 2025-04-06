@@ -825,7 +825,7 @@ struct dcc_Packet {
   union {
     struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders speedAndDirectionPacketForLocomotiveDecoders;
     struct dcc_BroadcastStopPacketForAllDecoders broadcastStopPacketForAllDecoders;
-    struct dcc_ResetPacketForMultiFunctionDecoders decoderResetPacketForMultiFunctionDecoders;
+    struct dcc_ResetPacketForMultiFunctionDecoders resetPacketForMultiFunctionDecoders;
     struct dcc_HardResetPacketForMultiFunctionDecoders hardResetPacketForMultiFunctionDecoders;
     struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders
       factoryTestInstructionPacketForMultiFunctionDecoders;
