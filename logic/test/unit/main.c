@@ -182,8 +182,8 @@ static MunitResult test_parseIdlePacketForAllDecoders_0b11111111_0b00000000_0b11
   return MUNIT_OK;
 }
 
-static MunitResult test_parseResetPacketForMultiFunctionDecoders_0b00000011_0b0000000_0b00000011_is_3(MunitParameter const params[],
-                                                                                     void *fixture) {
+static MunitResult test_parseResetPacketForMultiFunctionDecoders_0b00000011_0b0000000_0b00000011_is_3(
+  MunitParameter const params[], void *fixture) {
   uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x00), UINT8_C(0x03) };
   struct dcc_ResetPacketForMultiFunctionDecoders packet;
   enum dcc_Result const result = dcc_parseResetPacketForMultiFunctionDecoders(bytes, 3, &packet);

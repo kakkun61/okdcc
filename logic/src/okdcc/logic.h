@@ -1050,13 +1050,11 @@ enum dcc_Result dcc_parseResetPacketForAllDecoders(dcc_Byte const *const bytes, 
 
 enum dcc_Result dcc_parseIdlePacketForAllDecoders(dcc_Byte const *const bytes, size_t const bytesSize);
 
-enum dcc_Result dcc_parseBroadcastStopPacketForAllDecoders(
-  dcc_Byte const *const bytes, size_t const bytesSize,
-  struct dcc_BroadcastStopPacketForAllDecoders *const packet);
+enum dcc_Result dcc_parseBroadcastStopPacketForAllDecoders(dcc_Byte const *const bytes, size_t const bytesSize,
+                                                           struct dcc_BroadcastStopPacketForAllDecoders *const packet);
 
 enum dcc_Result dcc_parseResetPacketForMultiFunctionDecoders(
-  dcc_Byte const *const bytes, size_t const bytesSize,
-  struct dcc_ResetPacketForMultiFunctionDecoders *const packet);
+  dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_ResetPacketForMultiFunctionDecoders *const packet);
 
 enum dcc_Result dcc_parseHardResetPacketForMultiFunctionDecoders(
   dcc_Byte const *const bytes, size_t const bytesSize,
@@ -1112,23 +1110,23 @@ int dcc_showBytes(char *buffer, size_t const bufferSize, dcc_Byte const *const b
 
 int dcc_showDirection(char *buffer, size_t const bufferSize, enum dcc_Direction const direction);
 
-int dcc_showBroadcastStopKind(
-  char *buffer, size_t const bufferSize, enum dcc_BroadcastStopKind const broadcastStopKind);
+int dcc_showBroadcastStopKind(char *buffer, size_t const bufferSize,
+                              enum dcc_BroadcastStopKind const broadcastStopKind);
 
 int dcc_showSpeedAndDirectionPacketForLocomotiveDecoders(
   char *buffer, size_t const bufferSize, struct dcc_SpeedAndDirectionPacketForLocomotiveDecoders const packet);
 
-int dcc_showBroadcastStopPacketForAllDecoders(
-  char *buffer, size_t const bufferSize, struct dcc_BroadcastStopPacketForAllDecoders const packet);
+int dcc_showBroadcastStopPacketForAllDecoders(char *buffer, size_t const bufferSize,
+                                              struct dcc_BroadcastStopPacketForAllDecoders const packet);
 
 int dcc_showResetPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
-    struct dcc_ResetPacketForMultiFunctionDecoders const packet);
+                                                struct dcc_ResetPacketForMultiFunctionDecoders const packet);
 
 int dcc_showHardResetPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
- struct dcc_HardResetPacketForMultiFunctionDecoders const packet);
+                                                    struct dcc_HardResetPacketForMultiFunctionDecoders const packet);
 
-int dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders(char *buffer, size_t const bufferSize,
-              struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders const packet);
+int dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders const packet);
 
 int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet const packet);
 
