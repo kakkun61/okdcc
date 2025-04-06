@@ -585,11 +585,11 @@ int dcc_showBytes(char *buffer, size_t const bufferSize, dcc_Byte const *const p
 int dcc_showDirection(char *buffer, size_t const bufferSize, enum dcc_Direction const direction) {
   switch (direction) {
     case dcc_Forward:
-      return snprintf(buffer, bufferSize, "Forward");
+      return snprintf(buffer, bufferSize, "\"Forward\"");
     case dcc_Backward:
-      return snprintf(buffer, bufferSize, "Backward");
+      return snprintf(buffer, bufferSize, "\"Backward\"");
     default:
-      return snprintf(buffer, bufferSize, "Unknown");
+      return snprintf(buffer, bufferSize, "\"Unknown\"");
   }
 }
 
