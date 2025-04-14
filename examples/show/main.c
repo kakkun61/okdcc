@@ -2,30 +2,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct dcc_Packet makeExamplePacket(enum dcc_PacketTag const tag) {
+size_t makeExamplePackets(enum dcc_PacketTag const tag, struct dcc_Packet packets[], size_t const packetsSize) {
+  size_t i = 0;
   switch (tag) {
     case dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag:
-      return (struct dcc_Packet) {
+      packets[i++] = (struct dcc_Packet){
         .tag = dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag,
-        .speedAndDirectionPacketForLocomotiveDecoders = {
-          .address = 3,
-          .direction = dcc_Forward,
-          .flControl = false,
-          .speed5Bit = 23,
-          .directionMayBeIgnored = false,
-          .emergencyStop = false
-        },
+        .speedAndDirectionPacketForLocomotiveDecoders = { .address = 3,
+                                                          .direction = dcc_Forward,
+                                                          .flControl = false,
+                                                          .speed5Bit = 23,
+                                                          .directionMayBeIgnored = false,
+                                                          .emergencyStop = false },
       };
+      packets[i++] = (struct dcc_Packet){
+        .tag = dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag,
+        .speedAndDirectionPacketForLocomotiveDecoders = { .address = 3,
+                                                          .direction = dcc_Forward,
+                                                          .flControl = true,
+                                                          .speed4Bit = 15,
+                                                          .fl = true,
+                                                          .emergencyStop = false },
+      };
+      return i;
     case dcc_ResetPacketForAllDecodersTag:
-      return (struct dcc_Packet) {
+      packets[i++] = (struct dcc_Packet){
         .tag = dcc_ResetPacketForAllDecodersTag,
       };
+      return i;
     case dcc_IdlePacketForAllDecodersTag:
-      return (struct dcc_Packet) {
+      packets[i++] = (struct dcc_Packet){
         .tag = dcc_IdlePacketForAllDecodersTag,
       };
+      return i;
     case dcc_BroadcastStopPacketForAllDecodersTag:
-      return (struct dcc_Packet) {
+      packets[i++] = (struct dcc_Packet) {
         .tag = dcc_BroadcastStopPacketForAllDecodersTag,
         .broadcastStopPacketForAllDecoders = {
           .kind = dcc_BroadcastStopKind_Stop,
@@ -33,18 +44,50 @@ struct dcc_Packet makeExamplePacket(enum dcc_PacketTag const tag) {
           .direction = dcc_Forward,
         },
       };
+      return i;
     case dcc_ResetPacketForMultiFunctionDecodersTag:
-      return (struct dcc_Packet) {
+      packets[i++] = (struct dcc_Packet) {
         .tag = dcc_ResetPacketForMultiFunctionDecodersTag,
         .resetPacketForMultiFunctionDecoders = {
           .address = 2355,
         },
       };
+      return i;
+    case dcc_HardResetPacketForMultiFunctionDecodersTag:
+      packets[i++] = (struct dcc_Packet) {
+        .tag = dcc_HardResetPacketForMultiFunctionDecodersTag,
+        .hardResetPacketForMultiFunctionDecoders = {
+          .address = 2355,
+        },
+      };
+      return i;
+    case dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag:
+      packets[i++] = (struct dcc_Packet){ .tag = dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag,
+                                          .factoryTestInstructionPacketForMultiFunctionDecoders = { .address = 2355,
+                                                                                                    .set = true,
+                                                                                                    .dataExists = true,
+                                                                                                    .data = 0xFF } };
+      packets[i++] = (struct dcc_Packet){
+        .tag = dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag,
+        .factoryTestInstructionPacketForMultiFunctionDecoders = { .address = 2355, .set = false, .dataExists = false }
+      };
+      return i;
+    case dcc_SetDecoderFlagsPacketForMultiFunctionDecodersTag:
+      packets[i++] = (struct dcc_Packet){ .tag = dcc_SetDecoderFlagsPacketForMultiFunctionDecodersTag,
+                                          .setDecoderFlagsPacketForMultiFunctionDecoders = {
+                                            .address = 2355,
+                                            .set = true,
+                                            .subaddress = 7,
+                                            .instruction = dcc_Disable111Instructions
+                                          } };
+      return i;
     default:
       fprintf(stderr, "Unsupported packet tag: %d\n", tag);
       exit(EXIT_FAILURE);
   }
 }
+
+#define PACKETS_SIZE 5
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -55,9 +98,15 @@ int main(int argc, char *argv[]) {
             argv[0]);
     return EXIT_FAILURE;
   }
-  struct dcc_Packet const packet = makeExamplePacket((enum dcc_PacketTag) atoi(argv[1]));
-  char buffer[1024];
-  dcc_showPacket(buffer, sizeof(buffer), packet);
-  printf("%s\n", buffer);
+  struct dcc_Packet packets[PACKETS_SIZE];
+  size_t exampleCount = makeExamplePackets((enum dcc_PacketTag) atoi(argv[1]), packets, PACKETS_SIZE);
+  printf("[");
+  for (size_t i = 0; i < exampleCount; i++) {
+    if (i != 0) printf(",");
+    char buffer[1024];
+    dcc_showPacket(buffer, sizeof(buffer), packets[i]);
+    printf("%s", buffer);
+  }
+  printf("]\n");
   return EXIT_SUCCESS;
 }
