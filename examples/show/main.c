@@ -78,8 +78,12 @@ size_t makeExamplePackets(enum dcc_PacketTag const tag, struct dcc_Packet packet
                                             .address = 2355,
                                             .set = true,
                                             .subaddress = 7,
-                                            .instruction = dcc_Disable111Instructions
-                                          } };
+                                            .instruction = dcc_Disable111Instructions } };
+      return i;
+    case dcc_SetExtendedAddressingPacketForMultiFunctionDecodersTag:
+      packets[i++] =
+        (struct dcc_Packet){ .tag = dcc_SetExtendedAddressingPacketForMultiFunctionDecodersTag,
+                             .setExtendedAddressingPacketForMultiFunctionDecoders = { .address = 2355, .set = true } };
       return i;
     default:
       fprintf(stderr, "Unsupported packet tag: %d\n", tag);
