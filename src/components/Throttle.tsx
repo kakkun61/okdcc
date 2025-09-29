@@ -6,7 +6,7 @@ import "./variables.css";
 
 export interface ThrottleProps {
   maxFunctionNumber?: Dcc.FunctionNumber;
-};
+}
 
 export const Throttle = ({
   maxFunctionNumber = Dcc.maxFunctionNumber,
@@ -17,8 +17,15 @@ export const Throttle = ({
       <div>Speed</div>
       <div>Direction</div>
       <div className="function-buttons">
-        <FrontLightFunctionButton className="fl" key={Dcc.frontLightFunctionNumber} />
-        {[...Array(maxFunctionNumber)].map((_, i) => i + 1).map(i => <FunctionButton number={Dcc.createFunctionNumber(i)} key={i} />)}
+        <FrontLightFunctionButton
+          className="fl"
+          key={Dcc.frontLightFunctionNumber}
+        />
+        {[...Array(maxFunctionNumber)]
+          .map((_, i) => i + 1)
+          .map((i) => (
+            <FunctionButton number={Dcc.createFunctionNumber(i)} key={i} />
+          ))}
         <style jsx>{`
           .function-buttons {
             display: grid;

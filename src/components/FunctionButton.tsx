@@ -9,7 +9,12 @@ export interface FunctionButtonProps {
   className?: string;
 }
 
-export const FunctionButton = ({ number, label, onClick, ...props }: FunctionButtonProps) => {
+export const FunctionButton = ({
+  number,
+  label,
+  onClick,
+  ...props
+}: FunctionButtonProps) => {
   return (
     <button onClick={onClick} {...props}>
       {label ?? number}
@@ -22,6 +27,15 @@ export const FunctionButton = ({ number, label, onClick, ...props }: FunctionBut
   );
 };
 
-export const FrontLightFunctionButton = (props: { onClick?: () => void; className?: string }) => {
-  return <FunctionButton number={Dcc.frontLightFunctionNumber} label="FL" {...props} />;
+export const FrontLightFunctionButton = (props: {
+  onClick?: () => void;
+  className?: string;
+}) => {
+  return (
+    <FunctionButton
+      number={Dcc.frontLightFunctionNumber}
+      label="FL"
+      {...props}
+    />
+  );
 };
