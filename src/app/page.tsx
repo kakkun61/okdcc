@@ -1,4 +1,4 @@
-import { FunctionButton } from "@/components/FunctionButton";
+import { FunctionButton } from "@/components/Throttle/FunctionButton";
 import { Throttle } from "@/components/Throttle";
 
 export default function Home() {

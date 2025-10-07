@@ -1,6 +1,16 @@
 :root {
   --gap-medium: 2mm;
+
   --font-size-medium: 16pt;
   --font-size-large: 24pt;
   --font-size-xlarge: 32pt;
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+
+  --button-padding-vertical: 0.4em;
+  --button-padding-horizontal: 1.2em;
+  --button-border-radius: 3em;
+  --button-font-size: var(--font-size-medium);
+  --button-font-weight: var(--font-weight-bold);
+  --button-line-height: 1;
 }

@@ -16,3 +16,17 @@ export const createFunctionNumber = (num: number): FunctionNumber =>
 export const maxFunctionNumber = 68 as FunctionNumber;
 
 export const frontLightFunctionNumber = 0 as FunctionNumber;
+
+export type TrainName = Brand<string, "TrainName">;
+
+export const createTrainName = (name: string): TrainName =>
+  name.length > 0
+    ? (name as TrainName)
+    : (() => {
+        throw new Error("TrainName must be non-empty");
+      })();
+
+export interface FunctionInfo {
+  label: string;
+  number: FunctionNumber;
+}

@@ -1,0 +1,5 @@
+words:
+  - xlarge
+ignorePaths:
+  - .cspell.yaml
+  - storybook-static/**

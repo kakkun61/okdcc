@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { fn } from "storybook/test";
 
-import { FunctionButton } from "../components/FunctionButton";
+import { FunctionButton } from "@/components/Throttle/FunctionButton";
+import { createFunctionNumber } from "@/lib/dcc";
 
 const meta = {
   component: FunctionButton,
@@ -19,6 +20,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   args: {
-    number: 1,
+    info: { number: createFunctionNumber(1), label: "Light" },
   },
 };

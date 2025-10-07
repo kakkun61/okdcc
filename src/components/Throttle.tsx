@@ -1,47 +1,81 @@
 "use client";
 
-import { FunctionButton, FrontLightFunctionButton } from "./FunctionButton";
-import * as Dcc from "../lib/dcc";
+import { FunctionButton } from "./Throttle/FunctionButton";
+import * as Dcc from "@/lib/dcc";
 import "./variables.css";
+import { Train } from "./Throttle/Train";
+import { SpeedMeter } from "./Throttle/SpeedMeter";
+import { ButtonGroup } from "./ButtonGroup";
+import { Button } from "./Button";
 
 export interface ThrottleProps {
-  maxFunctionNumber?: Dcc.FunctionNumber;
+  trainName: Dcc.TrainName;
+  functionInfos: Dcc.FunctionInfo[];
+  onClickSpeedUp?: () => void;
+  onClickSpeedDown?: () => void;
+  onClickForward?: () => void;
+  onClickBackward?: () => void;
+  onClickEmergencyStop?: () => void;
 }
 
-export const Throttle = ({
-  maxFunctionNumber = Dcc.maxFunctionNumber,
-}: ThrottleProps) => {
+export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
   return (
-    <>
-      <div>Address</div>
-      <div>Speed</div>
-      <div>Direction</div>
-      <div className="function-buttons">
-        <FrontLightFunctionButton
-          className="fl"
-          key={Dcc.frontLightFunctionNumber}
+    <div>
+      <div className="meters">
+        <SpeedMeter
+          style={`
+          grid-row: 1 / 4;
+          height: var(--meters-height);
+        `}
         />
-        {[...Array(maxFunctionNumber)]
-          .map((_, i) => i + 1)
-          .map((i) => (
-            <FunctionButton number={Dcc.createFunctionNumber(i)} key={i} />
-          ))}
-        <style jsx>{`
-          .function-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: auto;
-            row-gap: var(--gap-medium);
-            column-gap: var(--gap-medium);
-          }
-          .function-buttons :global(button) {
-            font-size: var(--font-size-xlarge);
-          }
-          .function-buttons :global(.fl) {
-            grid-column: 1 / span 3;
-          }
-        `}</style>
+        <Train name={trainName} />
+        <div className="speed-and-direction">
+          <ButtonGroup buttonProps={[{ label: "↑" }, { label: "↓" }]} style="width: 50%;" />
+          <ButtonGroup buttonProps={[{ label: "+" }, { label: "-" }]} style="width: 50%;" />
+        </div>
+        <div className="emergency-stop">
+          <Button label="Emergency Stop" style="width: 100%;" />
+        </div>
       </div>
-    </>
+      <div className="function-buttons">
+        {functionInfos.map((i) => (
+          <FunctionButton
+            info={i}
+            key={i.number}
+            onClick={(_) => {}}
+            style={`
+              font-size: var(--font-size-xlarge);
+            `}
+          />
+        ))}
+      </div>
+      <style jsx>{`
+        .meters {
+          --meters-height: 4cm;
+          --second-column-width: 8cm;
+          display: grid;
+          height: var(--meters-height);
+          grid-template-columns: var(--meters-height) var(--second-column-width) 1fr;
+          grid-template-rows: auto auto auto;
+        }
+
+        .speed-and-direction {
+          grid-column: 2;
+          padding: var(--gap-medium);
+        }
+
+        .emergency-stop {
+          grid-column: 2;
+        }
+
+        .function-buttons {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+          grid-template-rows: auto;
+          row-gap: var(--gap-medium);
+          column-gap: var(--gap-medium);
+        }
+      `}</style>
+    </div>
   );
 };
