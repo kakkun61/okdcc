@@ -23,6 +23,7 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
     <div>
       <div className="meters">
         <SpeedMeter
+          speed={0}
           style={`
           grid-row: 1 / 4;
           height: var(--meters-height);
@@ -30,8 +31,9 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
         />
         <Train name={trainName} />
         <div className="speed-and-direction">
-          <ButtonGroup buttonProps={[{ label: "↑" }, { label: "↓" }]} style="width: 50%;" />
-          <ButtonGroup buttonProps={[{ label: "+" }, { label: "-" }]} style="width: 50%;" />
+          <ButtonGroup buttonProps={[{ label: "↑" }, { label: "↓" }]} style="width: calc(50% - var(--gap-medium) / 2);" />
+          <span style={{ display: "inline-block", width: "var(--gap-medium)" }}></span>
+          <ButtonGroup buttonProps={[{ label: "+" }, { label: "-" }]} style="width: calc(50% - var(--gap-medium) / 2);" />
         </div>
         <div className="emergency-stop">
           <Button label="Emergency Stop" style="width: 100%;" />
@@ -51,12 +53,12 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
       </div>
       <style jsx>{`
         .meters {
-          --meters-height: 4cm;
+          --meters-height: 6cm;
           --second-column-width: 8cm;
           display: grid;
           height: var(--meters-height);
           grid-template-columns: var(--meters-height) var(--second-column-width) 1fr;
-          grid-template-rows: auto auto auto;
+          grid-template-rows: 1fr auto auto;
         }
 
         .speed-and-direction {
@@ -66,6 +68,7 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
 
         .emergency-stop {
           grid-column: 2;
+          padding: var(--gap-medium);
         }
 
         .function-buttons {
