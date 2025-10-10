@@ -4,12 +4,12 @@ import "./material-symbols.css";
 import "./variables.css";
 import "material-symbols/rounded.css";
 import { Button } from "./Button";
-import { Button as ButtonGroupButton } from "./ButtonGroup/Button"
+import { Button as ButtonGroupButton } from "./ButtonGroup/Button";
 import { ButtonGroup } from "./ButtonGroup";
-import { FunctionButton } from "./Throttle/FunctionButton";
-import { SpeedMeter } from "./Throttle/SpeedMeter";
+import { SpeedMeter } from "./SpeedMeter";
 import { Train } from "./Throttle/Train";
 import * as Dcc from "@/lib/dcc";
+import Image from "next/image";
 
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
@@ -19,9 +19,19 @@ export interface ThrottleProps {
   onClickForward?: () => void;
   onClickBackward?: () => void;
   onClickEmergencyStop?: () => void;
+  onClickFunctionButton?: (functionInfo: Dcc.FunctionInfo) => void;
 }
 
-export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
+export const Throttle = ({
+  functionInfos,
+  trainName,
+  onClickSpeedUp,
+  onClickSpeedDown,
+  onClickForward,
+  onClickBackward,
+  onClickEmergencyStop,
+  onClickFunctionButton,
+}: ThrottleProps) => {
   return (
     <div className="throttle">
       <div className="meters">
@@ -35,28 +45,26 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
         <Train name={trainName} />
         <div className="speed-and-direction">
           <ButtonGroup style="flex: 1 1 auto;">
-            <ButtonGroupButton onClick={() => {}} style="padding: 0;">
-              <span className="material-symbols-rounded">
-                arrow_upward
-              </span>
+            <ButtonGroupButton onClick={onClickForward}>
+              <span className="material-symbols-rounded">arrow_upward</span>
             </ButtonGroupButton>
-            <ButtonGroupButton onClick={() => {}}>
-              <span className="material-symbols-rounded">
-                arrow_downward
-              </span>
+            <ButtonGroupButton onClick={onClickBackward}>
+              <span className="material-symbols-rounded">arrow_downward</span>
             </ButtonGroupButton>
           </ButtonGroup>
           <ButtonGroup style="flex: 1 1 auto;">
-            <ButtonGroupButton onClick={() => {}}>
+            <ButtonGroupButton onClick={onClickSpeedUp}>
               <span className="material-symbols-rounded">add</span>
             </ButtonGroupButton>
-            <ButtonGroupButton onClick={() => {}}>
+            <ButtonGroupButton onClick={onClickSpeedDown}>
               <span className="material-symbols-rounded">remove</span>
             </ButtonGroupButton>
           </ButtonGroup>
         </div>
         <div className="emergency-stop">
-          <Button style="
+          <Button
+            onClick={onClickEmergencyStop}
+            style="
             display: flex;
             gap: var(--gap-medium);
             flex-wrap: wrap;
@@ -65,22 +73,32 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
             text-overflow: ellipsis;
             align-items: center;
             justify-content: center;
-          ">
+          "
+          >
             <span className="material-symbols-rounded">emergency</span>
             <span>Emergency Stop</span>
           </Button>
         </div>
       </div>
       <div className="function-buttons">
-        {functionInfos.map((i) => (
-          <FunctionButton
-            info={i}
-            key={i.number}
-            onClick={(_) => {}}
-            style={`
-              font-size: var(--font-size-xlarge);
-            `}
-          />
+        {functionInfos.map((info) => (
+          <button
+            role="button"
+            className="function-button"
+            onClick={() => onClickFunctionButton?.(info)}
+          >
+            {info.image && (
+              <div>
+                <Image
+                  src={info.image}
+                  alt={info.label}
+                  width={50}
+                  height={50}
+                />
+              </div>
+            )}
+            <div>{info.label}</div>
+          </button>
         ))}
       </div>
       <style jsx>{`
@@ -112,11 +130,22 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
         }
 
         .function-buttons {
+          margin-top: var(--gap-medium);
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
           grid-template-rows: auto;
           row-gap: var(--gap-medium);
           column-gap: var(--gap-medium);
+        }
+
+        .function-button {
+          display: block;
+          padding: var(--gap-medium);
+          border-style: none;
+          text-align: center;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       `}</style>
     </div>

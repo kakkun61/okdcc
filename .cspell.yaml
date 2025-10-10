@@ -1,9 +1,18 @@
 words:
   - autodocs
+  - customise
   - envrc
+  - evenodd
   - htmlacademy
+  - nixfmt
+  - nixos
+  - nixpkgs
+  - opsz
+  - pkgs
   - turbopack
+  - wght
   - xlarge
 ignorePaths:
   - .cspell.yaml
-  - storybook-static/**
+  - public
+  - storybook-static

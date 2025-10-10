@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { SpeedMeter } from "@/components/Throttle/SpeedMeter";
+import { SpeedMeter } from "@/components/SpeedMeter";
 
 const meta = {
   component: SpeedMeter,
@@ -23,5 +23,6 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
   args: {
     speed: 0,
-    style: "width: 200px; height: 200px;" },
+    style: "width: 200px; height: 200px;",
+  },
 };

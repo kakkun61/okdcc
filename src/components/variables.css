@@ -14,6 +14,10 @@
   --button-font-weight: var(--font-weight-bold);
   --button-line-height: 1;
   --button-background-color: hsl(41deg 100% 95%);
-  --button-background-color-hover: hsl(from var(--button-background-color) h s calc(l - 10));
-  --button-background-color-active: hsl(from var(--button-background-color) h s calc(l - 20));
+  --button-background-color-hover: hsl(
+    from var(--button-background-color) h s calc(l - 10)
+  );
+  --button-background-color-active: hsl(
+    from var(--button-background-color) h s calc(l - 20)
+  );
 }

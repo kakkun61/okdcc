@@ -38,19 +38,26 @@ export const SpeedMeter = ({ speed, style = "" }: SpeedMeterProps) => {
         preserveAspectRatio="xMidYMid meet"
         role="img"
       >
+        <title>Speed Meter</title>
         <defs>
-          <polygon id="main-mark" points={`
-            ${50 - mainMarkWidth / 2}, ${outlineVerticalPadding}
-            ${50 + mainMarkWidth / 2}, ${outlineVerticalPadding}
-            ${50 + mainMarkWidth / 2}, ${outlineVerticalPadding + mainMarkLength}
-            ${50 - mainMarkWidth / 2}, ${outlineVerticalPadding + mainMarkLength}
-          `} />
-          <polygon id="sub-mark" points={`
-            ${50 - subMarkWidth / 2}, ${outlineVerticalPadding}
-            ${50 + subMarkWidth / 2}, ${outlineVerticalPadding}
-            ${50 + subMarkWidth / 2}, ${outlineVerticalPadding + subMarkLength}
-            ${50 - subMarkWidth / 2}, ${outlineVerticalPadding + subMarkLength}
-          `} />
+          <polygon
+            id="main-mark"
+            points={`
+              ${50 - mainMarkWidth / 2}, ${outlineVerticalPadding}
+              ${50 + mainMarkWidth / 2}, ${outlineVerticalPadding}
+              ${50 + mainMarkWidth / 2}, ${outlineVerticalPadding + mainMarkLength}
+              ${50 - mainMarkWidth / 2}, ${outlineVerticalPadding + mainMarkLength}
+          `}
+          />
+          <polygon
+            id="sub-mark"
+            points={`
+              ${50 - subMarkWidth / 2}, ${outlineVerticalPadding}
+              ${50 + subMarkWidth / 2}, ${outlineVerticalPadding}
+              ${50 + subMarkWidth / 2}, ${outlineVerticalPadding + subMarkLength}
+              ${50 - subMarkWidth / 2}, ${outlineVerticalPadding + subMarkLength}
+          `}
+          />
         </defs>
         <path
           d={`
@@ -61,30 +68,45 @@ export const SpeedMeter = ({ speed, style = "" }: SpeedMeterProps) => {
           stroke="black"
           fill="white"
           strokeWidth="2"
-          strokeLinecap="round" />
-        {
-          Array.from({ length: mainMarkCount }, (_, i) => markStartAngle + i * mainMarkStep).map((angle) => (
-            <use key={angle} href="#main-mark" transform={`rotate(${angle} 50 ${coreCapCenterY})`} />
-          ))
-        }
-        {
-          Array.from({ length: subMarkCount }, (_, i) => markStartAngle + (1 + i + Math.floor(i / 4)) * subMarkStep).map((angle) => (
-            <use key={angle} href="#sub-mark" transform={`rotate(${angle} 50 ${coreCapCenterY})`} />
-          ))
-        }
-        <polygon id="hand" points={`
-          ${50 + handTipWidth / 2}, ${coreCapCenterY - handLength}
-          ${50 - handTipWidth / 2}, ${coreCapCenterY - handLength}
-          ${50 - handWidth / 2}, ${coreCapCenterY}
-          ${50 + handWidth / 2}, ${coreCapCenterY}
-        `} />
+          strokeLinecap="round"
+        />
+        {Array.from(
+          { length: mainMarkCount },
+          (_, i) => markStartAngle + i * mainMarkStep,
+        ).map((angle) => (
+          <use
+            key={angle}
+            href="#main-mark"
+            transform={`rotate(${angle} 50 ${coreCapCenterY})`}
+          />
+        ))}
+        {Array.from(
+          { length: subMarkCount },
+          (_, i) => markStartAngle + (1 + i + Math.floor(i / 4)) * subMarkStep,
+        ).map((angle) => (
+          <use
+            key={angle}
+            href="#sub-mark"
+            transform={`rotate(${angle} 50 ${coreCapCenterY})`}
+          />
+        ))}
+        <polygon
+          id="hand"
+          points={`
+            ${50 + handTipWidth / 2}, ${coreCapCenterY - handLength}
+            ${50 - handTipWidth / 2}, ${coreCapCenterY - handLength}
+            ${50 - handWidth / 2}, ${coreCapCenterY}
+            ${50 + handWidth / 2}, ${coreCapCenterY}
+        `}
+        />
         <circle
           cx={coreCapCenterX}
           cy={coreCapCenterY}
           r={coreCapRadius}
           stroke="black"
           fill="lightgray"
-          strokeWidth="2" />
+          strokeWidth="2"
+        />
       </svg>
       <style jsx>{`
         .speed-meter {

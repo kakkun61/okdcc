@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Throttle } from "@/components/Throttle";
 import * as Dcc from "@/lib/dcc";
 import { fn } from "storybook/internal/test";
+import lightImage from "@/assets/light.png";
 
 const meta = {
   component: Throttle,
@@ -24,7 +25,11 @@ export const Primary: Story = {
   args: {
     trainName: Dcc.createTrainName("DD-51"),
     functionInfos: [
-      { number: Dcc.createFunctionNumber(1), label: "Light" },
+      {
+        number: Dcc.createFunctionNumber(1),
+        label: "Light",
+        image: lightImage,
+      },
       { number: Dcc.createFunctionNumber(2), label: "Horn" },
       { number: Dcc.createFunctionNumber(3), label: "Bell" },
       { number: Dcc.createFunctionNumber(4), label: "Wiper" },
