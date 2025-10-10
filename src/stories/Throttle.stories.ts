@@ -37,6 +37,7 @@ export const Primary: Story = {
       { number: Dcc.createFunctionNumber(6), label: "Sound" },
       { number: Dcc.createFunctionNumber(7), label: "Smoke" },
       { number: Dcc.createFunctionNumber(8), label: "Music" },
+      { number: Dcc.createFunctionNumber(9), label: "Extremely Too Long Name" },
     ],
   },
 };

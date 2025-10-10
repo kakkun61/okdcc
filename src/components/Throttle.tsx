@@ -32,6 +32,7 @@ export const Throttle = ({
   onClickEmergencyStop,
   onClickFunctionButton,
 }: ThrottleProps) => {
+  const functionButtonImageSize = 50;
   return (
     <div className="throttle">
       <div className="meters">
@@ -73,6 +74,13 @@ export const Throttle = ({
             text-overflow: ellipsis;
             align-items: center;
             justify-content: center;
+            --button-background-color: hsl(from red h 100% 95%);
+            --button-background-color-hover: hsl(
+              from var(--button-background-color) h s calc(l - 10)
+            );
+            --button-background-color-active: hsl(
+              from var(--button-background-color) h s calc(l - 20)
+            );
           "
           >
             <span className="material-symbols-rounded">emergency</span>
@@ -87,17 +95,17 @@ export const Throttle = ({
             className="function-button"
             onClick={() => onClickFunctionButton?.(info)}
           >
-            {info.image && (
-              <div>
+            <div className="function-button-image">
+              {info.image && (
                 <Image
                   src={info.image}
                   alt={info.label}
-                  width={50}
-                  height={50}
+                  width={functionButtonImageSize}
+                  height={functionButtonImageSize}
                 />
-              </div>
-            )}
-            <div>{info.label}</div>
+              )}
+            </div>
+            <div className="function-button-label">{info.label}</div>
           </button>
         ))}
       </div>
@@ -139,13 +147,25 @@ export const Throttle = ({
         }
 
         .function-button {
-          display: block;
+          display: flex;
+          flex-direction: column;
           padding: var(--gap-medium);
           border-style: none;
           text-align: center;
+          white-space: nowrap;
+          cursor: pointer;
+        }
+
+        .function-button-image {
+          height: ${functionButtonImageSize}px;
+          flex: 0 0 ${functionButtonImageSize}px;
+        }
+
+        .function-button-label {
+          margin-top: var(--gap-small);
+          flex: 0 0 auto;
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap;
         }
       `}</style>
     </div>
