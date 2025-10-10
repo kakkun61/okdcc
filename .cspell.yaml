@@ -1,4 +1,5 @@
 words:
+  - autodocs
   - xlarge
 ignorePaths:
   - .cspell.yaml

@@ -7,6 +7,7 @@ import { createFunctionNumber } from "@/lib/dcc";
 
 const meta = {
   component: FunctionButton,
+  title: "Throttle/FunctionButton",
   parameters: {
     layout: "centered",
   },

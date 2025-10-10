@@ -9,8 +9,13 @@ export interface TrainProps {
 export const Train = ({ name }: TrainProps) => {
   return (
     <div>
-      <img src="https://placehold.co/60x60" />
       {name}
+      <style jsx>{`
+        div {
+          font-size: var(--font-size-xlarge);
+          padding: var(--gap-medium);
+        }
+      `}</style>
     </div>
   );
 };

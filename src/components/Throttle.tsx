@@ -1,12 +1,15 @@
 "use client";
 
-import { FunctionButton } from "./Throttle/FunctionButton";
-import * as Dcc from "@/lib/dcc";
+import "./material-symbols.css";
 import "./variables.css";
-import { Train } from "./Throttle/Train";
-import { SpeedMeter } from "./Throttle/SpeedMeter";
-import { ButtonGroup } from "./ButtonGroup";
+import "material-symbols/rounded.css";
 import { Button } from "./Button";
+import { Button as ButtonGroupButton } from "./ButtonGroup/Button"
+import { ButtonGroup } from "./ButtonGroup";
+import { FunctionButton } from "./Throttle/FunctionButton";
+import { SpeedMeter } from "./Throttle/SpeedMeter";
+import { Train } from "./Throttle/Train";
+import * as Dcc from "@/lib/dcc";
 
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
@@ -20,7 +23,7 @@ export interface ThrottleProps {
 
 export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
   return (
-    <div>
+    <div className="throttle">
       <div className="meters">
         <SpeedMeter
           speed={0}
@@ -31,12 +34,41 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
         />
         <Train name={trainName} />
         <div className="speed-and-direction">
-          <ButtonGroup buttonProps={[{ label: "↑" }, { label: "↓" }]} style="width: calc(50% - var(--gap-medium) / 2);" />
-          <span style={{ display: "inline-block", width: "var(--gap-medium)" }}></span>
-          <ButtonGroup buttonProps={[{ label: "+" }, { label: "-" }]} style="width: calc(50% - var(--gap-medium) / 2);" />
+          <ButtonGroup style="flex: 1 1 auto;">
+            <ButtonGroupButton onClick={() => {}} style="padding: 0;">
+              <span className="material-symbols-rounded">
+                arrow_upward
+              </span>
+            </ButtonGroupButton>
+            <ButtonGroupButton onClick={() => {}}>
+              <span className="material-symbols-rounded">
+                arrow_downward
+              </span>
+            </ButtonGroupButton>
+          </ButtonGroup>
+          <ButtonGroup style="flex: 1 1 auto;">
+            <ButtonGroupButton onClick={() => {}}>
+              <span className="material-symbols-rounded">add</span>
+            </ButtonGroupButton>
+            <ButtonGroupButton onClick={() => {}}>
+              <span className="material-symbols-rounded">remove</span>
+            </ButtonGroupButton>
+          </ButtonGroup>
         </div>
         <div className="emergency-stop">
-          <Button label="Emergency Stop" style="width: 100%;" />
+          <Button style="
+            display: flex;
+            gap: var(--gap-medium);
+            flex-wrap: wrap;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            align-items: center;
+            justify-content: center;
+          ">
+            <span className="material-symbols-rounded">emergency</span>
+            <span>Emergency Stop</span>
+          </Button>
         </div>
       </div>
       <div className="function-buttons">
@@ -52,23 +84,31 @@ export const Throttle = ({ functionInfos, trainName }: ThrottleProps) => {
         ))}
       </div>
       <style jsx>{`
+        .throttle {
+          max-width: 150mm;
+        }
+
         .meters {
-          --meters-height: 6cm;
-          --second-column-width: 8cm;
+          --meters-height: 40mm;
+          --first-column-width: var(--meters-height);
           display: grid;
-          height: var(--meters-height);
-          grid-template-columns: var(--meters-height) var(--second-column-width) 1fr;
+          grid-template-columns: var(--first-column-width) 1fr;
           grid-template-rows: 1fr auto auto;
+          align-items: center;
         }
 
         .speed-and-direction {
           grid-column: 2;
-          padding: var(--gap-medium);
+          margin-top: var(--gap-medium);
+          display: flex;
+          gap: var(--gap-medium);
+          flex-wrap: wrap;
         }
 
         .emergency-stop {
           grid-column: 2;
-          padding: var(--gap-medium);
+          margin-top: var(--gap-medium);
+          min-width: 0;
         }
 
         .function-buttons {

@@ -18,6 +18,7 @@ export const FunctionButton = ({
       {info.label}
       <style jsx>{`
         .button {
+          border-style: none;
           text-align: center;
           overflow: hidden;
           text-overflow: ellipsis;

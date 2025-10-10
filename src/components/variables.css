@@ -1,9 +1,9 @@
 :root {
   --gap-medium: 2mm;
 
-  --font-size-medium: 16pt;
-  --font-size-large: 24pt;
-  --font-size-xlarge: 32pt;
+  --font-size-medium: 1rem;
+  --font-size-large: calc(var(--font-size-medium) * 1.2);
+  --font-size-xlarge: calc(var(--font-size-medium) * 1.5);
   --font-weight-regular: 400;
   --font-weight-bold: 700;
 
@@ -13,4 +13,7 @@
   --button-font-size: var(--font-size-medium);
   --button-font-weight: var(--font-weight-bold);
   --button-line-height: 1;
+  --button-background-color: hsl(41deg 100% 95%);
+  --button-background-color-hover: hsl(from var(--button-background-color) h s calc(l - 10));
+  --button-background-color-active: hsl(from var(--button-background-color) h s calc(l - 20));
 }
