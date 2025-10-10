@@ -2,6 +2,7 @@
   --gap-small: 1mm;
   --gap-medium: 2mm;
 
+  --font-family: sans-serif;
   --font-size-medium: 1rem;
   --font-size-large: calc(var(--font-size-medium) * 1.2);
   --font-size-xlarge: calc(var(--font-size-medium) * 1.5);

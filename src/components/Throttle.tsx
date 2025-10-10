@@ -7,7 +7,6 @@ import { Button } from "./Button";
 import { Button as ButtonGroupButton } from "./ButtonGroup/Button";
 import { ButtonGroup } from "./ButtonGroup";
 import { SpeedMeter } from "./SpeedMeter";
-import { Train } from "./Throttle/Train";
 import * as Dcc from "@/lib/dcc";
 import Image from "next/image";
 
@@ -39,11 +38,11 @@ export const Throttle = ({
         <SpeedMeter
           speed={0}
           style={`
-          grid-row: 1 / 4;
-          height: var(--meters-height);
-        `}
+            grid-row: 1 / 4;
+            height: var(--meters-height);
+          `}
         />
-        <Train name={trainName} />
+        <div className="train-name">{trainName}</div>
         <div className="speed-and-direction">
           <ButtonGroup style="flex: 1 1 auto;">
             <ButtonGroupButton onClick={onClickForward}>
@@ -121,6 +120,12 @@ export const Throttle = ({
           grid-template-columns: var(--first-column-width) 1fr;
           grid-template-rows: 1fr auto auto;
           align-items: center;
+        }
+
+        .train-name {
+          padding: var(--gap-medium);
+          font-size: var(--font-size-xlarge);
+          font-weight: var(--font-weight-bold);
         }
 
         .speed-and-direction {

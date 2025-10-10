@@ -1,8 +1,9 @@
+import { fn } from "storybook/internal/test";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+import "@/components/default.css"
 import { Throttle } from "@/components/Throttle";
 import * as Dcc from "@/lib/dcc";
-import { fn } from "storybook/internal/test";
 import lightImage from "@/assets/light.png";
 
 const meta = {
