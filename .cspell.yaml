@@ -1,5 +1,8 @@
 words:
   - autodocs
+  - envrc
+  - htmlacademy
+  - turbopack
   - xlarge
 ignorePaths:
   - .cspell.yaml
