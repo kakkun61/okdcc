@@ -1,13 +1,21 @@
-import { ButtonGroup } from "@/components/ButtonGroup";
-import { Button } from "@/components/ButtonGroup/Button";
 import { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
+
+import { ButtonGroup } from "@/components/ButtonGroup";
+import { Button } from "@/components/ButtonGroup/Button";
 
 const meta = {
   component: ButtonGroup,
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
+  },
+  argTypes: {
+    children: {
+      table: {
+        disable: true,
+      },
+    },
   },
 } satisfies Meta<typeof ButtonGroup>;
 

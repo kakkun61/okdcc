@@ -1,7 +1,7 @@
 import { fn } from "storybook/internal/test";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import "@/components/default.css"
+import "@/components/default.css";
 import { Throttle } from "@/components/Throttle";
 import * as Dcc from "@/lib/dcc";
 import lightImage from "@/assets/light.png";

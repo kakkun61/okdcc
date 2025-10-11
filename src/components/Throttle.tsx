@@ -9,6 +9,8 @@ import { ButtonGroup } from "./ButtonGroup";
 import { SpeedMeter } from "./SpeedMeter";
 import * as Dcc from "@/lib/dcc";
 import Image from "next/image";
+import { RadioButtonGroup } from "./RadioButtonGroup";
+import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
 
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
@@ -44,14 +46,14 @@ export const Throttle = ({
         />
         <div className="train-name">{trainName}</div>
         <div className="speed-and-direction">
-          <ButtonGroup style="flex: 1 1 auto;">
-            <ButtonGroupButton onClick={onClickForward}>
+          <RadioButtonGroup initialActivated="forward" style="flex: 1 1 auto;">
+            <RadioButtonGroupButton id="forward" onClick={onClickForward}>
               <span className="material-symbols-rounded">arrow_upward</span>
-            </ButtonGroupButton>
-            <ButtonGroupButton onClick={onClickBackward}>
+            </RadioButtonGroupButton>
+            <RadioButtonGroupButton id="backward" onClick={onClickBackward}>
               <span className="material-symbols-rounded">arrow_downward</span>
-            </ButtonGroupButton>
-          </ButtonGroup>
+            </RadioButtonGroupButton>
+          </RadioButtonGroup>
           <ButtonGroup style="flex: 1 1 auto;">
             <ButtonGroupButton onClick={onClickSpeedUp}>
               <span className="material-symbols-rounded">add</span>
@@ -101,6 +103,7 @@ export const Throttle = ({
                   alt={info.label}
                   width={functionButtonImageSize}
                   height={functionButtonImageSize}
+                  priority={false}
                 />
               )}
             </div>

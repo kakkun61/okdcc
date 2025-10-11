@@ -3,7 +3,7 @@ import "./variables.css";
 
 export interface ButtonGroupProps {
   style?: string;
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export const ButtonGroup = ({ style = "", children }: ButtonGroupProps) => {

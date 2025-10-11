@@ -11,6 +11,13 @@ const meta = {
   },
   tags: ["autodocs"],
   args: { onClick: fn() },
+  argTypes: {
+    children: {
+      table: {
+        disable: true,
+      },
+    },
+  },
 } satisfies Meta<typeof Button>;
 
 export default meta;
@@ -18,6 +25,6 @@ type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   args: {
-    label: "Button",
+    children: "Button",
   },
 };
