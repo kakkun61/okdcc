@@ -9,6 +9,8 @@
   --font-weight-regular: 400;
   --font-weight-bold: 700;
 
+  --color: black;
+
   --button-padding-vertical: 0.4em;
   --button-padding-horizontal: 1.2em;
   --button-border-radius: 3em;
@@ -17,9 +19,11 @@
   --button-line-height: 1;
   --button-background-color: hsl(41deg 100% 95%);
   --button-background-color-hover: hsl(
-    from var(--button-background-color) h s calc(l - 10)
+    from var(--button-background-color) h s calc(l * 0.9)
   );
   --button-background-color-active: hsl(
-    from var(--button-background-color) h s calc(l - 20)
+    from var(--button-background-color) h s calc(l * 0.8)
   );
+  --button-color: var(--color);
+  --button-color-disabled: hsl(from var(--color) h s 50%);
 }

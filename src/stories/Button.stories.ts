@@ -23,8 +23,29 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+export const Default: Story = {
   args: {
     children: "Button",
   },
 };
+
+export const Hover: Story = {
+  args: {
+    children: "Button",
+    state: "hover",
+  }
+}
+
+export const Active: Story = {
+  args: {
+    children: "Button",
+    state: "active",
+  }
+}
+
+export const Disabled: Story = {
+  args: {
+    children: "Button",
+    state: "disabled",
+  }
+}
