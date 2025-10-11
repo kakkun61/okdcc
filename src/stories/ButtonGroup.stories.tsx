@@ -23,12 +23,36 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+const children = (
+  <>
+    <Button onClick={fn()}>Button 1</Button>
+    <Button onClick={fn()}>Button 2</Button>
+    <Button onClick={fn()}>Button 3</Button>
+  </>
+);
+
+export const Default: Story = {
+  args: {
+    state: "default",
+    children: children,
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    state: "disabled",
+    children: children,
+  },
+};
+
+export const Mixed: Story = {
   args: {
     children: (
       <>
         <Button onClick={fn()}>Button 1</Button>
-        <Button onClick={fn()}>Button 2</Button>
+        <Button state="disabled" onClick={fn()}>
+          Button 2
+        </Button>
         <Button onClick={fn()}>Button 3</Button>
       </>
     ),

@@ -3,13 +3,23 @@ import "./variables.css";
 export interface ButtonProps {
   state?: "default" | "hover" | "active" | "disabled";
   style?: string;
-  onClick?: () => void;
   children: React.ReactNode;
+  onClick?: () => void;
 }
 
-export const Button = ({ state = "default", style = "", onClick, children }: ButtonProps) => {
+export const Button = ({
+  state = "default",
+  style = "",
+  children,
+  onClick,
+}: ButtonProps) => {
   return (
-    <button type="button" className={state === "default"?"":state} disabled={state === "disabled"} onClick={onClick}>
+    <button
+      type="button"
+      className={state === "default" ? "" : state}
+      disabled={state === "disabled"}
+      onClick={onClick}
+    >
       {children}
       <style jsx>{`
         button {
@@ -35,11 +45,6 @@ export const Button = ({ state = "default", style = "", onClick, children }: But
 
         button.active:not(:disabled) {
           background-color: var(--button-background-color-active);
-        }
-
-        button.disabled {
-          color: var(--button-text-color-disabled);
-          cursor: default;
         }
 
         button:hover:not(:disabled) {

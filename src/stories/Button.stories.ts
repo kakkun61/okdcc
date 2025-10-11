@@ -33,19 +33,19 @@ export const Hover: Story = {
   args: {
     children: "Button",
     state: "hover",
-  }
-}
+  },
+};
 
 export const Active: Story = {
   args: {
     children: "Button",
     state: "active",
-  }
-}
+  },
+};
 
 export const Disabled: Story = {
   args: {
     children: "Button",
     state: "disabled",
-  }
-}
+  },
+};

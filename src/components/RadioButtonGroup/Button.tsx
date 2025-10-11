@@ -2,6 +2,7 @@ import "../variables.css";
 
 export interface ButtonProps {
   id: string;
+  state?: "default" | "hover" | "active" | "disabled";
   active?: boolean;
   style?: string;
   onClick?: () => void;
@@ -9,13 +10,19 @@ export interface ButtonProps {
 }
 
 export const Button = ({
+  state = "default",
   active,
-  onClick,
   style = "",
   children,
+  onClick,
 }: ButtonProps) => {
   return (
-    <button type="button" onClick={onClick}>
+    <button
+      type="button"
+      className={state === "default" ? "" : state}
+      disabled={state === "disabled"}
+      onClick={onClick}
+    >
       {children}
       <style jsx>{`
         button {
@@ -36,12 +43,26 @@ export const Button = ({
           ${style}
         }
 
-        button:hover {
+        /* :hover など疑似属性が優先されるようにそれらはクラス属性 .hover .active .disabled の後に書く */
+        button.hover:not(:disabled) {
           background-color: var(--button-background-color-hover);
         }
 
-        button:active {
+        button.active:not(:disabled) {
           background-color: var(--button-background-color-active);
+        }
+
+        button:hover:not(:disabled) {
+          background-color: var(--button-background-color-hover);
+        }
+
+        button:active:not(:disabled) {
+          background-color: var(--button-background-color-active);
+        }
+
+        button:disabled {
+          color: var(--button-color-disabled);
+          cursor: default;
         }
 
         button:first-child {

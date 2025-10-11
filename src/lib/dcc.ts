@@ -1,5 +1,3 @@
-import { StaticImageData } from "next/image";
-
 declare const __brand: unique symbol;
 
 type Brand<T, TBrand> = T & { [__brand]: TBrand };
@@ -28,8 +26,8 @@ export const createTrainName = (name: string): TrainName =>
         throw new Error("TrainName must be non-empty");
       })();
 
-export interface FunctionInfo {
+export interface FunctionInfo<Image> {
   label: string;
   number: FunctionNumber;
-  image?: string | StaticImageData;
+  image?: string | Image;
 }

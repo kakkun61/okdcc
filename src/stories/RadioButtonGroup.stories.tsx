@@ -22,13 +22,44 @@ const meta = {
       },
     },
   },
+  args: {
+    onActivate: fn(),
+  },
 } satisfies Meta<typeof RadioButtonGroup>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = {
+const children = (
+  <>
+    <Button id="1" onClick={fn()}>
+      Button 1
+    </Button>
+    <Button id="2" onClick={fn()}>
+      Button 2
+    </Button>
+    <Button id="3" onClick={fn()}>
+      Button 3
+    </Button>
+  </>
+);
+
+export const Default: Story = {
+  args: {
+    initialActivated: "1",
+    children: children,
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    state: "disabled",
+    children: children,
+  },
+};
+
+export const Mixed: Story = {
   args: {
     initialActivated: "1",
     children: (
@@ -36,7 +67,7 @@ export const Primary: Story = {
         <Button id="1" onClick={fn()}>
           Button 1
         </Button>
-        <Button id="2" onClick={fn()}>
+        <Button id="2" state="disabled" onClick={fn()}>
           Button 2
         </Button>
         <Button id="3" onClick={fn()}>
