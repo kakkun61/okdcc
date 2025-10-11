@@ -25,6 +25,7 @@ export const Button = ({
         button {
           display: inline-block;
           min-width: 10mm;
+          margin-inline-end: var(--button-group-gap);
           padding: var(--button-padding-vertical) var(--button-padding-horizontal);
           border-style: none;
           border-radius: 0;
@@ -69,6 +70,7 @@ export const Button = ({
         }
 
         button:last-child {
+          margin-inline-end: 0;
           border-start-end-radius: var(--button-border-radius);
           border-end-end-radius: var(--button-border-radius);
         }

@@ -26,4 +26,6 @@
   );
   --button-color: var(--color);
   --button-color-disabled: hsl(from var(--color) h s 50%);
+
+  --button-group-gap: 0.5mm;
 }
