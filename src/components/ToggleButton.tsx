@@ -12,24 +12,24 @@ export interface ToggleButtonProps {
 }
 
 export const ToggleButton = ({
-  state = "default",
+  state: initialState = "default",
   action,
   style = "",
   children,
   onClick,
   onChangeState,
 }: ToggleButtonProps) => {
-  const [currentState, setCurrentState] = React.useState<
+  const [state, setState] = React.useState<
     "default" | "selected"
-  >(state === "selected" ? state : "default");
+  >(initialState === "selected" ? initialState : "default");
   return (
     <button
       type="button"
-      className={`toggle ${currentState === "default" ? "" : currentState} ${action ?? ""}`}
-      disabled={state === "disabled"}
+      className={`toggle ${state === "default" ? "" : state} ${action ?? ""}`}
+      disabled={initialState === "disabled"}
       onClick={() => {
-        const newState = currentState === "default" ? "selected" : "default";
-        setCurrentState(newState);
+        const newState = state === "default" ? "selected" : "default";
+        setState(newState);
         onChangeState?.(newState);
         onClick?.();
       }}

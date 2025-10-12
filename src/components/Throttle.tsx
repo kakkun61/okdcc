@@ -46,7 +46,7 @@ export const Throttle = ({
         />
         <div className="train-name">{trainName}</div>
         <div className="speed-and-direction">
-          <RadioButtonGroup initialActivated="forward" style="flex: 1 1 auto;">
+          <RadioButtonGroup selected="forward" style="flex: 1 1 auto;">
             <RadioButtonGroupButton id="forward" onClick={onClickForward}>
               <span className="material-symbols-rounded">arrow_upward</span>
             </RadioButtonGroupButton>

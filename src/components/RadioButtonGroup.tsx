@@ -1,13 +1,13 @@
 import React from "react";
 import "./variables.css";
 
-import { Button } from "./RadioButtonGroup/Button";
+import { Button,ButtonProps } from "./RadioButtonGroup/Button";
 import { updateComponentPropsRecursively } from "./lib";
 
 export interface RadioButtonGroupProps {
   state?: "default" | "disabled";
   style?: string;
-  initialActivated?: string;
+  selected?: string;
   children: React.ReactNode;
   onActivate?: (id: string) => void;
 }
@@ -15,20 +15,19 @@ export interface RadioButtonGroupProps {
 export const RadioButtonGroup = ({
   state = "default",
   style = "",
-  initialActivated,
+  selected: initialSelected,
   children,
   onActivate,
 }: RadioButtonGroupProps) => {
   const [selected, setSelected] = React.useState<string | null>(
-    initialActivated ?? null,
+    initialSelected ?? null,
   );
   const children_ = updateComponentPropsRecursively(
     Button,
     children,
-    (props) => ({
-      state: state === "disabled" ? "disabled" : props.state,
-      active: props.id === selected,
-      onClick: () => {
+    (props: ButtonProps): Partial<ButtonProps> => ({
+      state: state === "disabled" ? "disabled" : props.id === selected ? "selected" : props.state,
+      onClick: props.id ===selected? undefined:() => {
         props.onClick?.();
         setSelected(props.id);
         onActivate?.(props.id);

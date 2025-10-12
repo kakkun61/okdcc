@@ -1,9 +1,9 @@
-import { buttonGroupButtonStyle, buttonStyle } from "../lib";
+import { buttonGroupButtonStyle, buttonStyle, toggleButtonStyle } from "../lib";
 
 export interface ButtonProps {
   id: string;
-  state?: "default" | "hover" | "active" | "disabled";
-  active?: boolean;
+  state?: "default" | "disabled" | "selected";
+  action?: "hover" | "active" | "focus" | null;
   style?: string;
   onClick?: () => void;
   children: React.ReactNode;
@@ -11,7 +11,7 @@ export interface ButtonProps {
 
 export const Button = ({
   state = "default",
-  active,
+  action,
   style = "",
   children,
   onClick,
@@ -19,19 +19,15 @@ export const Button = ({
   return (
     <button
       type="button"
-      className={state === "default" ? "" : state}
+      className={`toggle ${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={state === "disabled"}
       onClick={onClick}
     >
       {children}
       <style jsx>{buttonStyle}</style>
+      <style jsx>{toggleButtonStyle}</style>
       <style jsx>{buttonGroupButtonStyle}</style>
-      <style jsx>{`
-        button {
-          background-color: ${active ? "var(--button-background-color-active)" : "var(--button-background-color)"};
-          ${style}
-        }
-      `}</style>
+      <style jsx>{`button { ${style} }`}</style>
     </button>
   );
 };

@@ -11,7 +11,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
-    initialActivated: {
+    selected: {
       table: {
         disable: true,
       },
@@ -47,7 +47,7 @@ const children = (
 
 export const Default: Story = {
   args: {
-    initialActivated: "1",
+    selected: "1",
     children: children,
   },
 };
@@ -61,7 +61,7 @@ export const Disabled: Story = {
 
 export const Mixed: Story = {
   args: {
-    initialActivated: "1",
+    selected: "1",
     children: (
       <>
         <Button id="1" onClick={fn()}>
