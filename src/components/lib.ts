@@ -56,44 +56,78 @@ export const updateComponentPropsRecursively = (
 
 export type FunctionInfo = dcc.FunctionInfo<StaticImageData>;
 
-export const buttonStyle = css`
-  button {
-    display: inline-block;
-    padding: var(--button-padding-vertical) var(--button-padding-horizontal);
-    border-style: none;
-    border-radius: var(--button-border-radius);
-    font-size: var(--button-font-size);
-    font-weight: var(--button-font-weight);
-    text-align: center;
-    line-height: var(--button-line-height);
-    cursor: pointer;
-    color: var(--button-color);
-    background-color: var(--button-background-color);
-    text-align: center;
-  }
+// TODO active と selected を分ける
+// active は saturation を hover より高く
+// selected は saturation を hover より低く
+/**
+ * ボタンのスタイル
+ *
+ * @remarks
+ *
+ * (状態 × ユーザーの操作)→スタイル
+ *
+ * ```txt
+ *        | default disabled selected
+ * -------+---------------------------
+ * hover  | hover   disabled both
+ * active | active  disabled both
+ * focus  | focus   both     both
+ * ```
+ */
+export const buttonStyle =
+  // :hover など疑似属性が優先される
+  // クラス属性が先、疑似属性が後
+  css`
+    button {
+      display: inline-block;
+      padding: var(--button-padding-vertical) var(--button-padding-horizontal);
+      border-style: none;
+      border-radius: var(--button-border-radius);
+      font-size: var(--button-font-size);
+      font-weight: var(--button-font-weight);
+      text-align: center;
+      line-height: var(--button-line-height);
+      cursor: pointer;
+      color: var(--button-color);
+      background-color: var(--button-background-color);
+      text-align: center;
+    }
 
-  /* :hover など疑似属性が優先されるようにそれらはクラス属性 .hover .active .disabled の後に書く */
-  button.hover:not(:disabled) {
-    background-color: var(--button-background-color-hover);
-  }
+    button.hover:not(:disabled) {
+      background-color: var(--button-background-color-hover);
+    }
 
-  button.active:not(:disabled) {
-    background-color: var(--button-background-color-active);
-  }
+    button.active:not(:disabled) {
+      background-color: var(--button-background-color-active);
+    }
 
-  button:hover:not(:disabled) {
-    background-color: var(--button-background-color-hover);
-  }
+    button:hover:not(:disabled) {
+      background-color: var(--button-background-color-hover);
+    }
 
-  button:active:not(:disabled) {
-    background-color: var(--button-background-color-active);
-  }
+    button:active:not(:disabled) {
+      background-color: var(--button-background-color-active);
+    }
 
-  button:disabled {
-    color: var(--button-color-disabled);
-    cursor: default;
-  }
-`;
+    button:disabled {
+      color: var(--button-color-disabled);
+      cursor: default;
+    }
+  `;
+
+export const toggleButtonStyle = css`
+    button.toggle {
+      box-shadow:
+        inset 0 0 0 var(--toggle-button-ring-width) var(--toggle-button-ring-color),
+        inset 0 0 0 calc(var(--toggle-button-ring-width) + var(--toggle-button-ring-gap)) var(--background-color);
+    }
+
+    button.toggle.selected {
+      box-shadow:
+        inset 0 0 0 var(--toggle-button-ring-width) var(--toggle-button-ring-color-selected),
+        inset 0 0 0 calc(var(--toggle-button-ring-width) + var(--toggle-button-ring-gap)) var(--background-color);
+    }
+  `;
 
 export const buttonGroupButtonStyle = css`
   button {

@@ -1,7 +1,8 @@
 import { buttonStyle } from "./lib";
 
 export interface ButtonProps {
-  state?: "default" | "hover" | "active" | "disabled";
+  state?: "default" | "disabled";
+  action?: "hover" | "active" | "focus" | null;
   style?: string;
   children: React.ReactNode;
   onClick?: () => void;
@@ -9,6 +10,7 @@ export interface ButtonProps {
 
 export const Button = ({
   state = "default",
+  action,
   style = "",
   children,
   onClick,
@@ -16,7 +18,7 @@ export const Button = ({
   return (
     <button
       type="button"
-      className={state === "default" ? "" : state}
+      className={`${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={state === "disabled"}
       onClick={onClick}
     >

@@ -12,6 +12,11 @@ const meta = {
   tags: ["autodocs"],
   args: { onChangeState: fn() },
   argTypes: {
+    action: {
+      control: "radio",
+      options: ["hover", "active", "focus", "null"],
+      mapping: { hover: "hover", active: "active", focus: "focus", null: null },
+    },
     children: {
       table: {
         disable: true,
@@ -32,14 +37,14 @@ export const Default: Story = {
 export const Hover: Story = {
   args: {
     children: "Button",
-    state: "hover",
+    action: "hover",
   },
 };
 
 export const Active: Story = {
   args: {
     children: "Button",
-    state: "active",
+    action: "active",
   },
 };
 

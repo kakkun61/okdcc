@@ -1,4 +1,6 @@
 :root {
+  --background-color: white;
+
   --gap-small: 1mm;
   --gap-medium: 2mm;
 
@@ -19,13 +21,22 @@
   --button-line-height: 1;
   --button-background-color: hsl(41deg 100% 95%);
   --button-background-color-hover: hsl(
-    from var(--button-background-color) h s calc(l * 0.9)
+    from var(--button-background-color) h s calc(l * 0.8)
   );
   --button-background-color-active: hsl(
-    from var(--button-background-color) h s calc(l * 0.8)
+    from var(--button-background-color) h s calc(l * 0.9)
   );
   --button-color: var(--color);
   --button-color-disabled: hsl(from var(--color) h s 50%);
+
+  --toggle-button-ring-color: hsl(
+    from var(--button-background-color) h s calc(l * 0.8)
+  );
+  --toggle-button-ring-color-selected: hsl(
+    from var(--button-background-color) h s calc(l * 0.5)
+  );
+  --toggle-button-ring-width: 0.6mm;
+  --toggle-button-ring-gap: 0.2mm;
 
   --button-group-gap: 0.5mm;
 }
