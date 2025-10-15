@@ -4,7 +4,6 @@ import { SpeedMeter } from "@/components/SpeedMeter";
 
 const meta = {
   component: SpeedMeter,
-  title: "Throttle/SpeedMeter",
   parameters: {
     layout: "centered",
   },

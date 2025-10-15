@@ -35,6 +35,7 @@ export const Default: Story = {
 };
 
 export const Hover: Story = {
+  name: "Default + Hover",
   args: {
     children: "Button",
     action: "hover",
@@ -42,8 +43,35 @@ export const Hover: Story = {
 };
 
 export const Active: Story = {
+  name: "Default + Active",
   args: {
     children: "Button",
+    action: "active",
+  },
+};
+
+export const Selected: Story = {
+  name: "Selected",
+  args: {
+    children: "Button",
+    state: "selected",
+  },
+};
+
+export const HoverSelected: Story = {
+  name: "Selected + Hover",
+  args: {
+    children: "Button",
+    state: "selected",
+    action: "hover",
+  },
+};
+
+export const ActiveSelected: Story = {
+  name: "Selected + Active",
+  args: {
+    children: "Button",
+    state: "selected",
     action: "active",
   },
 };
