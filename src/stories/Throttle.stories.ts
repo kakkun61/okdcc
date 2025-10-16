@@ -10,6 +10,7 @@ const meta = {
   component: Throttle,
   tags: ["autodocs"],
   args: {
+    style: "height: 100%;",
     onClickSpeedUp: fn(),
     onClickSpeedDown: fn(),
     onClickForward: fn(),
@@ -44,7 +45,7 @@ export const Primary: Story = {
       },
       {
         number: Dcc.createFunctionNumber(4),
-        label: "Wiper",
+        label: "Squeal",
         stateType: "toggle",
       },
       {
@@ -54,7 +55,7 @@ export const Primary: Story = {
       },
       {
         number: Dcc.createFunctionNumber(6),
-        label: "Sound",
+        label: "Mute",
         stateType: "toggle",
       },
       {
@@ -64,13 +65,73 @@ export const Primary: Story = {
       },
       {
         number: Dcc.createFunctionNumber(8),
-        label: "Music",
+        label: "Generator",
         stateType: "toggle",
       },
       {
         number: Dcc.createFunctionNumber(9),
         label:
           "Extremely Too Long Long Long Long Long Long Long Long Long Long Name",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(10),
+        label: "Placeholder 1",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(11),
+        label: "Placeholder 2",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(12),
+        label: "Placeholder 3",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(13),
+        label: "Placeholder 4",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(14),
+        label: "Placeholder 5",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(15),
+        label: "Placeholder 6",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(16),
+        label: "Placeholder 7",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(17),
+        label: "Placeholder 8",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(18),
+        label: "Placeholder 9",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(19),
+        label: "Placeholder 10",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(20),
+        label: "Placeholder 11",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(21),
+        label: "Placeholder 12",
         stateType: "toggle",
       },
     ],

@@ -13,10 +13,12 @@ import { RadioButtonGroup } from "./RadioButtonGroup";
 import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
 import { FunctionInfo, mmToPx } from "./lib";
 import { ToggleButton } from "./ToggleButton";
+import { JSX } from "react";
 
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
   functionInfos: FunctionInfo[];
+  style?: string;
   onClickSpeedUp?: () => void;
   onClickSpeedDown?: () => void;
   onClickForward?: () => void;
@@ -28,6 +30,7 @@ export interface ThrottleProps {
 export const Throttle = ({
   functionInfos,
   trainName,
+  style,
   onClickSpeedUp,
   onClickSpeedDown,
   onClickForward,
@@ -48,18 +51,26 @@ export const Throttle = ({
         <div className="train-name">{trainName}</div>
         <div className="speed-and-direction">
           <RadioButtonGroup selected="forward" style="flex: 1 1 auto;">
-            <RadioButtonGroupButton id="forward" onClick={onClickForward}>
+            <RadioButtonGroupButton
+              key="forward"
+              id="forward"
+              onClick={onClickForward}
+            >
               <span className="material-symbols-rounded">arrow_upward</span>
             </RadioButtonGroupButton>
-            <RadioButtonGroupButton id="backward" onClick={onClickBackward}>
+            <RadioButtonGroupButton
+              key="backward"
+              id="backward"
+              onClick={onClickBackward}
+            >
               <span className="material-symbols-rounded">arrow_downward</span>
             </RadioButtonGroupButton>
           </RadioButtonGroup>
           <ButtonGroup style="flex: 1 1 auto;">
-            <ButtonGroupButton onClick={onClickSpeedUp}>
+            <ButtonGroupButton key="speed-up" onClick={onClickSpeedUp}>
               <span className="material-symbols-rounded">add</span>
             </ButtonGroupButton>
-            <ButtonGroupButton onClick={onClickSpeedDown}>
+            <ButtonGroupButton key="speed-down" onClick={onClickSpeedDown}>
               <span className="material-symbols-rounded">remove</span>
             </ButtonGroupButton>
           </ButtonGroup>
@@ -111,7 +122,7 @@ export const Throttle = ({
           const style = "height: 30mm; flex-direction: column;";
           if (info.stateType === "toggle") {
             return (
-              <ToggleButton style={style}>
+              <ToggleButton key={info.number} style={style}>
                 {imageDiv}
                 <div className="function-button-label">{info.label}</div>
               </ToggleButton>
@@ -120,6 +131,7 @@ export const Throttle = ({
           if (info.stateType === "momentary") {
             return (
               <Button
+                key={info.number}
                 onClick={() => onClickFunctionButton?.(info)}
                 style={style}
               >
@@ -132,12 +144,17 @@ export const Throttle = ({
       </div>
       <style jsx>{`
         .throttle {
+          display: flex;
+          flex-direction: column;
           max-width: 150mm;
+          height: 100%;
+          overflow: hidden;
         }
 
         .meters {
           --meters-height: 40mm;
           --first-column-width: var(--meters-height);
+          flex: 0 0 auto;
           display: grid;
           grid-template-columns: var(--first-column-width) 1fr;
           grid-template-rows: 1fr auto auto;
@@ -165,11 +182,14 @@ export const Throttle = ({
         }
 
         .function-buttons {
+          flex: 0 1 auto;
           margin-top: var(--gap-medium);
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
           row-gap: var(--gap-medium);
           column-gap: var(--gap-medium);
+          overflow-y: auto;
+          overscroll-behavior: contain;
         }
 
         .function-button {
@@ -188,6 +208,7 @@ export const Throttle = ({
           text-overflow: ellipsis;
         }
       `}</style>
+      <style jsx>{`.throttle { ${style} }`}</style>
     </div>
   );
 };

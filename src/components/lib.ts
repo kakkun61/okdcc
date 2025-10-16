@@ -103,8 +103,10 @@ export const buttonStyle =
       background-color: var(--button-background-color-active);
     }
 
-    button:hover:not(:disabled) {
-      background-color: var(--button-background-color-hover);
+    @media (hover: hover) {
+      button:hover:not(:disabled) {
+        background-color: var(--button-background-color-hover);
+      }
     }
 
     button:active:not(:disabled) {
