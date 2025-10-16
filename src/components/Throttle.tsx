@@ -109,7 +109,7 @@ export const Throttle = ({
                 {info.image && (
                   <Image
                     src={info.image}
-                    alt={info.label}
+                    alt="" // 直下にラベルがあるので要らない
                     width={mmToPx(functionButtonImageSize)}
                     height={mmToPx(functionButtonImageSize)}
                     priority={false}
@@ -145,7 +145,8 @@ export const Throttle = ({
         .throttle {
           display: flex;
           flex-direction: column;
-          max-width: 150mm;
+          max-width: var(--throttle-max-width);
+          min-width: min(100vw, var(--throttle-min-width));
           height: 100%;
           overflow: hidden;
         }
@@ -188,7 +189,7 @@ export const Throttle = ({
           row-gap: var(--gap-medium);
           column-gap: var(--gap-medium);
           overflow-y: auto;
-          overscroll-behavior: contain;
+          overscroll-behavior-y: none;
         }
 
         .function-button {
