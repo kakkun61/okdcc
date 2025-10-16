@@ -13,7 +13,6 @@ import { RadioButtonGroup } from "./RadioButtonGroup";
 import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
 import { FunctionInfo, mmToPx } from "./lib";
 import { ToggleButton } from "./ToggleButton";
-import { JSX } from "react";
 
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
