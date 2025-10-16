@@ -30,4 +30,5 @@ export interface FunctionInfo<Image> {
   label: string;
   number: FunctionNumber;
   image?: string | Image;
+  stateType: "momentary" | "toggle";
 }

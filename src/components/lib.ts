@@ -79,18 +79,20 @@ export const buttonStyle =
   // クラス属性が先、疑似属性が後
   css`
     button {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: var(--button-padding-vertical) var(--button-padding-horizontal);
       border-style: none;
       border-radius: var(--button-border-radius);
       font-size: var(--button-font-size);
       font-weight: var(--button-font-weight);
-      text-align: center;
       line-height: var(--button-line-height);
       cursor: pointer;
       color: var(--button-color);
       background-color: var(--button-background-color);
-      text-align: center;
+      overflow: clip;
+      text-overflow: ellipsis;
     }
 
     button.hover:not(:disabled) {
@@ -117,15 +119,13 @@ export const buttonStyle =
 
 export const toggleButtonStyle = css`
     button.toggle {
+      border: solid var(--toggle-button-ring-width) var(--toggle-button-ring-color);
       box-shadow:
-        inset 0 0 0 var(--toggle-button-ring-width) var(--toggle-button-ring-color),
-        inset 0 0 0 calc(var(--toggle-button-ring-width) + var(--toggle-button-ring-gap)) var(--background-color);
+        inset 0 0 0 var(--toggle-button-ring-gap) var(--background-color);
     }
 
     button.toggle.selected {
-      box-shadow:
-        inset 0 0 0 var(--toggle-button-ring-width) var(--toggle-button-ring-color-selected),
-        inset 0 0 0 calc(var(--toggle-button-ring-width) + var(--toggle-button-ring-gap)) var(--background-color);
+      border: solid var(--toggle-button-ring-width) var(--toggle-button-ring-color-selected);
     }
   `;
 
@@ -163,3 +163,5 @@ export const buttonGroupButtonStyle = css`
     border-end-end-radius: var(--button-border-radius);
   }
 `;
+
+export const mmToPx = (mm: number): number => mm * 3.7795275591;

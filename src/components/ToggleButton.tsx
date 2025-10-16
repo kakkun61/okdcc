@@ -8,7 +8,7 @@ export interface ToggleButtonProps {
   style?: string;
   children: React.ReactNode;
   onClick?: () => void;
-  onChangeState?: (state: "default" | "selected") => void;
+  onToggle?: (state: "default" | "selected") => void;
 }
 
 export const ToggleButton = ({
@@ -17,11 +17,11 @@ export const ToggleButton = ({
   style = "",
   children,
   onClick,
-  onChangeState,
+  onToggle: onToggle,
 }: ToggleButtonProps) => {
-  const [state, setState] = React.useState<
-    "default" | "selected"
-  >(initialState === "selected" ? initialState : "default");
+  const [state, setState] = React.useState<"default" | "selected">(
+    initialState === "selected" ? initialState : "default",
+  );
   return (
     <button
       type="button"
@@ -30,7 +30,7 @@ export const ToggleButton = ({
       onClick={() => {
         const newState = state === "default" ? "selected" : "default";
         setState(newState);
-        onChangeState?.(newState);
+        onToggle?.(newState);
         onClick?.();
       }}
     >

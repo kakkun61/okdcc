@@ -10,7 +10,7 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
-  args: { onChangeState: fn() },
+  args: { onToggle: fn() },
   argTypes: {
     action: {
       control: "radio",

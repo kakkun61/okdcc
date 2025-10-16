@@ -30,15 +30,49 @@ export const Primary: Story = {
         number: Dcc.createFunctionNumber(1),
         label: "Light",
         image: lightImage,
+        stateType: "toggle",
       },
-      { number: Dcc.createFunctionNumber(2), label: "Horn" },
-      { number: Dcc.createFunctionNumber(3), label: "Bell" },
-      { number: Dcc.createFunctionNumber(4), label: "Wiper" },
-      { number: Dcc.createFunctionNumber(5), label: "Coupler" },
-      { number: Dcc.createFunctionNumber(6), label: "Sound" },
-      { number: Dcc.createFunctionNumber(7), label: "Smoke" },
-      { number: Dcc.createFunctionNumber(8), label: "Music" },
-      { number: Dcc.createFunctionNumber(9), label: "Extremely Too Long Name" },
+      {
+        number: Dcc.createFunctionNumber(2),
+        label: "Horn",
+        stateType: "momentary",
+      },
+      {
+        number: Dcc.createFunctionNumber(3),
+        label: "Bell",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(4),
+        label: "Wiper",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(5),
+        label: "Coupler",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(6),
+        label: "Sound",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(7),
+        label: "Smoke",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(8),
+        label: "Music",
+        stateType: "toggle",
+      },
+      {
+        number: Dcc.createFunctionNumber(9),
+        label:
+          "Extremely Too Long Long Long Long Long Long Long Long Long Long Name",
+        stateType: "toggle",
+      },
     ],
   },
 };

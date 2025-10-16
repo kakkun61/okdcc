@@ -1,7 +1,7 @@
 import React from "react";
 import "./variables.css";
 
-import { Button,ButtonProps } from "./RadioButtonGroup/Button";
+import { Button, ButtonProps } from "./RadioButtonGroup/Button";
 import { updateComponentPropsRecursively } from "./lib";
 
 export interface RadioButtonGroupProps {
@@ -26,12 +26,20 @@ export const RadioButtonGroup = ({
     Button,
     children,
     (props: ButtonProps): Partial<ButtonProps> => ({
-      state: state === "disabled" ? "disabled" : props.id === selected ? "selected" : props.state,
-      onClick: props.id ===selected? undefined:() => {
-        props.onClick?.();
-        setSelected(props.id);
-        onActivate?.(props.id);
-      },
+      state:
+        state === "disabled"
+          ? "disabled"
+          : props.id === selected
+            ? "selected"
+            : props.state,
+      onClick:
+        props.id === selected
+          ? undefined
+          : () => {
+              props.onClick?.();
+              setSelected(props.id);
+              onActivate?.(props.id);
+            },
     }),
   );
   return (

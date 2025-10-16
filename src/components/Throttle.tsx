@@ -11,16 +11,18 @@ import * as Dcc from "@/lib/dcc";
 import Image from "next/image";
 import { RadioButtonGroup } from "./RadioButtonGroup";
 import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
+import { FunctionInfo, mmToPx } from "./lib";
+import { ToggleButton } from "./ToggleButton";
 
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
-  functionInfos: Dcc.FunctionInfo[];
+  functionInfos: FunctionInfo[];
   onClickSpeedUp?: () => void;
   onClickSpeedDown?: () => void;
   onClickForward?: () => void;
   onClickBackward?: () => void;
   onClickEmergencyStop?: () => void;
-  onClickFunctionButton?: (functionInfo: Dcc.FunctionInfo) => void;
+  onClickFunctionButton?: (functionInfo: FunctionInfo) => void;
 }
 
 export const Throttle = ({
@@ -33,7 +35,6 @@ export const Throttle = ({
   onClickEmergencyStop,
   onClickFunctionButton,
 }: ThrottleProps) => {
-  const functionButtonImageSize = 50;
   return (
     <div className="throttle">
       <div className="meters">
@@ -90,26 +91,44 @@ export const Throttle = ({
         </div>
       </div>
       <div className="function-buttons">
-        {functionInfos.map((info) => (
-          <button
-            role="button"
-            className="function-button"
-            onClick={() => onClickFunctionButton?.(info)}
-          >
-            <div className="function-button-image">
-              {info.image && (
-                <Image
-                  src={info.image}
-                  alt={info.label}
-                  width={functionButtonImageSize}
-                  height={functionButtonImageSize}
-                  priority={false}
-                />
-              )}
-            </div>
-            <div className="function-button-label">{info.label}</div>
-          </button>
-        ))}
+        {functionInfos.map((info) => {
+          const imageDiv = (() => {
+            const functionButtonImageSize = 15;
+            return (
+              <div>
+                {info.image && (
+                  <Image
+                    src={info.image}
+                    alt={info.label}
+                    width={mmToPx(functionButtonImageSize)}
+                    height={mmToPx(functionButtonImageSize)}
+                    priority={false}
+                  />
+                )}
+              </div>
+            );
+          })();
+          const style = "height: 30mm; flex-direction: column;";
+          if (info.stateType === "toggle") {
+            return (
+              <ToggleButton style={style}>
+                {imageDiv}
+                <div className="function-button-label">{info.label}</div>
+              </ToggleButton>
+            );
+          }
+          if (info.stateType === "momentary") {
+            return (
+              <Button
+                onClick={() => onClickFunctionButton?.(info)}
+                style={style}
+              >
+                {imageDiv}
+                <div className="function-button-label">{info.label}</div>
+              </Button>
+            );
+          }
+        })}
       </div>
       <style jsx>{`
         .throttle {
@@ -149,7 +168,6 @@ export const Throttle = ({
           margin-top: var(--gap-medium);
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          grid-template-rows: auto;
           row-gap: var(--gap-medium);
           column-gap: var(--gap-medium);
         }
@@ -164,13 +182,7 @@ export const Throttle = ({
           cursor: pointer;
         }
 
-        .function-button-image {
-          height: ${functionButtonImageSize}px;
-          flex: 0 0 ${functionButtonImageSize}px;
-        }
-
         .function-button-label {
-          margin-top: var(--gap-small);
           flex: 0 0 auto;
           overflow: hidden;
           text-overflow: ellipsis;
