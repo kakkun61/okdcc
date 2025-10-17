@@ -17,6 +17,7 @@ import { ToggleButton } from "./ToggleButton";
 export interface ThrottleProps {
   trainName: Dcc.TrainName;
   functionInfos: FunctionInfo[];
+  ref?: React.Ref<HTMLDivElement>;
   style?: string;
   onClickSpeedUp?: () => void;
   onClickSpeedDown?: () => void;
@@ -29,6 +30,7 @@ export interface ThrottleProps {
 export const Throttle = ({
   functionInfos,
   trainName,
+  ref,
   style,
   onClickSpeedUp,
   onClickSpeedDown,
@@ -38,7 +40,7 @@ export const Throttle = ({
   onClickFunctionButton,
 }: ThrottleProps) => {
   return (
-    <div className="throttle">
+    <div className="throttle" ref={ref}>
       <div className="meters">
         <SpeedMeter
           speed={0}
