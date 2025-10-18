@@ -1,0 +1,14 @@
+@import "./variables.css";
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  height: 100vh;
+  font-family: var(--font-family);
+  margin: 0;
+  padding: var(--gap-medium);
+  box-sizing: border-box;
+}

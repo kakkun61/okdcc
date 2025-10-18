@@ -1,0 +1,51 @@
+:root {
+  --background-color: white;
+
+  --gap-small: 1mm;
+  --gap-medium: 2mm;
+  --gap-large: 8mm;
+
+  --font-family: sans-serif;
+  --font-size-medium: 1rem;
+  --font-size-large: calc(var(--font-size-medium) * 1.2);
+  --font-size-xlarge: calc(var(--font-size-medium) * 1.5);
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+
+  /* --font-size-medium が 16px だと思ってレイアウトを組んでいく */
+  --font-size-default: 16px;
+  /* フォントサイズに依存するレイアウトのサイズで使用する比率 */
+  --font-size-ratio: calc(var(--font-size-medium) / var(--font-size-default));
+
+  --color: black;
+
+  --button-padding-vertical: 0.4em;
+  --button-padding-horizontal: 1.2em;
+  --button-border-radius: 3em;
+  --button-font-size: var(--font-size-medium);
+  --button-font-weight: var(--font-weight-bold);
+  --button-line-height: 1.6;
+  --button-background-color: hsl(41deg 100% 95%);
+  --button-background-color-hover: hsl(
+    from var(--button-background-color) h s calc(l * 0.8)
+  );
+  --button-background-color-active: hsl(
+    from var(--button-background-color) h s calc(l * 0.9)
+  );
+  --button-color: var(--color);
+  --button-color-disabled: hsl(from var(--color) h s 50%);
+
+  --toggle-button-ring-color: hsl(
+    from var(--button-background-color) h s calc(l * 0.8)
+  );
+  --toggle-button-ring-color-selected: hsl(
+    from var(--button-background-color) h s calc(l * 0.5)
+  );
+  --toggle-button-ring-width: 0.6mm;
+  --toggle-button-ring-gap: 0.2mm;
+
+  --button-group-gap: 0.5mm;
+
+  --throttle-max-width: 150mm;
+  --throttle-min-width: 120mm;
+}
