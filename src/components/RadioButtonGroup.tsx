@@ -9,7 +9,10 @@ export interface RadioButtonGroupProps {
   style?: string;
   selected?: string;
   children: React.ReactNode;
-  onActivate?: (id: string) => void;
+  onActivate?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    id: string,
+  ) => void;
 }
 
 export const RadioButtonGroup = ({
@@ -35,10 +38,10 @@ export const RadioButtonGroup = ({
       onClick:
         props.id === selected
           ? undefined
-          : () => {
-              props.onClick?.();
+          : (event) => {
+              props.onClick?.(event);
               setSelected(props.id);
-              onActivate?.(props.id);
+              onActivate?.(event, props.id);
             },
     }),
   );

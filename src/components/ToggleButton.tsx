@@ -7,8 +7,11 @@ export interface ToggleButtonProps {
   action?: "hover" | "active" | "focus" | null;
   style?: string;
   children: React.ReactNode;
-  onClick?: () => void;
-  onToggle?: (state: "default" | "selected") => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onToggle?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    state: "default" | "selected",
+  ) => void;
 }
 
 export const ToggleButton = ({
@@ -27,11 +30,11 @@ export const ToggleButton = ({
       type="button"
       className={`toggle ${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={initialState === "disabled"}
-      onClick={() => {
+      onClick={(event) => {
         const newState = state === "default" ? "selected" : "default";
         setState(newState);
-        onToggle?.(newState);
-        onClick?.();
+        onToggle?.(event, newState);
+        onClick?.(event);
       }}
     >
       {children}

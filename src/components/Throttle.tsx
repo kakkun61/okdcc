@@ -7,7 +7,7 @@ import { Button } from "./Button";
 import { Button as ButtonGroupButton } from "./ButtonGroup/Button";
 import { ButtonGroup } from "./ButtonGroup";
 import { SpeedMeter } from "./SpeedMeter";
-import * as Dcc from "@/lib/dcc";
+import * as Dcc from "@/logic";
 import Image from "next/image";
 import { RadioButtonGroup } from "./RadioButtonGroup";
 import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
@@ -19,12 +19,25 @@ export interface ThrottleProps {
   functionInfos: FunctionInfo[];
   ref?: React.Ref<HTMLDivElement>;
   style?: string;
-  onClickSpeedUp?: () => void;
-  onClickSpeedDown?: () => void;
-  onClickForward?: () => void;
-  onClickBackward?: () => void;
-  onClickEmergencyStop?: () => void;
-  onClickFunctionButton?: (functionInfo: FunctionInfo) => void;
+  onClickSpeedUp?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
+  onClickSpeedDown?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
+  onClickForward?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
+  onClickBackward?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
+  onClickEmergencyStop?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => void;
+  onClickFunctionButton?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    functionInfo: FunctionInfo,
+  ) => void;
 }
 
 export const Throttle = ({
@@ -133,7 +146,7 @@ export const Throttle = ({
             return (
               <Button
                 key={info.number}
-                onClick={() => onClickFunctionButton?.(info)}
+                onClick={(event) => onClickFunctionButton?.(event, info)}
                 style={style}
               >
                 {imageDiv}

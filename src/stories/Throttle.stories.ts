@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import "@/components/default.css";
 import { Throttle } from "@/components/Throttle";
-import * as Dcc from "@/lib/dcc";
+import * as Dcc from "@/logic";
 import lightImage from "@/assets/light.png";
 
 const meta = {

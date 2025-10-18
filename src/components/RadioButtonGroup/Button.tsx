@@ -5,7 +5,7 @@ export interface ButtonProps {
   state?: "default" | "disabled" | "selected";
   action?: "hover" | "active" | "focus" | null;
   style?: string;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   children: React.ReactNode;
 }
 

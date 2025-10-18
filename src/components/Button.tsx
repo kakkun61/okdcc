@@ -5,7 +5,9 @@ export interface ButtonProps {
   action?: "hover" | "active" | "focus" | null;
   style?: string;
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onPointerDown?: (event: React.PointerEvent<HTMLButtonElement>) => void;
+  onPointerUp?: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }
 
 export const Button = ({
@@ -14,6 +16,8 @@ export const Button = ({
   style = "",
   children,
   onClick,
+  onPointerDown,
+  onPointerUp,
 }: ButtonProps) => {
   return (
     <button
@@ -21,6 +25,8 @@ export const Button = ({
       className={`${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={state === "disabled"}
       onClick={onClick}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
     >
       {children}
       <style jsx>{buttonStyle}</style>

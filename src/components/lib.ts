@@ -1,9 +1,12 @@
+// components/lib.ts はプロジェクトの logic.ts に依存してもよい
+// React や Next.js に依存してもよい
+
 import React from "react";
 import { StaticImageData } from "next/image";
 import css from "styled-jsx/css";
 
-import * as dcc from "@/lib/dcc";
-import "./variables.css";
+import * as logic from "@/logic";
+import lightImage from "@/assets/light.png";
 
 export const updateComponentPropsRecursively = (
   component:
@@ -54,7 +57,33 @@ export const updateComponentPropsRecursively = (
   }
 };
 
-export type FunctionInfo = dcc.FunctionInfo<StaticImageData>;
+const builtinImages = {
+  light: lightImage,
+};
+
+export type FunctionInfo = {
+  label: string;
+  number: logic.FunctionNumber;
+  image?: StaticImageData;
+  stateType: "momentary" | "toggle";
+};
+
+export const makeFunctionInfo = (info: logic.FunctionInfo): FunctionInfo => ({
+  label: info.label,
+  number: info.number,
+  image:
+    info?.image &&
+    info.image.kind === "builtin" &&
+    info.image.id in builtinImages
+      ? builtinImages[info.image.id as keyof typeof builtinImages]
+      : undefined,
+  stateType: info.stateType,
+});
+
+export type ThrottleInfo = {
+  trainInfo: logic.TrainName;
+  functionInfos: FunctionInfo[];
+};
 
 // TODO active と selected を分ける
 // active は saturation を hover より高く
