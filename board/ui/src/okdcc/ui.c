@@ -7,10 +7,10 @@ struct view {
 };
 
 struct dcc_ui_Model_Command dcc_ui_init(lv_indev_t *buttonsIndev) {
-  return (struct dcc_ui_Model_Command){ .model = (struct dcc_ui_Model){ .buttonsIndev = buttonsIndev,
-                                                                        .tag = dcc_ui_MonitorModelTag,
-                                                                        .model.monitorModel.packets = { { 0 } } },
-                                        .command = (struct dcc_ui_Command){ .tag = dcc_ui_NoneCommandTag } };
+  return (struct dcc_ui_Model_Command) { .model = (struct dcc_ui_Model) { .buttonsIndev = buttonsIndev,
+                                                                          .tag = dcc_ui_MonitorModelTag,
+                                                                          .model.monitorModel.packets = { { 0 } } },
+                                         .command = (struct dcc_ui_Command) { .tag = dcc_ui_NoneCommandTag } };
 }
 
 void packetList_cb(lv_event_t *event) {

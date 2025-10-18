@@ -71,7 +71,7 @@ dcc_TimeMicroSec const dcc_maxOneHalfBitReceivedPeriodDiff = 6UL;
 static unsigned long uldiff(unsigned long const a, unsigned long const b) { return a > b ? a - b : b - a; }
 
 struct dcc_SignalBuffer dcc_initializeSignalBuffer(dcc_TimeMicroSec *buffer, size_t const size) {
-  return (struct dcc_SignalBuffer){ .buffer = buffer, .size = size, .written = 0, .writeIndex = 0, .readIndex = 0 };
+  return (struct dcc_SignalBuffer) { .buffer = buffer, .size = size, .written = 0, .writeIndex = 0, .readIndex = 0 };
 }
 
 enum dcc_Result dcc_writeSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec const signal) {
@@ -93,7 +93,7 @@ enum dcc_Result dcc_readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_
 }
 
 struct dcc_SignalStreamParser dcc_initializeSignalStreamParser(void) {
-  return (struct dcc_SignalStreamParser){ { 0 }, 0 };
+  return (struct dcc_SignalStreamParser) { { 0 }, 0 };
 }
 
 enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const parser, dcc_TimeMicroSec const signal,
@@ -128,7 +128,7 @@ enum dcc_StreamParserResult dcc_feedSignal(struct dcc_SignalStreamParser *const 
 }
 
 struct dcc_BitStreamParser dcc_initializeBitStreamParser(void) {
-  return (struct dcc_BitStreamParser){
+  return (struct dcc_BitStreamParser) {
     .state = dcc_BitStreamParserState_InPreamble,
     .inPreamble = { .oneBitsCount = 0 },
     .bytes = { 0 },
@@ -505,9 +505,9 @@ enum dcc_Result dcc_parseSpeedStep128ControlPacket(
 }
 
 struct dcc_Decoder dcc_initializeDecoder(dcc_TimeMicroSec *signalBufferValues, size_t const signalBufferSize) {
-  return (struct dcc_Decoder){ .signalBuffer = dcc_initializeSignalBuffer(signalBufferValues, signalBufferSize),
-                               .signalStreamParser = dcc_initializeSignalStreamParser(),
-                               .bitStreamParser = dcc_initializeBitStreamParser() };
+  return (struct dcc_Decoder) { .signalBuffer = dcc_initializeSignalBuffer(signalBufferValues, signalBufferSize),
+                                .signalStreamParser = dcc_initializeSignalStreamParser(),
+                                .bitStreamParser = dcc_initializeBitStreamParser() };
 }
 
 enum dcc_StreamParserResult dcc_decode(struct dcc_Decoder *const decoder, dcc_TimeMicroSec const signal,

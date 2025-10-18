@@ -1,16 +1,25 @@
 {
-  description = "Description for the project";
+  description = "An Implementation of Digital Command Control for Model Railroads";
 
   inputs = {
-    flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = inputs@{ nixpkgs, flake-parts, ... }:
+  outputs =
+    inputs@{ nixpkgs, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [];
+      imports = [ ];
       systems = nixpkgs.lib.systems.flakeExposed;
-      perSystem = { config, self', inputs', pkgs, system, ... }: 
+      perSystem =
+        {
+          config,
+          self',
+          inputs',
+          pkgs,
+          system,
+          ...
+        }:
         let
           web-packages = with pkgs; [
             nodejs_24
@@ -30,18 +39,26 @@
             valgrind
             xorg.libX11
           ];
-        in{
-        devShells.default = pkgs.mkShell {
-          packages = web-packages ++ board-packages;
-        };
-        apps = {
-          unit = {
-            type = "app";
-            program = "${self'.packages.${system}.default}/bin/unit";
+        in
+        {
+          devShells.default = pkgs.mkShell {
+            packages =
+              (with pkgs; [
+                nixfmt
+                treefmt
+                yamlfmt
+              ])
+              ++ web-packages
+              ++ board-packages;
           };
+          apps = {
+            unit = {
+              type = "app";
+              program = "${self'.packages.${system}.default}/bin/unit";
+            };
+          };
+          formatter = pkgs.treefmt;
         };
-        formatter = pkgs.nixfmt;
-      };
-      flake = {};
+      flake = { };
     };
 }

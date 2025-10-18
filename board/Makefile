@@ -60,15 +60,11 @@ upload.app.monitor: build.app.monitor
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT) --target upload --upload-port $(PORT)
 
 .PHONY: format
-format: format.c format.nix
+format: format.c
 
 .PHONY: format.c
 format.c:
 	clang-format --style=file -i $$(git ls-files | grep -G '.*\.\(c\|cc\|h\)$$' | grep --invert-match '.*icon.*')
-
-.PHONY: format.nix
-format.nix:
-	nixpkgs-fmt $$(git ls-files | grep '.*\.nix$$')
 
 .PHONY: doc
 doc: doc.en doc.ja
