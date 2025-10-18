@@ -17,43 +17,43 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../../../../doc/index.rst:5 9e967b1d61cd416f805fb3742af4ddd9
+#: ../../../../../doc/index.rst:5 fa072367f3ea47edab4491382214b19d
 msgid "Okdcc Documentation"
 msgstr "Okdcc ドキュメント"
 
-#: ../../../../../doc/index.rst:11 21db231eb8d64ecb8a6cc203afa57eca
+#: ../../../../../doc/index.rst:11 04b88519b3b64f5a82c2dab1149e9e24
 msgid "Logic"
 msgstr "ロジック"
 
-#: ../../../../../doc/index.rst:14 4201b21ef22f47448d16953b2de24551
+#: ../../../../../doc/index.rst:14 ea22f8a5797145158c54249b3109524f
 msgid "Decode"
 msgstr "デコード"
 
-#: ../../../../../doc/index.rst:0 fe54ec8990db41b1826335cf043e694e
-#: 8c4fe58446f34838b9384a77e0399a25 630743bfe4844abb92fd3a2e1780667c
-#: 7fc5332d090a4c1a9e1077fc4b7ebd60 32f086bfb7a8413d8ecdc3b14fe64926
-#: 8f62f9f7ed734258b4e2246a37937b44 227a4c126c5245dd96d28678bf7e67de
+#: ../../../../../doc/index.rst:0 eff26326b0114dbcb1922f4c7f6568c3
+#: c41a4de8aec44542b44bc9212dc4d491 ff92678903184ced98890bca37ae1f7a
+#: d138b4eaea9544948e9da6a8016310f2 39db27e0d90a4be18f88dc2581a64b39
+#: 680a017e628e453e98abaff1ef2c35e7 590e84cfbe274ec4b923afefe04c19f2
 msgid "Parameters"
 msgstr ""
 
-#: ../../../../../doc/index.rst:0 8be9998e21494f7b95b2bdd691b34d14
-#: 0e4916c23a15487d8dd2459b8a0c0ace d5e47f513c724687ba163da8a0a4c281
-#: a9d79fe9c4474c369f73fb5a66452433 6f267e60c13e42f29fe3c3df72ca9a60
-#: 0a0ffb0e68e14aa383f58e377960a0f4 0a966cf8b51649bf945ccdab10d74bfe
-#: 1a30107c048146caaea1cb85682dc9f8 f92121419d504a6bb620af7d394228d1
+#: ../../../../../doc/index.rst:0 28330448dba647bd9a95a7fef18c95d4
+#: dddbd9b302794813936a2b0f57830fe3 ef5de19e78b94b39b622c08cbbd98826
+#: defbb2ab73b74e4687c35ce05df897fe 139b1820978d4a3bad59e3abc960d772
+#: 3f752bfe055a442ab8e1c2d5854e1ca0 fc99dde425a7409cbd0202a5a2f9cc70
+#: dc16035daf4d4a5a9caa4b3cafbdc5da 282f269c5a2d4e79a38165c3a1750866
 msgid "Returns"
 msgstr ""
 
-#: ../../../../../doc/index.rst:46 5ed5c488866d4099b9f649d948809205
+#: ../../../../../doc/index.rst:46 65917e09f0f643fe853dd98a578657f3
 msgid "Data"
 msgstr "データ"
 
-#: ../../../../../doc/index.rst:0 0ac164706b634724b8ea0b67bdb0494a
-#: d0b3507677274cee95ccf77a3d30885a 928d17d78c174a25aa3c2f0c87bc83c8
-#: d42f4a7c678c4ddda51c9b8f1e760dff 477e793943a141f298b479c93536b575
-#: a4c28508df564777a7ec43ebad723a1d 1824767cc9d242d0a95f91b92e048ce0
-#: a9b878e429d149d7b6a4ade259c5ace6 f70839a090f440ef9b2745898ec5b505
-#: 6275d250f7de42249fc95df1f21cb04e df7a162c0a4d4c02923f1c265fdc2ac5
-#: ab2042aa43d14c1db4537594ec4b12fb
+#: ../../../../../doc/index.rst:0 7389516ddc0348ccb34137d812ac2dbb
+#: 4103b7e08f81457985a90c1786a78c83 5a6fd734e9ea4b08b0baa6464403abd0
+#: 966d0647ee654028a6e8418d40f9b161 30b6a78163e4475e8190487fac186ea6
+#: 9289016f82a945b697b1abf7e7a758c9 1920dff983e04b2890748e46dae0f91f
+#: 4b7b39d934c14d16b96ce5ac832b18e1 3832e415bfa14e299715c9781c9e50cc
+#: d7b0e99fa5a64c7f945db86a687e314b 4b253d164c2043deac31af20dd8bae0c
+#: 2b034237b30e4ebb97abc6078189b568
 msgid "Public Members"
 msgstr ""
