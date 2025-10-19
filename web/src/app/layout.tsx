@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import "@/components/default.css";
-import { AppContext } from "@/components/AppContext";
 
 export const metadata: Metadata = {
   title: "OKDCC Web Throttle",
@@ -15,9 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <AppContext>{children}</AppContext>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

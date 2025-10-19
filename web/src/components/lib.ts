@@ -4,8 +4,9 @@
 import React from "react";
 import { StaticImageData } from "next/image";
 import css from "styled-jsx/css";
+import * as Next from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-import * as logic from "@/logic";
+import * as Logic from "@/logic";
 import lightImage from "@/assets/light.png";
 
 export const updateComponentPropsRecursively = (
@@ -63,17 +64,17 @@ const builtinImages = {
 
 export type FunctionInfo = {
   label: string;
-  number: logic.FunctionNumber;
+  number: Logic.FunctionNumber;
   image?: StaticImageData;
   stateType: "momentary" | "toggle";
 };
 
-export const makeFunctionInfo = (info: logic.FunctionInfo): FunctionInfo => ({
+export const makeFunctionInfo = (info: Logic.FunctionInfo): FunctionInfo => ({
   label: info.label,
   number: info.number,
   image:
     info?.image &&
-    info.image.kind === "builtin" &&
+    info.image.type === "builtin" &&
     info.image.id in builtinImages
       ? builtinImages[info.image.id as keyof typeof builtinImages]
       : undefined,
@@ -81,7 +82,7 @@ export const makeFunctionInfo = (info: logic.FunctionInfo): FunctionInfo => ({
 });
 
 export type ThrottleInfo = {
-  trainInfo: logic.TrainName;
+  trainInfo: Logic.TrainName;
   functionInfos: FunctionInfo[];
 };
 

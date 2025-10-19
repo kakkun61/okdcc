@@ -7,7 +7,7 @@ import { Button } from "./Button";
 import { Button as ButtonGroupButton } from "./ButtonGroup/Button";
 import { ButtonGroup } from "./ButtonGroup";
 import { SpeedMeter } from "./SpeedMeter";
-import * as Dcc from "@/logic";
+import * as Logic from "@/logic";
 import Image from "next/image";
 import { RadioButtonGroup } from "./RadioButtonGroup";
 import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
@@ -15,7 +15,7 @@ import { FunctionInfo, mmToPx } from "./lib";
 import { ToggleButton } from "./ToggleButton";
 
 export interface ThrottleProps {
-  trainName: Dcc.TrainName;
+  trainName: Logic.TrainName;
   functionInfos: FunctionInfo[];
   ref?: React.Ref<HTMLDivElement>;
   style?: string;

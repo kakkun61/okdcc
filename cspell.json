@@ -2,6 +2,7 @@
   "version": "0.2",
   "language": "en",
   "words": [
+    "autodocs",
     "cachix",
     "doxyfile",
     "espressif",
@@ -13,6 +14,7 @@
     "okdcc",
     "pthread",
     "valgrind",
+    "xlarge",
     "xorg"
   ],
   "flagWords": [],

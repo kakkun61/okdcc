@@ -7,14 +7,18 @@ type Brand<T, TBrand> = T & { [__brand]: TBrand };
 
 export type FunctionNumber = Brand<number, "FunctionNumber">;
 
-export const createFunctionNumber = (num: number): FunctionNumber =>
-  0 <= num && num <= maxFunctionNumber
-    ? (num as FunctionNumber)
+export const createFunctionNumber = (number: number): FunctionNumber =>
+  0 <= number && number <= maxFunctionNumber
+    ? (number as FunctionNumber)
     : (() => {
         throw new Error(
           `FunctionNumber must be between 0 and ${maxFunctionNumber}`,
         );
       })();
+
+export const parseFunctionNumber = (value: any): FunctionNumber => {
+  return createFunctionNumber(value);
+};
 
 export const maxFunctionNumber = 68 as FunctionNumber;
 
@@ -29,11 +33,15 @@ export const createTrainName = (name: string): TrainName =>
         throw new Error("TrainName must be non-empty");
       })();
 
-export type ImageId = { kind: "builtin"; id: string };
+export const parseTrainName = (value: any): TrainName => {
+  return createTrainName(value);
+};
 
-export const createBuiltinImageId = (id: string): ImageId => ({
-  kind: "builtin",
-  id,
+export type ImageId = { type: "builtin"; id: string };
+
+export const parseImageId = (value: any): ImageId => ({
+  type: value["type"],
+  id: value["id"],
 });
 
 export type FunctionInfo = {
@@ -42,6 +50,13 @@ export type FunctionInfo = {
   image?: ImageId;
   stateType: "momentary" | "toggle";
 };
+
+export const parseFunctionInfo = (value: any): FunctionInfo => ({
+  label: value["label"],
+  number: parseFunctionNumber(value["number"]),
+  image: typeof value["image"] === "undefined" ? undefined : parseImageId(value["image"]),
+  stateType: value["stateType"],
+});
 
 export type Speed = Speed28 | Speed128;
 
@@ -73,63 +88,71 @@ export const createSpeed128 = (speed: "Stop" | "E-Stop" | number): Speed128 => {
   throw new Error("Speed128 must be 'Stop', 'E-Stop', or between 1 and 128");
 };
 
-export type App = {
-  state: AppState;
-};
-
-export type AppState = AppStateThrottle | AppStateDebug;
-
-export type AppStateThrottle = {
-  type: "AppStateThrottle";
-  throttleStates: ThrottleState[];
-};
-
-export type AppStateDebug = {
-  type: "AppStateDebug";
+export type ThrottleInfo = {
+  trainName: TrainName;
+  functionInfos: FunctionInfo[];
 };
 
 export type ThrottleState = {
-  throttleInfo: {};
+  throttleInfo: ThrottleInfo;
   direction: "forward" | "backward";
   speed: Speed;
 };
 
-export const initialApp: App = {
-  state: {
-    type: "AppStateDebug",
-  },
-};
+export const parseThrottleInfo = (value: any): ThrottleInfo => ({
+  trainName: parseTrainName(value["trainName"]),
+  functionInfos: value["functionInfos"].map(parseFunctionInfo),
+});
 
-export const moveToThrottleState = (
-  _: App,
-  throttleStates: { throttleInfo: {} }[],
-): App => {
-  return {
-    state: {
-      type: "AppStateThrottle",
-      throttleStates: throttleStates.map((ts) => ({
-        throttleInfo: ts.throttleInfo,
-        direction: "forward",
-        speed: "Stop",
-      })),
+export const exampleThrottleInfo: ThrottleInfo = {
+  trainName: createTrainName("DD-51"),
+  functionInfos: [
+    {
+      number: createFunctionNumber(1),
+      label: "Light",
+      image: parseImageId({ type: "builtin", id: "light" }),
+      stateType: "toggle",
     },
-  };
+    {
+      number: createFunctionNumber(2),
+      label: "Horn",
+      stateType: "momentary",
+    },
+    {
+      number: createFunctionNumber(3),
+      label: "Bell",
+      stateType: "toggle",
+    },
+    {
+      number: createFunctionNumber(4),
+      label: "Squeal",
+      stateType: "toggle",
+    },
+    {
+      number: createFunctionNumber(5),
+      label: "Coupler",
+      stateType: "toggle",
+    },
+    {
+      number: createFunctionNumber(6),
+      label: "Mute",
+      stateType: "toggle",
+    },
+    {
+      number: createFunctionNumber(7),
+      label: "Smoke",
+      stateType: "toggle",
+    },
+    {
+      number: createFunctionNumber(8),
+      label: "Generator",
+      stateType: "toggle",
+    },
+  ],
 };
 
-export type AppAction = {
-  type: "start";
-  throttleStates: { throttleInfo: {} }[];
-};
-
-export const appDispatch = (app: App, action: AppAction) => {
-  switch (app.state.type) {
-    case "AppStateDebug":
-      switch (action.type) {
-        case "start":
-          return moveToThrottleState(app, action.throttleStates);
-      }
-  }
-  throw new Error(
-    `Unhandled action: {app: ${JSON.stringify(app)}, action: ${JSON.stringify(action)}}`,
-  );
-};
+export const exampleThrottleInfos: ThrottleInfo[] = [
+  exampleThrottleInfo,
+  { ...exampleThrottleInfo, trainName: createTrainName("C57") },
+  { ...exampleThrottleInfo, trainName: createTrainName("JRW 221") },
+];
