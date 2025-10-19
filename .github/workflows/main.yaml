@@ -2,7 +2,6 @@ on:
   push:
     branches: [master]
   pull_request:
-    branches: [master]
 
 jobs:
   build:
@@ -14,7 +13,7 @@ jobs:
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-23.11
-      - run: nix develop --command make build
+      - run: nix develop --command make -C board build
 
   test:
     runs-on: ubuntu-latest
@@ -25,4 +24,4 @@ jobs:
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-23.11
-      - run: nix develop --command make test
+      - run: nix develop --command make -C board test
