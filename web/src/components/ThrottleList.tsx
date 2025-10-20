@@ -22,12 +22,8 @@ export const ThrottleList = ({
 
       const listWidth = throttleListRef.current.clientWidth;
       const throttleWidth = lastThrottleRef.current.offsetWidth;
-      const gap = parseFloat(
-        getComputedStyle(throttleListRef.current).getPropertyValue("gap") ||
-          "0",
-      );
 
-      return Math.max(0, listWidth - throttleWidth - gap);
+      return Math.max(0, listWidth - throttleWidth);
     };
 
     setSpacerWidth(calculateSpacerWidth());
@@ -35,10 +31,8 @@ export const ThrottleList = ({
     const resizeObserver = new ResizeObserver(() => {
       setSpacerWidth(calculateSpacerWidth());
     });
-    if (throttleListRef.current) {
+    if (throttleListRef.current && lastThrottleRef.current) {
       resizeObserver.observe(throttleListRef.current);
-    }
-    if (lastThrottleRef.current) {
       resizeObserver.observe(lastThrottleRef.current);
     }
 
