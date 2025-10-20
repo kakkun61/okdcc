@@ -1,32 +1,46 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import * as Io from "@/io";
+import * as Logic from "@/logic";
 
 export default () => {
-  const [throttleInfoIds, setThrottleInfoIds] = useState<Io.ThrottleInfoId[]>(
-    [],
-  );
+  const [throttleInfoIds, setThrottleInfoIds] = useState<
+    Io.ThrottleInfoId[] | undefined
+  >(undefined);
   useEffect(() => {
     setThrottleInfoIds(Io.readThrottleInfoIdsAll(localStorage));
   }, []);
   return (
     <>
       <h1>Debug Mode</h1>
-      <p>
-        <Link href="/throttle">Start</Link>
-      </p>
-      {throttleInfoIds.length === 0 ? (
-        <p>None</p>
-      ) : (
-        <ul>
-          {throttleInfoIds.map((id) => (
-            <li key={id}>{id}</li>
-          ))}
-        </ul>
-      )}
+      {(() => {
+        if (typeof throttleInfoIds === "undefined") {
+          return <p>Loading...</p>;
+        }
+        if (throttleInfoIds.length === 0) {
+          return <p>None</p>;
+        }
+        return (
+          <form method="get" action="/throttle">
+            <fieldset>
+              {throttleInfoIds.map((id) => (
+                <div key={id}>
+                  <input
+                    type="checkbox"
+                    id={id}
+                    name={Logic.throttlePageIdParamKey}
+                    value={id}
+                  />
+                  <label htmlFor={id}>{id}</label>
+                </div>
+              ))}
+              <input type="submit" />
+            </fieldset>
+          </form>
+        );
+      })()}
       <p>
         <button
           onClick={() => {

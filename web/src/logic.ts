@@ -54,7 +54,10 @@ export type FunctionInfo = {
 export const parseFunctionInfo = (value: any): FunctionInfo => ({
   label: value["label"],
   number: parseFunctionNumber(value["number"]),
-  image: typeof value["image"] === "undefined" ? undefined : parseImageId(value["image"]),
+  image:
+    typeof value["image"] === "undefined"
+      ? undefined
+      : parseImageId(value["image"]),
   stateType: value["stateType"],
 });
 
@@ -103,6 +106,8 @@ export const parseThrottleInfo = (value: any): ThrottleInfo => ({
   trainName: parseTrainName(value["trainName"]),
   functionInfos: value["functionInfos"].map(parseFunctionInfo),
 });
+
+export const throttlePageIdParamKey = "id";
 
 export const exampleThrottleInfo: ThrottleInfo = {
   trainName: createTrainName("DD-51"),

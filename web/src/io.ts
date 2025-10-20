@@ -67,9 +67,7 @@ export const writeThrottleInfos = (
   writeThrottleInfoIdsAll(storage, ids);
 };
 
-export const readThrottleInfosAll = (
-  storage: Storage,
-): ThrottleInfo[] => {
+export const readThrottleInfosAll = (storage: Storage): ThrottleInfo[] => {
   const ids = readThrottleInfoIdsAll(storage);
   return ids.map((id) => readThrottleInfo(storage, id));
 };
