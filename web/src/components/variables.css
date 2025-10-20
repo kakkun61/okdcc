@@ -48,4 +48,6 @@
 
   --throttle-max-width: 150mm;
   --throttle-min-width: 120mm;
+
+  --app-bar-height: 10mm;
 }

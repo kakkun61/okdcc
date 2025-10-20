@@ -1,14 +1,15 @@
 "use client";
 
+import Image from "next/image";
+import "material-symbols/rounded.css";
+
 import "./material-symbols.css";
 import "./variables.css";
-import "material-symbols/rounded.css";
 import { Button } from "./Button";
 import { Button as ButtonGroupButton } from "./ButtonGroup/Button";
 import { ButtonGroup } from "./ButtonGroup";
 import { SpeedMeter } from "./SpeedMeter";
 import * as Logic from "@/logic";
-import Image from "next/image";
 import { RadioButtonGroup } from "./RadioButtonGroup";
 import { Button as RadioButtonGroupButton } from "./RadioButtonGroup/Button";
 import { FunctionInfo, mmToPx } from "./lib";
