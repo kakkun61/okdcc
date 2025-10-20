@@ -44,6 +44,7 @@
           devShells.default = pkgs.mkShell {
             packages =
               (with pkgs; [
+                cspell
                 nixfmt
                 treefmt
                 yamlfmt
