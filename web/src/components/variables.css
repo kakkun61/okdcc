@@ -49,5 +49,10 @@
   --throttle-max-width: 150mm;
   --throttle-min-width: 120mm;
 
-  --app-bar-height: 10mm;
+  --app-bar-height: 16mm;
+  --app-bar-padding: var(--gap-medium);
+  --app-bar-button-background-color-hover: lightgray;
+  --app-bar-button-background-color-active: hsl(
+    from var(--app-bar-button-background-color-hover) h s calc(l * 0.9)
+  );
 }

@@ -1,25 +1,177 @@
 @import "./variables.css";
 
-* {
+html.app * {
   box-sizing: border-box;
 }
 
-html, body {
+html.app,
+html.app body {
   height: 100vh;
   width: 100vw;
   margin: 0;
   padding: 0;
 }
 
-body {
+html.app body {
   font-family: var(--font-family);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-main {
+html.app main {
   flex: 1 1 0;
   width: 100%;
   overflow: hidden;
+}
+
+/*
+ * components/Button.tsx
+ * components/ButtonGroup/Button.tsx
+ * components/RadioButtonGroup/Button.tsx
+ *
+ * (状態 × ユーザーの操作)→スタイル
+ *
+ * ```txt
+ *        | default disabled selected
+ * -------+---------------------------
+ * hover  | hover   disabled both
+ * active | active  disabled both
+ * focus  | focus   both     both
+ * ```
+ *
+ * :hover など疑似属性が優先される
+ * クラス属性が先、疑似属性が後
+ */
+button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--button-padding-vertical) var(--button-padding-horizontal);
+  border-style: none;
+  border-radius: var(--button-border-radius);
+  font-size: var(--button-font-size);
+  font-weight: var(--button-font-weight);
+  line-height: var(--button-line-height);
+  cursor: pointer;
+  color: var(--button-color);
+  background-color: var(--button-background-color);
+  overflow: clip;
+  text-overflow: ellipsis;
+}
+
+button.button.hover:not(:disabled) {
+  background-color: var(--button-background-color-hover);
+}
+
+button.button.active:not(:disabled) {
+  background-color: var(--button-background-color-active);
+}
+
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    background-color: var(--button-background-color-hover);
+  }
+}
+
+button.button:active:not(:disabled) {
+  background-color: var(--button-background-color-active);
+}
+
+button.button:disabled {
+  color: var(--button-color-disabled);
+  cursor: default;
+}
+
+/*
+ * components/ToggleButton.tsx
+ * components/RadioButtonGroup/Button.tsx
+ */
+button.toggle-button {
+  border: solid var(--toggle-button-ring-width) var(--toggle-button-ring-color);
+  box-shadow: inset 0 0 0 var(--toggle-button-ring-gap) var(--background-color);
+}
+
+button.toggle-button.selected {
+  border: solid var(--toggle-button-ring-width)
+    var(--toggle-button-ring-color-selected);
+}
+
+/*
+ * components/ButtonGroup/Button.tsx
+ * components/RadioButtonGroup/Button.tsx
+ */
+button.button-group-button {
+  min-width: 10mm;
+  margin-inline-end: var(--button-group-gap);
+  padding: var(--button-padding-vertical) var(--button-padding-horizontal);
+  border-style: none;
+  border-radius: 0;
+  /* grow */ flex: 1 /* shrink */ 1 /* basis */ 50%;
+}
+
+button.button-group-button:first-child {
+  border-start-start-radius: var(--button-border-radius);
+  border-end-start-radius: var(--button-border-radius);
+  border-inline-start-width: var(--button-border-width);
+}
+
+button.button-group-button:last-child {
+  margin-inline-end: 0;
+  border-start-end-radius: var(--button-border-radius);
+  border-end-end-radius: var(--button-border-radius);
+}
+
+button.button-group-button:first-child {
+  border-start-start-radius: var(--button-border-radius);
+  border-end-start-radius: var(--button-border-radius);
+  border-inline-start-width: var(--button-border-width);
+}
+
+button.button-group-button:last-child {
+  margin-inline-end: 0;
+  border-start-end-radius: var(--button-border-radius);
+  border-end-end-radius: var(--button-border-radius);
+}
+
+/*
+ * components/AppBar/Button.tsx
+ */
+.app-bar-button {
+  display: inline-block;
+  height: calc(var(--app-bar-height) - 2 * var(--app-bar-padding));
+  width: calc(var(--app-bar-height) - 2 * var(--app-bar-padding));
+  position: relative;
+}
+
+.app-bar-button > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.app-bar-button > .background {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+}
+
+@media (hover: hover) {
+  .app-bar-button:not(:disabled):has(> a:hover) > .background {
+    background-color: var(--app-bar-button-background-color-hover);
+  }
+}
+
+.app-bar-button:not(:disabled):has(> a:active) > .background {
+  background-color: var(--app-bar-button-background-color-active);
 }

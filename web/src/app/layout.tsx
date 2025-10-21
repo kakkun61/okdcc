@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import "@/components/default.css";
-import { AppBar } from "@/components/AppBar";
 
 export const metadata: Metadata = {
   title: "OKDCC Web Throttle",
@@ -14,13 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <AppBar />
-        <main>
-          {children}
-        </main>
-      </body>
+    <html lang="en" className="app">
+      <body>{children}</body>
     </html>
   );
 }

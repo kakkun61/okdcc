@@ -8,9 +8,12 @@ import * as Io from "@/io";
 import * as Ui from "@/components/lib";
 import { ThrottleProps } from "@/components/Throttle";
 import * as Logic from "@/logic";
+import { Page } from "@/components/Page";
 
 export default () => {
-  const [throttleInfos, setThrottleInfos] = useState<Io.ThrottleInfo[]>([]);
+  const [throttleInfos, setThrottleInfos] = useState<
+    Io.ThrottleInfo[] | undefined
+  >(undefined);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -21,12 +24,27 @@ export default () => {
       throttleInfoIds.map((id) => Io.readThrottleInfo(localStorage, id)),
     );
   }, [searchParams]);
+  if (typeof throttleInfos === "undefined") {
+    return (
+      <Page>
+        <p>Loading...</p>
+      </Page>
+    );
+  }
   if (throttleInfos.length === 0) {
-    return <p>No Throttle Infos</p>;
+    return (
+      <Page>
+        <p>No Throttle Infos</p>
+      </Page>
+    );
   }
   const throttlePropsList: ThrottleProps[] = throttleInfos.map((info) => ({
     trainName: info.trainName,
     functionInfos: info.functionInfos.map(Ui.makeFunctionInfo),
   }));
-  return <ThrottleList throttlePropsList={throttlePropsList} />;
+  return (
+    <Page>
+      <ThrottleList throttlePropsList={throttlePropsList} />
+    </Page>
+  );
 };

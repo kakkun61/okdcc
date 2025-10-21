@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import * as Io from "@/io";
 import * as Logic from "@/logic";
+import { Page } from "@/components/Page";
 
 export default () => {
   const [throttleInfoIds, setThrottleInfoIds] = useState<
@@ -13,7 +14,7 @@ export default () => {
     setThrottleInfoIds(Io.readThrottleInfoIdsAll(localStorage));
   }, []);
   return (
-    <>
+    <Page>
       <h1>Debug Mode</h1>
       {(() => {
         if (typeof throttleInfoIds === "undefined") {
@@ -51,6 +52,6 @@ export default () => {
           Save Example to Localstorage
         </button>
       </p>
-    </>
+    </Page>
   );
 };

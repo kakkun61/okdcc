@@ -1,7 +1,5 @@
 import React from "react";
 
-import { buttonStyle, toggleButtonStyle } from "./lib";
-
 export interface ToggleButtonProps {
   state?: "default" | "disabled" | "selected";
   action?: "hover" | "active" | "focus" | null;
@@ -28,7 +26,7 @@ export const ToggleButton = ({
   return (
     <button
       type="button"
-      className={`toggle ${state === "default" ? "" : state} ${action ?? ""}`}
+      className={`button toggle-button ${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={initialState === "disabled"}
       onClick={(event) => {
         const newState = state === "default" ? "selected" : "default";
@@ -38,8 +36,6 @@ export const ToggleButton = ({
       }}
     >
       {children}
-      <style jsx>{buttonStyle}</style>
-      <style jsx>{toggleButtonStyle}</style>
       <style jsx>{`button { ${style} }`}</style>
     </button>
   );

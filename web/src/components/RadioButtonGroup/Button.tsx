@@ -1,5 +1,3 @@
-import { buttonGroupButtonStyle, buttonStyle, toggleButtonStyle } from "../lib";
-
 export interface ButtonProps {
   id: string;
   state?: "default" | "disabled" | "selected";
@@ -19,14 +17,11 @@ export const Button = ({
   return (
     <button
       type="button"
-      className={`toggle ${state === "default" ? "" : state} ${action ?? ""}`}
+      className={`button toggle-button button-group-button ${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={state === "disabled"}
       onClick={onClick}
     >
       {children}
-      <style jsx>{buttonStyle}</style>
-      <style jsx>{toggleButtonStyle}</style>
-      <style jsx>{buttonGroupButtonStyle}</style>
       <style jsx>{`button { ${style} }`}</style>
     </button>
   );

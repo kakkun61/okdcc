@@ -1,5 +1,3 @@
-import { buttonStyle } from "./lib";
-
 export interface ButtonProps {
   state?: "default" | "disabled";
   action?: "hover" | "active" | "focus" | null;
@@ -22,14 +20,13 @@ export const Button = ({
   return (
     <button
       type="button"
-      className={`${state === "default" ? "" : state} ${action ?? ""}`}
+      className={`button ${state === "default" ? "" : state} ${action ?? ""}`}
       disabled={state === "disabled"}
       onClick={onClick}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
     >
       {children}
-      <style jsx>{buttonStyle}</style>
       <style jsx>{`button { ${style} }`}</style>
     </button>
   );
