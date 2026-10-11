@@ -8,7 +8,7 @@ build:
     - gettext
   jobs:
     install:
-      - pip install -r doc/requirements.txt
+      - pip install -r board/doc/requirements.txt
     build:
       html:
-        - make doc.rtd
+        - make -C board doc.rtd
