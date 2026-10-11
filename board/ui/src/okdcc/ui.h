@@ -2,60 +2,68 @@
 #define DCC_UI_H
 
 #include <lvgl.h>
+#include <stdbool.h>
 
-#define DCC_UI_PACKETS_SIZE 100
+/// \~english
+/// \brief The maximum number of packets shown in the packet list.
+///
+/// \~japanese
+/// \brief パケット一覧に表示するパケットの最大数。
+#define DCC_UI_PACKETS_CAPACITY 50
 
-enum dcc_ui_ModelTag {
-  dcc_ui_MonitorModelTag,
-  dcc_ui_SelectModelTag,
-  dcc_ui_ShowModelTag,
-};
-
-struct dcc_ui_MonitorModel {
-  char packets[28][DCC_UI_PACKETS_SIZE];
-};
-
+/// \~english
+/// \brief The state of the monitor UI.
+///
+/// \~japanese
+/// \brief モニター UI の状態。
 struct dcc_ui_Model {
   lv_indev_t *buttonsIndev;
-  enum dcc_ui_ModelTag tag;
-  union {
-    struct dcc_ui_MonitorModel monitorModel;
-  } model;
-};
-
-enum dcc_ui_ViewTag {
-  dcc_ui_StartViewTag,
-};
-
-struct dcc_ui_View {
-  enum dcc_ui_ViewTag tag;
+  lv_group_t *group;
+  lv_obj_t *statusButton;
+  lv_obj_t *statusLabel;
+  lv_obj_t *packetList;
+  unsigned long packetsCount;
+  unsigned long errorsCount;
+  /// \~english
+  /// \brief While paused, received packets are counted but not added to the list.
+  ///
+  /// \~japanese
+  /// \brief 一時停止中は受信したパケットを数えるが一覧には追加しない。
+  bool paused;
 };
 
 enum dcc_ui_MessageTag {
-  dcc_ui_NoneMessageTag,
+  dcc_ui_PacketReceivedMessageTag,
+  dcc_ui_DecodeFailedMessageTag,
+  dcc_ui_PauseToggledMessageTag,
 };
 
 struct dcc_ui_Message {
   enum dcc_ui_MessageTag tag;
+  union {
+    /// \~english
+    /// \brief The text of the received packet. It is copied by `dcc_ui_update`.
+    ///
+    /// \~japanese
+    /// \brief 受信したパケットの文字列。`dcc_ui_update` が複製する。
+    char const *packetText;
+  };
 };
 
-enum dcc_ui_CommandTag {
-  dcc_ui_NoneCommandTag,
-};
+/// \~english
+/// \brief Creates the screen of the monitor.
+///
+/// \~japanese
+/// \brief モニターの画面を作る。
+///
+/// `model` は画面が存在する間は有効でなければならない。
+void dcc_ui_init(struct dcc_ui_Model *const model, lv_indev_t *buttonsIndev);
 
-struct dcc_ui_Command {
-  enum dcc_ui_CommandTag tag;
-};
-
-struct dcc_ui_Model_Command {
-  struct dcc_ui_Model model;
-  struct dcc_ui_Command command;
-};
-
-struct dcc_ui_Model_Command dcc_ui_init(lv_indev_t *buttonsIndev);
-
-void dcc_ui_view(struct dcc_ui_Model model);
-
-struct dcc_ui_Command dcc_ui_update(struct dcc_ui_Model model, struct dcc_ui_Message message);
+/// \~english
+/// \brief Updates the model and the screen by the message.
+///
+/// \~japanese
+/// \brief メッセージによってモデルと画面を更新する。
+void dcc_ui_update(struct dcc_ui_Model *const model, struct dcc_ui_Message const message);
 
 #endif

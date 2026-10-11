@@ -17,10 +17,19 @@ int main(void) {
   lv_display_t *display = lv_x11_window_create("OKDCC", SCREEN_WIDTH, SCREEN_HEIGHT);
   lv_x11_inputs_create(display, NULL);
 
-  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(NULL);
-  dcc_ui_view(modelCommand.model);
+  static struct dcc_ui_Model model;
+  dcc_ui_init(&model, NULL);
 
+  // 実機の代わりに定期的に偽のパケットを流す
+  unsigned long loopsCount = 0;
   while (1) {
+    if (loopsCount % 100 == 0) {
+      dcc_ui_update(&model,
+                    (struct dcc_ui_Message) { .tag = dcc_ui_PacketReceivedMessageTag,
+                                              .packetText = "{\"tag\":\"dcc_IdlePacketForAllDecodersTag\"}" });
+    }
+    if (loopsCount % 700 == 0) dcc_ui_update(&model, (struct dcc_ui_Message) { .tag = dcc_ui_DecodeFailedMessageTag });
+    loopsCount++;
     lv_timer_handler();
     usleep(5 * 1000);
   }
