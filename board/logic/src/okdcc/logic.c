@@ -205,6 +205,14 @@ enum dcc_Result dcc_validatePacket(dcc_Byte const *const bytes, size_t const byt
 enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet) {
   // 速度・方向パケット内で FL を制御するかどうか（CV 29 のビット1が `0` のとき `true`）
   bool const flControl = false;  // TODO CV の実装ができたら書き換える
+  if (dcc_Success ==
+      dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders(bytes,
+                                                            bytesSize,
+                                                            flControl,
+                                                            &packet->speedAndDirectionPacketForLocomotiveDecoders)) {
+    packet->tag = dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag;
+    return dcc_Success;
+  }
   if (dcc_Success == dcc_parseResetPacketForAllDecoders(bytes, bytesSize)) {
     packet->tag = dcc_ResetPacketForAllDecodersTag;
     return dcc_Success;
@@ -216,14 +224,6 @@ enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesS
   if (dcc_Success ==
       dcc_parseBroadcastStopPacketForAllDecoders(bytes, bytesSize, &packet->broadcastStopPacketForAllDecoders)) {
     packet->tag = dcc_BroadcastStopPacketForAllDecodersTag;
-    return dcc_Success;
-  }
-  if (dcc_Success ==
-      dcc_parseSpeedAndDirectionPacketForLocomotiveDecoders(bytes,
-                                                            bytesSize,
-                                                            flControl,
-                                                            &packet->speedAndDirectionPacketForLocomotiveDecoders)) {
-    packet->tag = dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag;
     return dcc_Success;
   }
   if (dcc_Success ==
