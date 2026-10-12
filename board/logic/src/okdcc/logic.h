@@ -273,10 +273,10 @@ struct dcc_SetDecoderFlagsPacketForMultiFunctionDecoders {
 };
 
 /// \~english
-/// See `dcc_AdvancedAddressingSetPacketTag`.
+/// See `dcc_SetExtendedAddressingPacketForMultiFunctionDecodersTag`.
 ///
 /// \~japanese
-/// `dcc_AdvancedAddressingSetPacketTag` を参照。
+/// `dcc_SetExtendedAddressingPacketForMultiFunctionDecodersTag` を参照。
 struct dcc_SetExtendedAddressingPacketForMultiFunctionDecoders {
   dcc_AddressForExtendedPacket address;
   bool set;
@@ -342,6 +342,12 @@ struct dcc_RestrictedSpeedStepPacketForMultiFunctionDecoders {
 /// `dcc_AnalogFunctionPacketForMultiFunctionDecodersTag` を参照。
 struct dcc_AnalogFunctionPacketForMultiFunctionDecoders {
   dcc_AddressForExtendedPacket address;
+  /// \~english
+  /// \brief Analog function output. `1` means volume control and the others are reserved.
+  ///
+  /// \~japanese
+  /// \brief アナログ機能出力。`1` は音量制御を意味し、それ以外は予約されている。
+  dcc_Byte output;
   dcc_Byte data;
 };
 
@@ -376,6 +382,7 @@ struct dcc_SpeedAndDirectionPacketForMultiFunctionDecoders {
 /// \~japanese
 /// `dcc_FunctionGroup1PacketForMultiFunctionDecodersTag` を参照。
 struct dcc_FunctionGroup1PacketForMultiFunctionDecoders {
+  dcc_AddressForExtendedPacket address;
   /// \~english
   /// \brief Which FL control is active within Function Group One Instruction Packet or not.
   ///
@@ -404,6 +411,7 @@ enum dcc_FunctionGroup2Group {
 /// \~japanese
 /// `dcc_FunctionGroup2PacketForMultiFunctionDecodersTag` を参照。
 struct dcc_FunctionGroup2PacketForMultiFunctionDecoders {
+  dcc_AddressForExtendedPacket address;
   enum dcc_FunctionGroup2Group group;
   union {
     struct {
@@ -835,6 +843,15 @@ struct dcc_Packet {
       decoderAcknowledgementRequestPacketForMultiFunctionDecoders;
     struct dcc_ConsistControlPacketForMultiFunctionDecoders consistControlPacketForMultiFunctionDecoders;
     struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders speedStep128ControlPacket;
+    struct dcc_RestrictedSpeedStepPacketForMultiFunctionDecoders restrictedSpeedStepPacketForMultiFunctionDecoders;
+    struct dcc_AnalogFunctionPacketForMultiFunctionDecoders analogFunctionPacketForMultiFunctionDecoders;
+    struct dcc_SpeedAndDirectionPacketForMultiFunctionDecoders speedAndDirectionPacketForMultiFunctionDecoders;
+    struct dcc_FunctionGroup1PacketForMultiFunctionDecoders functionGroup1PacketForMultiFunctionDecoders;
+    struct dcc_FunctionGroup2PacketForMultiFunctionDecoders functionGroup2PacketForMultiFunctionDecoders;
+    struct dcc_BinaryStateControlLongFormPacket binaryStateControlLongFormPacket;
+    struct dcc_BinaryStateControlShortFormPacket binaryStateControlShortFormPacket;
+    struct dcc_FunctionControlF13F20Packet functionControlF13F20Packet;
+    struct dcc_FunctionControlF21F28Packet functionControlF21F28Packet;
   };
 };
 
@@ -1068,12 +1085,56 @@ enum dcc_Result dcc_parseFactoryTestInstructionPacketForMultiFunctionDecoders(
   dcc_Byte const *const bytes, size_t const bytesSize,
   struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders *const packet);
 
+enum dcc_Result dcc_parseSetDecoderFlagsPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_SetDecoderFlagsPacketForMultiFunctionDecoders *const packet);
+
+enum dcc_Result dcc_parseSetExtendedAddressingPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_SetExtendedAddressingPacketForMultiFunctionDecoders *const packet);
+
 enum dcc_Result dcc_parseConsistControlPacket(dcc_Byte const *const bytes, size_t const bytesSize,
                                               struct dcc_ConsistControlPacketForMultiFunctionDecoders *const packet);
 
 enum dcc_Result dcc_parseSpeedStep128ControlPacket(
   dcc_Byte const *const bytes, size_t const bytesSize,
   struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders *const packet);
+
+enum dcc_Result dcc_parseRestrictedSpeedStepPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize, bool flControl,
+  struct dcc_RestrictedSpeedStepPacketForMultiFunctionDecoders *const packet);
+
+enum dcc_Result dcc_parseAnalogFunctionPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_AnalogFunctionPacketForMultiFunctionDecoders *const packet);
+
+enum dcc_Result dcc_parseSpeedAndDirectionPacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize, bool flControl,
+  struct dcc_SpeedAndDirectionPacketForMultiFunctionDecoders *const packet);
+
+/// \~english
+/// \param flControl Whether bit 4 controls FL or not. Note that this is the opposite of `flControl` of the speed and direction packets for the same CV 29 value.
+/// \~japanese
+/// \param flControl ビット4が FL を制御するかどうか。同じ CV 29 の値に対して速度・方向パケットの `flControl` とは逆になることに注意。
+enum dcc_Result dcc_parseFunctionGroup1PacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize, bool flControl,
+  struct dcc_FunctionGroup1PacketForMultiFunctionDecoders *const packet);
+
+enum dcc_Result dcc_parseFunctionGroup2PacketForMultiFunctionDecoders(
+  dcc_Byte const *const bytes, size_t const bytesSize,
+  struct dcc_FunctionGroup2PacketForMultiFunctionDecoders *const packet);
+
+enum dcc_Result dcc_parseBinaryStateControlLongFormPacket(dcc_Byte const *const bytes, size_t const bytesSize,
+                                                          struct dcc_BinaryStateControlLongFormPacket *const packet);
+
+enum dcc_Result dcc_parseBinaryStateControlShortFormPacket(dcc_Byte const *const bytes, size_t const bytesSize,
+                                                           struct dcc_BinaryStateControlShortFormPacket *const packet);
+
+enum dcc_Result dcc_parseFunctionControlF13F20Packet(dcc_Byte const *const bytes, size_t const bytesSize,
+                                                     struct dcc_FunctionControlF13F20Packet *const packet);
+
+enum dcc_Result dcc_parseFunctionControlF21F28Packet(dcc_Byte const *const bytes, size_t const bytesSize,
+                                                     struct dcc_FunctionControlF21F28Packet *const packet);
 
 enum dcc_Result dcc_parsePacket(dcc_Byte const *const bytes, size_t const bytesSize, struct dcc_Packet *const packet);
 
@@ -1127,6 +1188,49 @@ int dcc_showHardResetPacketForMultiFunctionDecoders(char *buffer, size_t const b
 
 int dcc_showFactoryTestInstructionPacketForMultiFunctionDecoders(
   char *buffer, size_t const bufferSize, struct dcc_FactoryTestInstructionPacketForMultiFunctionDecoders const packet);
+
+int dcc_showSetDecoderFlagsPacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_SetDecoderFlagsPacketForMultiFunctionDecoders const packet);
+
+int dcc_showSetExtendedAddressingPacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_SetExtendedAddressingPacketForMultiFunctionDecoders const packet);
+
+int dcc_showDecoderAcknowledgementRequestPacket(
+  char *buffer, size_t const bufferSize,
+  struct dcc_DecoderAcknowledgementRequestPacketForMultiFunctionDecoders const packet);
+
+int dcc_showConsistControlPacket(char *buffer, size_t const bufferSize,
+                                 struct dcc_ConsistControlPacketForMultiFunctionDecoders const packet);
+
+int dcc_showSpeedStep128ControlPacket(char *buffer, size_t const bufferSize,
+                                      struct dcc_SpeedStep128ControlPacketForMultiFunctionDecoders const packet);
+
+int dcc_showRestrictedSpeedStepPacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_RestrictedSpeedStepPacketForMultiFunctionDecoders const packet);
+
+int dcc_showAnalogFunctionPacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_AnalogFunctionPacketForMultiFunctionDecoders const packet);
+
+int dcc_showSpeedAndDirectionPacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_SpeedAndDirectionPacketForMultiFunctionDecoders const packet);
+
+int dcc_showFunctionGroup1PacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_FunctionGroup1PacketForMultiFunctionDecoders const packet);
+
+int dcc_showFunctionGroup2PacketForMultiFunctionDecoders(
+  char *buffer, size_t const bufferSize, struct dcc_FunctionGroup2PacketForMultiFunctionDecoders const packet);
+
+int dcc_showBinaryStateControlLongFormPacket(char *buffer, size_t const bufferSize,
+                                             struct dcc_BinaryStateControlLongFormPacket const packet);
+
+int dcc_showBinaryStateControlShortFormPacket(char *buffer, size_t const bufferSize,
+                                              struct dcc_BinaryStateControlShortFormPacket const packet);
+
+int dcc_showFunctionControlF13F20Packet(char *buffer, size_t const bufferSize,
+                                        struct dcc_FunctionControlF13F20Packet const packet);
+
+int dcc_showFunctionControlF21F28Packet(char *buffer, size_t const bufferSize,
+                                        struct dcc_FunctionControlF21F28Packet const packet);
 
 int dcc_showPacket(char *buffer, size_t const bufferSize, struct dcc_Packet const packet);
 
