@@ -1,4 +1,4 @@
-<!-- spell-checker:ignore NMRA -->
+<!-- spell-checker:ignore NMRA photocoupler -->
 
 # okdcc monitor
 
