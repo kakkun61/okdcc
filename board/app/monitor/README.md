@@ -18,11 +18,13 @@ NMRA DCC 信号を受信してデコードし、結果をシリアル通信と�
 レールの信号はフォトカプラーで絶縁して GPIO 5（`DCC_SIGNAL_GPIO`）ひとつで受ける。
 
 ```
-レール A ── 抵抗 ──┬── LED（フォトカプラー）──┬── レール B
-                   └── 逆並列ダイオード ──────┘
+Rail A --- R ---+--- LED (photocoupler) ---+--- Rail B
+                |                          |
+                +---- anti-parallel D -----+
 
-3.3V ── プルアップ抵抗 ──┬── GPIO 5
-                         └── フォトカプラー出力（オープンコレクター）── GND
+3.3V --- R (pull-up) ---+--- GPIO 5
+                        |
+                        +--- photocoupler output (open collector) --- GND
 ```
 
 ### 注意
