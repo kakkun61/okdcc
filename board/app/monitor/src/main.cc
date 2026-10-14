@@ -33,7 +33,6 @@ void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map)
 void readButtons(lv_indev_t *indev, lv_indev_data_t *data);
 void onVoltageChange(void *);
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal);
-uint32_t getTickMs(void);
 [[noreturn]] void errorLoop(void);
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...);
 void printErrorLog(char const *const file, int const line, char const *func, char const *format, ...);
@@ -55,11 +54,11 @@ static StreamBufferHandle_t logStreamBuffer = NULL;
 static char logStreamBufferStorage[LOG_STREAM_BUFFER_SIZE + 1] = { 0 };  // StreamBuffer が 1 バイト余分に要求する
 static StaticStreamBuffer_t logStreamBufferStruct;
 static portMUX_TYPE signalBufferMux = portMUX_INITIALIZER_UNLOCKED;
-static struct dcc_ui_Program uiProgram;
 
 void app_main(void) {
   M5.begin();
   gfx.init();
+  lv_init();
   printf("OKDCC v0.0 (%s %s)\n", __DATE__, __TIME__);
   printf("LVGL v%d.%d.%d\n", lv_version_major(), lv_version_minor(), lv_version_patch());
 
@@ -69,7 +68,7 @@ void app_main(void) {
   lv_log_register_print_cb(printLvLog);
 #endif
 
-  lv_tick_set_cb(getTickMs);
+  lv_tick_set_cb((lv_tick_get_cb_t) xTaskGetTickCount);
 
   lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
   static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10 * BYTE_PER_PIXEL];
@@ -84,7 +83,8 @@ void app_main(void) {
     xStreamBufferCreateStatic(LOG_STREAM_BUFFER_SIZE, 1, (uint8_t *) logStreamBufferStorage, &logStreamBufferStruct);
   dcc_error_log = printErrorLog;
 
-  dcc_ui_start(&uiProgram, buttonsIndev);
+  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(buttonsIndev);
+  dcc_ui_view(modelCommand.model);
 
   {
     gpio_config_t config = { .pin_bit_mask = BIT64(DCC_SIGNAL_GPIO),
@@ -137,6 +137,7 @@ void app_main(void) {
 void loopTask(void *) {
   while (true) {
     M5.update();
+    lv_timer_handler();
     {
       dcc_TimeMicroSec signal;
       while (dcc_Success == readSignalBuffer(&decoder.signalBuffer, &signal)) {
@@ -145,8 +146,6 @@ void loopTask(void *) {
         switch (result) {
           case dcc_StreamParserResult_Failure:
             LOG("decode error");
-            dcc_ui_dispatch(&uiProgram,
-                            (struct dcc_ui_Message) { .tag = dcc_ui_DecodeFailedMessageTag, .packetText = NULL });
             continue;
           case dcc_StreamParserResult_Continue:
             // LOG("decode continue");
@@ -155,14 +154,11 @@ void loopTask(void *) {
             char buffer[512] = { 0 };
             dcc_showPacket(buffer, sizeof buffer, packet);
             LOG("packet: %s", buffer);
-            dcc_ui_dispatch(&uiProgram,
-                            (struct dcc_ui_Message) { .tag = dcc_ui_PacketReceivedMessageTag, .packetText = buffer });
             continue;
           }
         }
       }
     }
-    lv_timer_handler();
     vTaskDelay(1);
   }
   vTaskDelete(NULL);
@@ -195,8 +191,6 @@ void readButtons(lv_indev_t *indev, lv_indev_data_t *data) {
 
   index = (index + 1) % 3;
 }
-
-uint32_t getTickMs(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
 
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
   portENTER_CRITICAL(&signalBufferMux);
