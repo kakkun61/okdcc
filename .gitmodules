@@ -1,6 +1,6 @@
 [submodule "board/lib/munit"]
 	path = board/lib/munit
-	url = git@github.com:nemequ/munit.git
+	url = https://github.com/nemequ/munit.git
 [submodule "board/lib/lvgl"]
 	path = board/lib/lvgl
-	url = git@github.com:lvgl/lvgl.git
+	url = https://github.com/lvgl/lvgl.git
