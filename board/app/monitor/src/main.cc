@@ -55,7 +55,7 @@ static StreamBufferHandle_t logStreamBuffer = NULL;
 static char logStreamBufferStorage[LOG_STREAM_BUFFER_SIZE + 1] = { 0 };  // StreamBuffer が 1 バイト余分に要求する
 static StaticStreamBuffer_t logStreamBufferStruct;
 static portMUX_TYPE signalBufferMux = portMUX_INITIALIZER_UNLOCKED;
-static struct dcc_ui_Model uiModel;
+static struct dcc_ui_Program uiProgram;
 
 void app_main(void) {
   M5.begin();
@@ -84,7 +84,7 @@ void app_main(void) {
     xStreamBufferCreateStatic(LOG_STREAM_BUFFER_SIZE, 1, (uint8_t *) logStreamBufferStorage, &logStreamBufferStruct);
   dcc_error_log = printErrorLog;
 
-  dcc_ui_init(&uiModel, buttonsIndev);
+  dcc_ui_start(&uiProgram, buttonsIndev);
 
   {
     gpio_config_t config = { .pin_bit_mask = BIT64(DCC_SIGNAL_GPIO),
@@ -145,8 +145,8 @@ void loopTask(void *) {
         switch (result) {
           case dcc_StreamParserResult_Failure:
             LOG("decode error");
-            dcc_ui_update(&uiModel,
-                          (struct dcc_ui_Message) { .tag = dcc_ui_DecodeFailedMessageTag, .packetText = NULL });
+            dcc_ui_dispatch(&uiProgram,
+                            (struct dcc_ui_Message) { .tag = dcc_ui_DecodeFailedMessageTag, .packetText = NULL });
             continue;
           case dcc_StreamParserResult_Continue:
             // LOG("decode continue");
@@ -155,8 +155,8 @@ void loopTask(void *) {
             char buffer[512] = { 0 };
             dcc_showPacket(buffer, sizeof buffer, packet);
             LOG("packet: %s", buffer);
-            dcc_ui_update(&uiModel,
-                          (struct dcc_ui_Message) { .tag = dcc_ui_PacketReceivedMessageTag, .packetText = buffer });
+            dcc_ui_dispatch(&uiProgram,
+                            (struct dcc_ui_Message) { .tag = dcc_ui_PacketReceivedMessageTag, .packetText = buffer });
             continue;
           }
         }
