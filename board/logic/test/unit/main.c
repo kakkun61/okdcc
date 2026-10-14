@@ -202,6 +202,253 @@ static MunitResult test_parseResetPacketForMultiFunctionDecoders_0b11000011_0b00
   return MUNIT_OK;
 }
 
+static MunitResult test_parsePacket_broadcast_stop_shutdown(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x00), UINT8_C(0x41), UINT8_C(0x41) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_BroadcastStopPacketForAllDecodersTag, ==, packet.tag);
+  munit_assert_int(dcc_BroadcastStopKind_Shutdown, ==, packet.broadcastStopPacketForAllDecoders.kind);
+  munit_assert_int(dcc_Backward, ==, packet.broadcastStopPacketForAllDecoders.direction);
+  munit_assert_int(false, ==, packet.broadcastStopPacketForAllDecoders.directionMayBeIgnored);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_broadcast_stop_direction_may_be_ignored(MunitParameter const params[],
+                                                                            void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x00), UINT8_C(0x70), UINT8_C(0x70) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_BroadcastStopPacketForAllDecodersTag, ==, packet.tag);
+  munit_assert_int(dcc_BroadcastStopKind_Stop, ==, packet.broadcastStopPacketForAllDecoders.kind);
+  munit_assert_int(dcc_Forward, ==, packet.broadcastStopPacketForAllDecoders.direction);
+  munit_assert_int(true, ==, packet.broadcastStopPacketForAllDecoders.directionMayBeIgnored);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_locomotive_speed_and_direction(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x6A), UINT8_C(0x69) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_SpeedAndDirectionPacketForLocomotiveDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.speedAndDirectionPacketForLocomotiveDecoders.address);
+  munit_assert_int(dcc_Forward, ==, packet.speedAndDirectionPacketForLocomotiveDecoders.direction);
+  munit_assert_uint8(17, ==, packet.speedAndDirectionPacketForLocomotiveDecoders.speed5Bit);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_broadcast_speed_and_direction(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x00), UINT8_C(0x6A), UINT8_C(0x6A) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_SpeedAndDirectionPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(0, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.address);
+  munit_assert_int(dcc_Forward, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.direction);
+  munit_assert_uint8(17, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.speed5Bit);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_long_address_speed_and_direction(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0xC3), UINT8_C(0x00), UINT8_C(0x4A), UINT8_C(0x89) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_SpeedAndDirectionPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(768, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.address);
+  munit_assert_int(dcc_Backward, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.direction);
+  munit_assert_uint8(17, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.speed5Bit);
+  munit_assert_int(false, ==, packet.speedAndDirectionPacketForMultiFunctionDecoders.emergencyStop);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_factory_test_without_data(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x02), UINT8_C(0x01) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.address);
+  munit_assert_int(false, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.set);
+  munit_assert_int(false, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.dataExists);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_factory_test_with_data(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0x03), UINT8_C(0x55), UINT8_C(0x55) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FactoryTestInstructionPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.address);
+  munit_assert_int(true, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.set);
+  munit_assert_int(true, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.dataExists);
+  munit_assert_uint8(0x55, ==, packet.factoryTestInstructionPacketForMultiFunctionDecoders.data);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_set_decoder_flags(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0x07), UINT8_C(0x93), UINT8_C(0x97) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_SetDecoderFlagsPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.setDecoderFlagsPacketForMultiFunctionDecoders.address);
+  munit_assert_int(true, ==, packet.setDecoderFlagsPacketForMultiFunctionDecoders.set);
+  munit_assert_uint8(3, ==, packet.setDecoderFlagsPacketForMultiFunctionDecoders.subaddress);
+  munit_assert_int(dcc_Set111Instruction, ==, packet.setDecoderFlagsPacketForMultiFunctionDecoders.instruction);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_set_extended_addressing(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x0B), UINT8_C(0x08) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_SetExtendedAddressingPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.setExtendedAddressingPacketForMultiFunctionDecoders.address);
+  munit_assert_int(true, ==, packet.setExtendedAddressingPacketForMultiFunctionDecoders.set);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_restricted_speed_step(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0x3E), UINT8_C(0x0A), UINT8_C(0x37) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_RestrictedSpeedStepPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.restrictedSpeedStepPacketForMultiFunctionDecoders.address);
+  munit_assert_int(true, ==, packet.restrictedSpeedStepPacketForMultiFunctionDecoders.enabled);
+  munit_assert_int(false, ==, packet.restrictedSpeedStepPacketForMultiFunctionDecoders.flControl);
+  munit_assert_uint8(17, ==, packet.restrictedSpeedStepPacketForMultiFunctionDecoders.speed5Bit);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_analog_function(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[5] = { UINT8_C(0x03), UINT8_C(0x3D), UINT8_C(0x01), UINT8_C(0x80), UINT8_C(0xBF) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 5, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_AnalogFunctionPacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.analogFunctionPacketForMultiFunctionDecoders.address);
+  munit_assert_uint8(1, ==, packet.analogFunctionPacketForMultiFunctionDecoders.output);
+  munit_assert_uint8(0x80, ==, packet.analogFunctionPacketForMultiFunctionDecoders.data);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_function_group_1(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0x95), UINT8_C(0x96) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FunctionGroup1PacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.functionGroup1PacketForMultiFunctionDecoders.address);
+  munit_assert_int(true, ==, packet.functionGroup1PacketForMultiFunctionDecoders.flControl);
+  munit_assert_int(true, ==, packet.functionGroup1PacketForMultiFunctionDecoders.fl);
+  munit_assert_int(true, ==, packet.functionGroup1PacketForMultiFunctionDecoders.f1);
+  munit_assert_int(false, ==, packet.functionGroup1PacketForMultiFunctionDecoders.f2);
+  munit_assert_int(true, ==, packet.functionGroup1PacketForMultiFunctionDecoders.f3);
+  munit_assert_int(false, ==, packet.functionGroup1PacketForMultiFunctionDecoders.f4);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_function_group_2_f5_f8(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0xB5), UINT8_C(0xB6) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FunctionGroup2PacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.functionGroup2PacketForMultiFunctionDecoders.address);
+  munit_assert_int(dcc_FunctionGroup2Group_F5_F8, ==, packet.functionGroup2PacketForMultiFunctionDecoders.group);
+  munit_assert_int(true, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f5);
+  munit_assert_int(false, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f6);
+  munit_assert_int(true, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f7);
+  munit_assert_int(false, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f8);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_function_group_2_f9_f12(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x03), UINT8_C(0xAA), UINT8_C(0xA9) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FunctionGroup2PacketForMultiFunctionDecodersTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.functionGroup2PacketForMultiFunctionDecoders.address);
+  munit_assert_int(dcc_FunctionGroup2Group_F9_F12, ==, packet.functionGroup2PacketForMultiFunctionDecoders.group);
+  munit_assert_int(false, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f9);
+  munit_assert_int(true, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f10);
+  munit_assert_int(false, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f11);
+  munit_assert_int(true, ==, packet.functionGroup2PacketForMultiFunctionDecoders.functions.f12);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_binary_state_control_long_form(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[5] = { UINT8_C(0x03), UINT8_C(0xC0), UINT8_C(0x85), UINT8_C(0x02), UINT8_C(0x44) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 5, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_BinaryStateControlLongFormPacketTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.binaryStateControlLongFormPacket.address);
+  munit_assert_uint16(261, ==, packet.binaryStateControlLongFormPacket.stateAddress);
+  munit_assert_int(true, ==, packet.binaryStateControlLongFormPacket.state);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_binary_state_control_short_form(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0xDD), UINT8_C(0x05), UINT8_C(0xDB) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_BinaryStateControlShortFormPacketTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.binaryStateControlShortFormPacket.address);
+  munit_assert_uint8(5, ==, packet.binaryStateControlShortFormPacket.stateAddress);
+  munit_assert_int(false, ==, packet.binaryStateControlShortFormPacket.state);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_function_control_f13_f20(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0xDE), UINT8_C(0x81), UINT8_C(0x5C) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FunctionControlF13F20PacketTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.functionControlF13F20Packet.address);
+  munit_assert_int(true, ==, packet.functionControlF13F20Packet.f13);
+  munit_assert_int(false, ==, packet.functionControlF13F20Packet.f14);
+  munit_assert_int(true, ==, packet.functionControlF13F20Packet.f20);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_function_control_f21_f28(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0xDF), UINT8_C(0x02), UINT8_C(0xDE) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Success, ==, result);
+  munit_assert_int(dcc_FunctionControlF21F28PacketTag, ==, packet.tag);
+  munit_assert_uint16(3, ==, packet.functionControlF21F28Packet.address);
+  munit_assert_int(false, ==, packet.functionControlF21F28Packet.f21);
+  munit_assert_int(true, ==, packet.functionControlF21F28Packet.f22);
+  munit_assert_int(false, ==, packet.functionControlF21F28Packet.f28);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_accessory_address_is_failure(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[3] = { UINT8_C(0x81), UINT8_C(0x00), UINT8_C(0x81) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 3, &packet);
+  munit_assert_int(dcc_Failure, ==, result);
+  return MUNIT_OK;
+}
+
+static MunitResult test_parsePacket_too_long_packet_is_failure(MunitParameter const params[], void *fixture) {
+  uint8_t const bytes[4] = { UINT8_C(0x03), UINT8_C(0x00), UINT8_C(0x00), UINT8_C(0x03) };
+  struct dcc_Packet packet;
+  enum dcc_Result const result = dcc_parsePacket(bytes, 4, &packet);
+  munit_assert_int(dcc_Failure, ==, result);
+  return MUNIT_OK;
+}
 static MunitSuite const suite = {
   "/okdcc",
   NULL,
@@ -327,6 +574,131 @@ static MunitSuite const suite = {
                         NULL },
                       { "([0b11000011, 0b0000000, 0b0000000, 0b11000011]) is { address = 768 }",
                         test_parseResetPacketForMultiFunctionDecoders_0b11000011_0b0000000_0b0000000_0b11000011_is_768,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL } },
+      NULL,
+      1,
+      MUNIT_SUITE_OPTION_NONE },
+    { "/dcc_parsePacket",
+      (MunitTest[]) { { "([0x00, 0x41, 0x41]) broadcast stop shutdown",
+                        test_parsePacket_broadcast_stop_shutdown,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x00, 0x70, 0x70]) broadcast stop direction may be ignored",
+                        test_parsePacket_broadcast_stop_direction_may_be_ignored,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x6A, 0x69]) locomotive speed and direction",
+                        test_parsePacket_locomotive_speed_and_direction,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x00, 0x6A, 0x6A]) broadcast speed and direction",
+                        test_parsePacket_broadcast_speed_and_direction,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0xC3, 0x00, 0x4A, 0x89]) long address speed and direction",
+                        test_parsePacket_long_address_speed_and_direction,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x02, 0x01]) factory test without data",
+                        test_parsePacket_factory_test_without_data,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x03, 0x55, 0x55]) factory test with data",
+                        test_parsePacket_factory_test_with_data,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x07, 0x93, 0x97]) set decoder flags",
+                        test_parsePacket_set_decoder_flags,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x0B, 0x08]) set extended addressing",
+                        test_parsePacket_set_extended_addressing,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x3E, 0x0A, 0x37]) restricted speed step",
+                        test_parsePacket_restricted_speed_step,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x3D, 0x01, 0x80, 0xBF]) analog function",
+                        test_parsePacket_analog_function,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x95, 0x96]) function group 1",
+                        test_parsePacket_function_group_1,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0xB5, 0xB6]) function group 2 f5 f8",
+                        test_parsePacket_function_group_2_f5_f8,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0xAA, 0xA9]) function group 2 f9 f12",
+                        test_parsePacket_function_group_2_f9_f12,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0xC0, 0x85, 0x02, 0x44]) binary state control long form",
+                        test_parsePacket_binary_state_control_long_form,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0xDD, 0x05, 0xDB]) binary state control short form",
+                        test_parsePacket_binary_state_control_short_form,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0xDE, 0x81, 0x5C]) function control f13 f20",
+                        test_parsePacket_function_control_f13_f20,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0xDF, 0x02, 0xDE]) function control f21 f28",
+                        test_parsePacket_function_control_f21_f28,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x81, 0x00, 0x81]) accessory address is failure",
+                        test_parsePacket_accessory_address_is_failure,
+                        NULL,
+                        NULL,
+                        MUNIT_TEST_OPTION_NONE,
+                        NULL },
+                      { "([0x03, 0x00, 0x00, 0x03]) too long packet is failure",
+                        test_parsePacket_too_long_packet_is_failure,
                         NULL,
                         NULL,
                         MUNIT_TEST_OPTION_NONE,
