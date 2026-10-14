@@ -33,6 +33,7 @@ void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map)
 void readButtons(lv_indev_t *indev, lv_indev_data_t *data);
 void onVoltageChange(void *);
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal);
+uint32_t getTickMs(void);
 [[noreturn]] void errorLoop(void);
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...);
 void printErrorLog(char const *const file, int const line, char const *func, char const *format, ...);
@@ -68,7 +69,7 @@ void app_main(void) {
   lv_log_register_print_cb(printLvLog);
 #endif
 
-  lv_tick_set_cb((lv_tick_get_cb_t) xTaskGetTickCount);
+  lv_tick_set_cb(getTickMs);
 
   lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
   static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10 * BYTE_PER_PIXEL];
@@ -191,6 +192,8 @@ void readButtons(lv_indev_t *indev, lv_indev_data_t *data) {
 
   index = (index + 1) % 3;
 }
+
+uint32_t getTickMs(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
 
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
   portENTER_CRITICAL(&signalBufferMux);
