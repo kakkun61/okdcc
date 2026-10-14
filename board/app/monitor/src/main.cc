@@ -59,7 +59,6 @@ static portMUX_TYPE signalBufferMux = portMUX_INITIALIZER_UNLOCKED;
 void app_main(void) {
   M5.begin();
   gfx.init();
-  lv_init();
   printf("OKDCC v0.0 (%s %s)\n", __DATE__, __TIME__);
   printf("LVGL v%d.%d.%d\n", lv_version_major(), lv_version_minor(), lv_version_patch());
 
