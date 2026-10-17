@@ -14,16 +14,12 @@
   },
   "frameworks": "*",
   "platforms": "*",
-  "dependencies": {
-    "lvgl/lvgl": "^9"
-  },
   "headers": "okdcc.h",
   "export": {
     "include": [
       "src/*",
       "logic/src/*",
-      "electric/src/*",
-      "ui/src/*"
+      "electric/src/*"
     ]
   },
   "build": {
@@ -32,14 +28,12 @@
     "srcFilter": [
       "+<src>",
       "+<logic/src>",
-      "+<electric/src>",
-      "+<ui/src>"
+      "+<electric/src>"
     ],
     "flags": [
       "-I src",
       "-I logic/src",
-      "-I electric/src",
-      "-I ui/src"
+      "-I electric/src"
     ]
   }
 }

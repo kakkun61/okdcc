@@ -4,11 +4,9 @@ ABS_BUILD_DIR = $(shell realpath $(BUILD_DIR))
 
 OKDCC_LOGIC_SOURCES = $(shell find logic/src -type f -name '*.c')
 OKDCC_ELECTRIC_SOURCES = $(shell find electric/src -type f -name '*.c')
-OKDCC_UI_SOURCES = $(shell find ui/src -type f -name '*.c')
 APP_MONITOR_SOURCES = $(shell find app/monitor/src -type f)
 OKDCC_LOGIC_OBJECTS = $(patsubst logic/src/%,$(BUILD_DIR)/okdcc/logic/%,$(OKDCC_LOGIC_SOURCES:.c=.o))
 OKDCC_ELECTRIC_OBJECTS = $(patsubst electric/src/%,$(BUILD_DIR)/okdcc/electric/%,$(OKDCC_ELECTRIC_SOURCES:.c=.o))
-OKDCC_UI_MOCK_X11_OBJECTS = $(patsubst ui/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/%,$(OKDCC_UI_SOURCES:.c=.o))
 
 PLATFORMIO_ENVIRONMENT = debug
 PLATFORMIO_OUT_EXTS = bin elf map
@@ -18,10 +16,6 @@ APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/$(PLATFORMIO_ENVIRONM
 TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/okdcc/test/electric/build
 TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
 
-LVGL_DIR = lib/lvgl
-LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
-LVGL_MOCK_X11_OBJECTS = $(patsubst $(LVGL_DIR)/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/lvgl/%,$(LVGL_SOURCES:.c=.o))
-
 # spell-checker:ignore Wextra Wconversion Wdeprecated
 CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter -D DCC_ASSERT
 
@@ -29,7 +23,7 @@ CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter -D DCC_A
 all: build
 
 .PHONY: build
-build: build.logic build.app.monitor build.logic.test build.electric.test build.example.cli build.example.show build.mock.x11
+build: build.logic build.app.monitor build.logic.test build.electric.test build.example.cli build.example.show
 
 .PHONY: build.logic
 build.logic: $(OKDCC_LOGIC_OBJECTS)
@@ -39,9 +33,6 @@ build.logic.test: $(BUILD_DIR)/okdcc/logic/test/unit
 
 .PHONY: build.app.monitor
 build.app.monitor: $(APP_MONITOR_OUT_PATHS)
-
-.PHONY: build.mock.x11
-build.mock.x11: $(BUILD_DIR)/okdcc/mock/x11
 
 .PHONY: build.example.cli
 build.example.cli: $(BUILD_DIR)/okdcc/examples/cli
@@ -115,7 +106,7 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -I lib/munit -c -o $@ $^
 
-$(APP_MONITOR_OUT_PATHS)&: $(APP_MONITOR_SOURCES) app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
+$(APP_MONITOR_OUT_PATHS)&: $(APP_MONITOR_SOURCES) app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES)
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
 
 $(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
@@ -128,18 +119,6 @@ $(BUILD_DIR)/okdcc/examples/%: $(BUILD_DIR)/okdcc/examples/%.o $(OKDCC_LOGIC_OBJ
 $(BUILD_DIR)/okdcc/examples/%.o: examples/%/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I logic/src -c -o $@ $^
-
-$(BUILD_DIR)/okdcc/mock/x11.d/lvgl/%.o: $(LVGL_DIR)/src/%.c mock/x11/lv_conf.h
-	@mkdir -p $(@D)
-	$(CC) -I mock/x11 -DLV_CONF_INCLUDE_SIMPLE -c -o $@ $<
-
-$(BUILD_DIR)/okdcc/mock/x11.d/okdcc/%.o: ui/src/okdcc/%.c
-	@mkdir -p $(@D)
-	$(CC) $(CC_OPTS) -I lib/lvgl -I mock/x11 -D LV_CONF_INCLUDE_SIMPLE -c -o $@ $<
-
-$(BUILD_DIR)/okdcc/mock/x11: $(LVGL_MOCK_X11_OBJECTS) $(OKDCC_UI_MOCK_X11_OBJECTS) mock/x11/main.c
-	@mkdir -p $(@D)
-	$(CC) $(CC_OPTS) -I lib/lvgl -I mock/x11 -I ui/src -l X11 -l pthread -l m -D LV_CONF_INCLUDE_SIMPLE -o $@ $^
 
 # spellchecker:ignore msgfmt
 doc/locales/ja/html/LC_MESSAGES/index.mo: doc/locales/ja/html/LC_MESSAGES/index.po
