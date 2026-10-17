@@ -4,3 +4,6 @@
 [submodule "board/lib/lvgl"]
 	path = board/lib/lvgl
 	url = git@github.com:lvgl/lvgl.git
+[submodule "board/lib/clay"]
+	path = board/lib/clay
+	url = git@github.com:nicbarker/clay.git

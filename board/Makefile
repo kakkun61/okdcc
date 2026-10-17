@@ -5,6 +5,7 @@ ABS_BUILD_DIR = $(shell realpath $(BUILD_DIR))
 OKDCC_LOGIC_SOURCES = $(shell find logic/src -type f -name '*.c')
 OKDCC_ELECTRIC_SOURCES = $(shell find electric/src -type f -name '*.c')
 OKDCC_UI_SOURCES = $(shell find ui/src -type f -name '*.c')
+APP_MONITOR_SOURCES = $(shell find app/monitor/src -type f)
 OKDCC_LOGIC_OBJECTS = $(patsubst logic/src/%,$(BUILD_DIR)/okdcc/logic/%,$(OKDCC_LOGIC_SOURCES:.c=.o))
 OKDCC_ELECTRIC_OBJECTS = $(patsubst electric/src/%,$(BUILD_DIR)/okdcc/electric/%,$(OKDCC_ELECTRIC_SOURCES:.c=.o))
 OKDCC_UI_MOCK_X11_OBJECTS = $(patsubst ui/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/%,$(OKDCC_UI_SOURCES:.c=.o))
@@ -114,7 +115,7 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -I lib/munit -c -o $@ $^
 
-$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
+$(APP_MONITOR_OUT_PATHS)&: $(APP_MONITOR_SOURCES) app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
 
 $(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
