@@ -25,8 +25,6 @@ unsigned long oldestSeq(Model const &model) {
   return model.packetsCount > historyCapacity ? model.packetsCount - historyCapacity + 1 : 1;
 }
 
-Clay_String toClayString(char const *text) { return Clay_String{ false, static_cast<int32_t>(strlen(text)), text }; }
-
 struct Replacement {
   char const *from;
   char const *to;
@@ -144,17 +142,13 @@ Model update(Model const &model, Message const &message) {
   return next;
 }
 
-void view(Model const &model, ViewBuffers &buffers) {
-  if (model.paused) {
-    snprintf(buffers.status,
-             sizeof buffers.status,
-             "PAUSED  -%lu  pkt %lu  err %lu",
-             model.packetsCount - model.anchorSeq,
-             model.packetsCount,
-             model.errorsCount);
-  } else {
-    snprintf(buffers.status, sizeof buffers.status, "RUNNING  pkt %lu  err %lu", model.packetsCount, model.errorsCount);
-  }
+void view(Model const &model, okdcc::ui::Frame &frame) {
+  Clay_String const status = model.paused
+                               ? frame.format("PAUSED  -%lu  pkt %lu  err %lu",
+                                              model.packetsCount - model.anchorSeq,
+                                              model.packetsCount,
+                                              model.errorsCount)
+                               : frame.format("RUNNING  pkt %lu  err %lu", model.packetsCount, model.errorsCount);
 
   CLAY(CLAY_ID("Root"),
        { .layout = { .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_GROW(0) }, .layoutDirection = CLAY_TOP_TO_BOTTOM },
@@ -162,7 +156,7 @@ void view(Model const &model, ViewBuffers &buffers) {
     CLAY(CLAY_ID("Status"),
          { .layout = { .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) }, .padding = { 6, 6, 4, 4 } },
            .backgroundColor = barColor }) {
-      CLAY_TEXT(toClayString(buffers.status),
+      CLAY_TEXT(status,
                 CLAY_TEXT_CONFIG({ .textColor = model.paused ? pausedColor : runningColor, .fontId = headerFontId }));
     }
 
@@ -179,11 +173,13 @@ void view(Model const &model, ViewBuffers &buffers) {
       size_t row = 0;
       for (unsigned long seq = newest; seq >= oldest && seq > 0 && row < maxRows; seq--, row++) {
         Entry const &entry = model.history[seq % historyCapacity];
-        formatPacket(buffers.rows[row], rowTextSize, entry.seq, entry.packet);
+        char *const text = frame.allocate(rowTextSize - 1);
+        if (text == nullptr) break;
+        formatPacket(text, rowTextSize, entry.seq, entry.packet);
         CLAY(CLAY_IDI("Row", static_cast<uint32_t>(row)),
              { .layout = { .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) }, .padding = { 2, 2, 1, 1 } },
                .backgroundColor = rowColors[seq % 2] }) {
-          CLAY_TEXT(toClayString(buffers.rows[row]),
+          CLAY_TEXT(okdcc::ui::Frame::string(text),
                     CLAY_TEXT_CONFIG({ .textColor = row == 0 ? seqColor : textColor, .fontId = bodyFontId }));
         }
       }
@@ -198,11 +194,27 @@ void view(Model const &model, ViewBuffers &buffers) {
         CLAY(CLAY_IDI("Button", static_cast<uint32_t>(i)),
              { .layout = { .sizing = { CLAY_SIZING_GROW(0), CLAY_SIZING_FIT(0) },
                            .childAlignment = { CLAY_ALIGN_X_CENTER, CLAY_ALIGN_Y_CENTER } } }) {
-          CLAY_TEXT(toClayString(labels[i]),
+          CLAY_TEXT(okdcc::ui::Frame::string(labels[i]),
                     CLAY_TEXT_CONFIG({ .textColor = enabled ? textColor : disabledColor, .fontId = headerFontId }));
         }
       }
     }
+  }
+}
+
+bool onButtonPressed(Model const &model, uint8_t button, Message *message) {
+  switch (button) {
+    case buttonA:
+      *message = Message{ MessageTag::ScrollOlder, {} };
+      return true;
+    case buttonB:
+      *message = Message{ MessageTag::TogglePause, {} };
+      return true;
+    case buttonC:
+      *message = Message{ MessageTag::ScrollNewer, {} };
+      return true;
+    default:
+      return false;
   }
 }
 

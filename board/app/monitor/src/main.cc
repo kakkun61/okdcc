@@ -49,15 +49,15 @@ void printLogTask(void *);
 }
 
 static void printClayError(Clay_ErrorData error);
-static void dispatch(monitor_ui::Message const &message);
 
 static LGFX display;
 static clay_lgfx::FontTable fontTable;
 static clay_lgfx::Renderer renderer(fontTable);
 static clay_lgfx::BandedPresenter presenter(display, renderer);
 static clay_lgfx::GpioButtons buttons({ BUTTON_A_GPIO, BUTTON_B_GPIO, BUTTON_C_GPIO });
-static monitor_ui::Model uiModel;
-static monitor_ui::ViewBuffers uiViewBuffers;
+static char uiFrameMemory[monitor_ui::frameMemorySize];
+static okdcc::ui::Frame uiFrame(uiFrameMemory, sizeof uiFrameMemory);
+static monitor_ui::Program uiProgram(monitor_ui::definition, uiFrame);
 static dcc_TimeMicroSec signalBufferValues[SIGNAL_BUFFER_SIZE];
 static struct dcc_Decoder decoder = dcc_initializeDecoder(signalBufferValues, SIGNAL_BUFFER_SIZE);
 static StreamBufferHandle_t logStreamBuffer = NULL;
@@ -94,7 +94,7 @@ void app_main(void) {
     errorLoop();
   }
   buttons.begin();
-  uiModel = monitor_ui::init();
+  uiProgram.start();
 
   {
     gpio_config_t config = { .pin_bit_mask = BIT64(DCC_SIGNAL_GPIO),
@@ -144,14 +144,11 @@ void app_main(void) {
   }
 }
 
-static void dispatch(monitor_ui::Message const &message) { uiModel = monitor_ui::update(uiModel, message); }
-
 static void printClayError(Clay_ErrorData error) {
   LOG("Clay: %.*s", static_cast<int>(error.errorText.length), error.errorText.chars);
 }
 
 void loopTask(void *) {
-  uint8_t lastButtons = 0;
   int64_t lastTime = esp_timer_get_time();
   while (true) {
     {
@@ -162,7 +159,7 @@ void loopTask(void *) {
         switch (result) {
           case dcc_StreamParserResult_Failure:
             LOG("decode error");
-            dispatch({ .tag = monitor_ui::MessageTag::DecodeFailed, .packet = {} });
+            uiProgram.dispatch({ .tag = monitor_ui::MessageTag::DecodeFailed, .packet = {} });
             continue;
           case dcc_StreamParserResult_Continue:
             // LOG("decode continue");
@@ -171,27 +168,18 @@ void loopTask(void *) {
             char buffer[512] = { 0 };
             dcc_showPacket(buffer, sizeof buffer, packet);
             LOG("packet: %s", buffer);
-            dispatch({ .tag = monitor_ui::MessageTag::PacketReceived, .packet = packet });
+            uiProgram.dispatch({ .tag = monitor_ui::MessageTag::PacketReceived, .packet = packet });
             continue;
           }
         }
       }
     }
-    {
-      uint8_t const held = buttons.read();
-      uint8_t const pressed = held & ~lastButtons;
-      lastButtons = held;
-      if (pressed & clay_lgfx::buttonPrev) dispatch({ .tag = monitor_ui::MessageTag::ScrollOlder, .packet = {} });
-      if (pressed & clay_lgfx::buttonSelect) dispatch({ .tag = monitor_ui::MessageTag::TogglePause, .packet = {} });
-      if (pressed & clay_lgfx::buttonNext) dispatch({ .tag = monitor_ui::MessageTag::ScrollNewer, .packet = {} });
-    }
+    uiProgram.handleButtons(buttons.read());
     {
       int64_t const now = esp_timer_get_time();
       float const deltaTime = static_cast<float>(now - lastTime) / 1000000.0f;
       lastTime = now;
-      Clay_BeginLayout();
-      monitor_ui::view(uiModel, uiViewBuffers);
-      presenter.present(Clay_EndLayout(deltaTime));
+      presenter.present(uiProgram.frame(deltaTime));
     }
     vTaskDelay(1);
   }

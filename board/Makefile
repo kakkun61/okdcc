@@ -4,6 +4,7 @@ ABS_BUILD_DIR = $(shell realpath $(BUILD_DIR))
 
 OKDCC_LOGIC_SOURCES = $(shell find logic/src -type f -name '*.c')
 OKDCC_ELECTRIC_SOURCES = $(shell find electric/src -type f -name '*.c')
+OKDCC_UI_SOURCES = $(shell find ui/src -type f)
 APP_MONITOR_SOURCES = $(shell find app/monitor/src -type f)
 OKDCC_LOGIC_OBJECTS = $(patsubst logic/src/%,$(BUILD_DIR)/okdcc/logic/%,$(OKDCC_LOGIC_SOURCES:.c=.o))
 OKDCC_ELECTRIC_OBJECTS = $(patsubst electric/src/%,$(BUILD_DIR)/okdcc/electric/%,$(OKDCC_ELECTRIC_SOURCES:.c=.o))
@@ -18,18 +19,22 @@ TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/$(PLATFORMIO_ENVI
 
 # spell-checker:ignore Wextra Wconversion Wdeprecated
 CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter -D DCC_ASSERT
+CXX_OPTS = -std=c++20 -Wall -Wextra -Wconversion -Wno-unused-parameter
 
 .PHONY: all
 all: build
 
 .PHONY: build
-build: build.logic build.app.monitor build.logic.test build.electric.test build.example.cli build.example.show
+build: build.logic build.app.monitor build.logic.test build.ui.test build.electric.test build.example.cli build.example.show
 
 .PHONY: build.logic
 build.logic: $(OKDCC_LOGIC_OBJECTS)
 
 .PHONY: build.logic.test
 build.logic.test: $(BUILD_DIR)/okdcc/logic/test/unit
+
+.PHONY: build.ui.test
+build.ui.test: $(BUILD_DIR)/okdcc/ui/test/unit
 
 .PHONY: build.app.monitor
 build.app.monitor: $(APP_MONITOR_OUT_PATHS)
@@ -44,8 +49,9 @@ build.example.show: $(BUILD_DIR)/okdcc/examples/show
 build.electric.test: $(TEST_ELECTRIC_OUT_PATHS)
 
 .PHONY: test
-test: $(BUILD_DIR)/okdcc/logic/test/unit
+test: $(BUILD_DIR)/okdcc/logic/test/unit $(BUILD_DIR)/okdcc/ui/test/unit
 	$(ABS_BUILD_DIR)/okdcc/logic/test/unit
+	$(ABS_BUILD_DIR)/okdcc/ui/test/unit
 
 .PHONY: upload.app.monitor
 upload.app.monitor: build.app.monitor
@@ -94,6 +100,14 @@ $(BUILD_DIR)/okdcc/logic/test/unit.o: logic/test/unit/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I lib/munit -I logic/src -c -o $@ $^
 
+$(BUILD_DIR)/okdcc/ui/test/unit: $(BUILD_DIR)/munit/munit.o $(BUILD_DIR)/okdcc/ui/test/unit.o
+	@mkdir -p $(@D)
+	$(CXX) $(CXX_OPTS) -o $@ $^
+
+$(BUILD_DIR)/okdcc/ui/test/unit.o: ui/test/unit/main.cpp $(OKDCC_UI_SOURCES)
+	@mkdir -p $(@D)
+	$(CXX) $(CXX_OPTS) -I lib/munit -isystem lib/clay -I ui/src -c -o $@ $<
+
 $(BUILD_DIR)/okdcc/logic/%.o: logic/src/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I src -c -o $@ $^
@@ -106,7 +120,7 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -I lib/munit -c -o $@ $^
 
-$(APP_MONITOR_OUT_PATHS)&: $(APP_MONITOR_SOURCES) app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES)
+$(APP_MONITOR_OUT_PATHS)&: $(APP_MONITOR_SOURCES) app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
 
 $(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
