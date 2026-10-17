@@ -7,7 +7,6 @@ extern "C" {
 
 #include "okdcc/electric.h"
 #include "okdcc/logic.h"
-#include "okdcc/ui.h"
 
 #ifdef __cplusplus
 }

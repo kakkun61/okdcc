@@ -1,25 +1,32 @@
-#include <M5Unified.h>
+#define LGFX_AUTODETECT
+#include <LGFX_AUTODETECT.hpp>
+#include <LovyanGFX.hpp>
+
+#define CLAY_IMPLEMENTATION
+#include <clay.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/stream_buffer.h>
-#include <lvgl.h>
 #include <okdcc.h>
 
-// 最後に include する
-#include <M5GFX.h>
+#include <ClayLGFX.hpp>
+
+#include "monitor_ui.hpp"
 
 #if 8 != CHAR_BIT
 #error "This program expects that the bit size of \"char\" is 8."
 #endif
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
-#define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
 #define SIGNAL_BUFFER_SIZE 1024
 #define LOG_STREAM_BUFFER_SIZE (4 * 1024)
 // フォトカプラーの出力を受け取るピン
 // レールの極性が反転するたびにレベルが変わる
 // フォトカプラーの出力はオープンコレクターを想定してプルアップする
 #define DCC_SIGNAL_GPIO GPIO_NUM_5
+#define BUTTON_A_GPIO 39
+#define BUTTON_B_GPIO 38
+#define BUTTON_C_GPIO 37
+#define DISPLAY_BAND_HEIGHT 40
+#define CLAY_MAX_ELEMENT_COUNT 128
 
 #define LOG(...)                                                \
   do {                                                          \
@@ -29,11 +36,8 @@
 extern "C" {
 void app_main(void);
 void loopTask(void *);
-void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map);
-void readButtons(lv_indev_t *indev, lv_indev_data_t *data);
 void onVoltageChange(void *);
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal);
-uint32_t getTickMs(void);
 [[noreturn]] void errorLoop(void);
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...);
 void printErrorLog(char const *const file, int const line, char const *func, char const *format, ...);
@@ -44,11 +48,16 @@ void printLogVa(char const *const level, char const *const file, int const line,
 void printLogTask(void *);
 }
 
-#if LV_USE_LOG
-void printLvLog(lv_log_level_t level, const char *buf);
-#endif
+static void printClayError(Clay_ErrorData error);
 
-static M5GFX gfx;
+static LGFX display;
+static clay_lgfx::FontTable fontTable;
+static clay_lgfx::Renderer renderer(fontTable);
+static clay_lgfx::BandedPresenter presenter(display, renderer);
+static clay_lgfx::GpioButtons buttons({ BUTTON_A_GPIO, BUTTON_B_GPIO, BUTTON_C_GPIO });
+static char uiFrameMemory[monitor_ui::frameMemorySize];
+static okdcc::ui::Frame uiFrame(uiFrameMemory, sizeof uiFrameMemory);
+static monitor_ui::Program uiProgram(monitor_ui::definition, uiFrame);
 static dcc_TimeMicroSec signalBufferValues[SIGNAL_BUFFER_SIZE];
 static struct dcc_Decoder decoder = dcc_initializeDecoder(signalBufferValues, SIGNAL_BUFFER_SIZE);
 static StreamBufferHandle_t logStreamBuffer = NULL;
@@ -57,34 +66,35 @@ static StaticStreamBuffer_t logStreamBufferStruct;
 static portMUX_TYPE signalBufferMux = portMUX_INITIALIZER_UNLOCKED;
 
 void app_main(void) {
-  M5.begin();
-  gfx.init();
   printf("OKDCC v0.0 (%s %s)\n", __DATE__, __TIME__);
-  printf("LVGL v%d.%d.%d\n", lv_version_major(), lv_version_minor(), lv_version_patch());
-
-  lv_init();
-
-#if LV_USE_LOG
-  lv_log_register_print_cb(printLvLog);
-#endif
-
-  lv_tick_set_cb(getTickMs);
-
-  lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
-  static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10 * BYTE_PER_PIXEL];
-  lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer), LV_DISPLAY_RENDER_MODE_PARTIAL);
-  lv_display_set_flush_cb(display, displayFlush);
-
-  lv_indev_t *buttonsIndev = lv_indev_create();
-  lv_indev_set_type(buttonsIndev, LV_INDEV_TYPE_KEYPAD);
-  lv_indev_set_read_cb(buttonsIndev, readButtons);
 
   logStreamBuffer =
     xStreamBufferCreateStatic(LOG_STREAM_BUFFER_SIZE, 1, (uint8_t *) logStreamBufferStorage, &logStreamBufferStruct);
   dcc_error_log = printErrorLog;
 
-  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(buttonsIndev);
-  dcc_ui_view(modelCommand.model);
+  display.init();
+  fontTable.set(0, &lgfx::fonts::Font0);
+  fontTable.set(1, &lgfx::fonts::Font2);
+  Clay_SetMaxElementCount(CLAY_MAX_ELEMENT_COUNT);
+  Clay_SetMaxMeasureTextCacheWordCount(512);
+  {
+    uint32_t const size = Clay_MinMemorySize();
+    void *const memory = malloc(size);
+    if (memory == NULL) {
+      LOG("Failed to allocate %lu bytes for Clay", (unsigned long) size);
+      errorLoop();
+    }
+    Clay_Initialize(Clay_CreateArenaWithCapacityAndMemory(size, memory),
+                    Clay_Dimensions{ static_cast<float>(display.width()), static_cast<float>(display.height()) },
+                    Clay_ErrorHandler{ printClayError, nullptr });
+  }
+  fontTable.attach();
+  if (!presenter.begin(DISPLAY_BAND_HEIGHT)) {
+    LOG("Failed to allocate the display band buffer");
+    errorLoop();
+  }
+  buttons.begin();
+  uiProgram.start();
 
   {
     gpio_config_t config = { .pin_bit_mask = BIT64(DCC_SIGNAL_GPIO),
@@ -126,7 +136,7 @@ void app_main(void) {
   {
     TaskHandle_t loopTaskHandle = NULL;
     BaseType_t loopTaskCreationResult =
-      xTaskCreate(loopTask, "loopTask", /* stack size */ 16 * 1024, NULL, 1, &loopTaskHandle);
+      xTaskCreate(loopTask, "loopTask", /* stack size */ 24 * 1024, NULL, 1, &loopTaskHandle);
     if (pdPASS != loopTaskCreationResult) {
       LOG("Failed to create \"loopTask\" task");
       errorLoop();
@@ -134,10 +144,13 @@ void app_main(void) {
   }
 }
 
+static void printClayError(Clay_ErrorData error) {
+  LOG("Clay: %.*s", static_cast<int>(error.errorText.length), error.errorText.chars);
+}
+
 void loopTask(void *) {
+  int64_t lastTime = esp_timer_get_time();
   while (true) {
-    M5.update();
-    lv_timer_handler();
     {
       dcc_TimeMicroSec signal;
       while (dcc_Success == readSignalBuffer(&decoder.signalBuffer, &signal)) {
@@ -146,6 +159,7 @@ void loopTask(void *) {
         switch (result) {
           case dcc_StreamParserResult_Failure:
             LOG("decode error");
+            uiProgram.dispatch({ .tag = monitor_ui::MessageTag::DecodeFailed, .packet = {} });
             continue;
           case dcc_StreamParserResult_Continue:
             // LOG("decode continue");
@@ -154,45 +168,23 @@ void loopTask(void *) {
             char buffer[512] = { 0 };
             dcc_showPacket(buffer, sizeof buffer, packet);
             LOG("packet: %s", buffer);
+            uiProgram.dispatch({ .tag = monitor_ui::MessageTag::PacketReceived, .packet = packet });
             continue;
           }
         }
       }
     }
+    uiProgram.handleButtons(buttons.read());
+    {
+      int64_t const now = esp_timer_get_time();
+      float const deltaTime = static_cast<float>(now - lastTime) / 1000000.0f;
+      lastTime = now;
+      presenter.present(uiProgram.frame(deltaTime));
+    }
     vTaskDelay(1);
   }
   vTaskDelete(NULL);
 }
-
-void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
-  unsigned int const w = area->x2 - area->x1 + 1;
-  unsigned int const h = area->y2 - area->y1 + 1;
-
-  gfx.startWrite();
-  gfx.setAddrWindow(area->x1, area->y1, w, h);
-  gfx.writePixels((uint16_t *) px_map, w * h, true);
-  gfx.endWrite();
-
-  lv_display_flush_ready(display);
-}
-
-void readButtons(lv_indev_t *indev, lv_indev_data_t *data) {
-  static int index = 0;
-  static m5::Button_Class buttons[] = { M5.BtnA, M5.BtnB, M5.BtnC };
-  static uint32_t const keys[] = { LV_KEY_NEXT, LV_KEY_PREV, LV_KEY_ENTER };
-
-  if (buttons[index].wasPressed()) {
-    data->state = LV_INDEV_STATE_PRESSED;
-    data->key = keys[index];
-  } else if (buttons[index].wasReleased()) {
-    data->state = LV_INDEV_STATE_RELEASED;
-    data->key = keys[index];
-  }
-
-  index = (index + 1) % 3;
-}
-
-uint32_t getTickMs(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
 
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
   portENTER_CRITICAL(&signalBufferMux);
@@ -230,13 +222,6 @@ void printLogTask(void *) {
   }
   vTaskDelete(NULL);
 }
-
-#if LV_USE_LOG
-void printLvLog(lv_log_level_t level, const char *buf) {
-  static const char *lvl_prefix[] = { "TRACE", "INFO", "WARN", "ERROR", "USER" };
-  printf("LVGL: %s: %s\n", lvl_prefix[level], buf);
-}
-#endif
 
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...) {
   va_list vlist;

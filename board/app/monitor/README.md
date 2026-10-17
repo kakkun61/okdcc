@@ -2,10 +2,18 @@
 
 # okdcc monitor
 
-NMRA DCC 信号を受信してデコードし、結果をシリアル通信に出力するテストアプリケーション。
+NMRA DCC 信号を受信してデコードし、結果をシリアル通信と画面に出力するテストアプリケーション。
 
 - ボード: M5Stack Core（ESP32）
-- 出力: シリアル（115200 bps）に `packet: {...}` 形式の JSON
+- 出力
+  - シリアル（115200 bps）: `packet: {...}` 形式の JSON
+  - 画面: 受信したパケットを新しいものほど上に並べる。上端に状態（RUNNING / PAUSED）・受信数・エラー数
+- ボタン
+  - A: 停止中、ひとつ古いパケットへさかのぼる
+  - B: 表示の更新を停止・再開する（停止中も受信とシリアル出力は続く）
+  - C: 停止中、ひとつ新しいパケットへ進む
+  - 直近 128 個までさかのぼれる。停止中に古いパケットが上書きされたら、残っている最も古いものへ移る
+- 画面は [Clay](https://github.com/nicbarker/clay) と [LovyanGFX](https://github.com/lovyan03/LovyanGFX) で、[clay-lgfx-renderer](https://github.com/kakkun61/clay-lgfx-renderer) を通して描く
 
 ## ハードウェア
 
@@ -38,7 +46,7 @@ Rail A --- R ---+--- LED (photocoupler) ---+--- Rail B
 
 ## ビルドと書き込み
 
-`board/` で次を実行する。
+`clay.h` はサブモジュール `board/lib/clay` から読むので、先に `git submodule update --init` しておく。`board/` で次を実行する。
 
 ```sh
 make build.app.monitor
