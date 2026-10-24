@@ -9,5 +9,5 @@ ConstructorInitializerIndentWidth: 2
 ContinuationIndentWidth: 2
 Cpp11BracedListStyle: false
 PointerAlignment: Right
-ReflowComments: false
+ReflowComments: Never
 SpaceAfterCStyleCast: true
