@@ -16,7 +16,9 @@
 #define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
 #define SIGNAL_BUFFER_SIZE 1024
 #define LOG_STREAM_BUFFER_SIZE (4 * 1024)
-#define VOLTAGE_GPIO GPIO_NUM_5
+// フォトカプラーの出力を受け取るピン
+// レールの極性が反転するたびにレベルが変わる
+#define DCC_SIGNAL_GPIO GPIO_NUM_5
 
 #define LOG(...)                                                \
   do {                                                          \
@@ -29,6 +31,8 @@ void loopTask(void *);
 void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map);
 void readButtons(lv_indev_t *indev, lv_indev_data_t *data);
 void onVoltageChange(void *);
+enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal);
+uint32_t getTickMs(void);
 [[noreturn]] void errorLoop(void);
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...);
 void printErrorLog(char const *const file, int const line, char const *func, char const *format, ...);
@@ -49,11 +53,11 @@ static struct dcc_Decoder decoder = dcc_initializeDecoder(signalBufferValues, SI
 static StreamBufferHandle_t logStreamBuffer = NULL;
 static char logStreamBufferStorage[LOG_STREAM_BUFFER_SIZE + 1] = { 0 };  // StreamBuffer が 1 バイト余分に要求する
 static StaticStreamBuffer_t logStreamBufferStruct;
+static portMUX_TYPE signalBufferMux = portMUX_INITIALIZER_UNLOCKED;
 
 void app_main(void) {
   M5.begin();
   gfx.init();
-  lv_init();
   printf("OKDCC v0.0 (%s %s)\n", __DATE__, __TIME__);
   printf("LVGL v%d.%d.%d\n", lv_version_major(), lv_version_minor(), lv_version_patch());
 
@@ -63,7 +67,7 @@ void app_main(void) {
   lv_log_register_print_cb(printLvLog);
 #endif
 
-  lv_tick_set_cb((lv_tick_get_cb_t) xTaskGetTickCount);
+  lv_tick_set_cb(getTickMs);
 
   lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
   static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10 * BYTE_PER_PIXEL];
@@ -82,14 +86,14 @@ void app_main(void) {
   dcc_ui_view(modelCommand.model);
 
   {
-    gpio_config_t config = { .pin_bit_mask = BIT(1) << VOLTAGE_GPIO,
+    gpio_config_t config = { .pin_bit_mask = BIT64(DCC_SIGNAL_GPIO),
                              .mode = GPIO_MODE_INPUT,
                              .pull_up_en = GPIO_PULLUP_DISABLE,
-                             .pull_down_en = GPIO_PULLDOWN_ENABLE,
+                             .pull_down_en = GPIO_PULLDOWN_DISABLE,
                              .intr_type = GPIO_INTR_ANYEDGE };
     esp_err_t const result = gpio_config(&config);
     if (ESP_OK != result) {
-      LOG("Failed to configure GPIO %d: %s", VOLTAGE_GPIO, esp_err_to_name(result));
+      LOG("Failed to configure GPIO %d: %s", DCC_SIGNAL_GPIO, esp_err_to_name(result));
       errorLoop();
     }
   }
@@ -101,9 +105,9 @@ void app_main(void) {
     }
   }
   {
-    esp_err_t const result = gpio_isr_handler_add(VOLTAGE_GPIO, onVoltageChange, NULL);
+    esp_err_t const result = gpio_isr_handler_add(DCC_SIGNAL_GPIO, onVoltageChange, NULL);
     if (ESP_OK != result) {
-      LOG("Failed to add ISR handler on GPIO %d: %s", VOLTAGE_GPIO, esp_err_to_name(result));
+      LOG("Failed to add ISR handler on GPIO %d: %s", DCC_SIGNAL_GPIO, esp_err_to_name(result));
       errorLoop();
     }
   }
@@ -135,10 +139,7 @@ void loopTask(void *) {
     lv_timer_handler();
     {
       dcc_TimeMicroSec signal;
-      char buffer[512] = { 0 };
-      dcc_showSignalBuffer(buffer, sizeof buffer, decoder.signalBuffer);
-      while (dcc_Success == dcc_readSignalBuffer(&decoder.signalBuffer, &signal)) {
-        dcc_showSignalBuffer(buffer, sizeof buffer, decoder.signalBuffer);
+      while (dcc_Success == readSignalBuffer(&decoder.signalBuffer, &signal)) {
         struct dcc_Packet packet;
         enum dcc_StreamParserResult result = dcc_decode(&decoder, signal, &packet);
         switch (result) {
@@ -157,6 +158,7 @@ void loopTask(void *) {
         }
       }
     }
+    vTaskDelay(1);
   }
   vTaskDelete(NULL);
 }
@@ -189,16 +191,26 @@ void readButtons(lv_indev_t *indev, lv_indev_data_t *data) {
   index = (index + 1) % 3;
 }
 
+uint32_t getTickMs(void) { return (uint32_t) (esp_timer_get_time() / 1000); }
+
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
-  gpio_intr_disable(VOLTAGE_GPIO);
-  enum dcc_Result result = dcc_readSignalBuffer(buffer, signal);
-  gpio_intr_enable(VOLTAGE_GPIO);
+  portENTER_CRITICAL(&signalBufferMux);
+  enum dcc_Result const result = dcc_readSignalBuffer(buffer, signal);
+  portEXIT_CRITICAL(&signalBufferMux);
   return result;
 }
 
-void onVoltageChange(void *) {
+// spell-checker:ignore IRAM
+void IRAM_ATTR onVoltageChange(void *) {
+  static int lastLevel = -1;
+  int const level = gpio_get_level(DCC_SIGNAL_GPIO);
+  if (level == lastLevel) return;
+  lastLevel = level;
   unsigned long const now = esp_timer_get_time();
-  if (dcc_Failure == dcc_writeSignalBuffer(&decoder.signalBuffer, now)) LOG("Failed to write signal buffer");
+  portENTER_CRITICAL_ISR(&signalBufferMux);
+  enum dcc_Result const result = dcc_writeSignalBuffer(&decoder.signalBuffer, now);
+  portEXIT_CRITICAL_ISR(&signalBufferMux);
+  if (dcc_Failure == result) LOG("Failed to write signal buffer");
 }
 
 void errorLoop(void) {
