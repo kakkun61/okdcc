@@ -4,6 +4,15 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    esp-dev.url = "github:mirrexagon/nixpkgs-esp-dev";
+    m5unified = {
+      url = "github:m5stack/M5Unified/0.2.27";
+      flake = false;
+    };
+    m5gfx = {
+      url = "github:m5stack/M5GFX/0.2.34";
+      flake = false;
+    };
   };
 
   outputs =
@@ -21,16 +30,26 @@
           ...
         }:
         let
+          esp-components = pkgs.linkFarm "okdcc-esp-components" [
+            {
+              name = "M5Unified";
+              path = inputs.m5unified;
+            }
+            {
+              name = "M5GFX";
+              path = inputs.m5gfx;
+            }
+          ];
           web-packages = with pkgs; [
             nodejs_24
           ];
           board-packages = with pkgs; [
             clang
             doxygen
+            inputs'.esp-dev.packages.esp-idf-xtensa
             gettext
             glibc
             nixpkgs-fmt
-            platformio-core
             python312
             python312Packages.breathe
             python312Packages.sphinx_rtd_theme
@@ -51,6 +70,7 @@
               ])
               ++ web-packages
               ++ board-packages;
+            OKDCC_ESP_COMPONENTS = esp-components;
           };
           apps = {
             unit = {
