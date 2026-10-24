@@ -14,6 +14,7 @@ words:
   - kazuki
   - lowmed
   - lvgl
+  - mirrexagon
   - munit
   - nixfmt
   - nixos
@@ -34,6 +35,7 @@ words:
   - wght
   - xlarge
   - xorg
+  - xtensa
   - yamlfmt
 flagWords: []
 ignorePaths:
