@@ -9,13 +9,21 @@ OKDCC_LOGIC_OBJECTS = $(patsubst logic/src/%,$(BUILD_DIR)/okdcc/logic/%,$(OKDCC_
 OKDCC_ELECTRIC_OBJECTS = $(patsubst electric/src/%,$(BUILD_DIR)/okdcc/electric/%,$(OKDCC_ELECTRIC_SOURCES:.c=.o))
 OKDCC_UI_MOCK_X11_OBJECTS = $(patsubst ui/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/%,$(OKDCC_UI_SOURCES:.c=.o))
 
-PLATFORMIO_ENVIRONMENT = debug
-PLATFORMIO_OUT_EXTS = bin elf map
-PLATFORMIO_OUTS = $(addprefix firmware.,$(PLATFORMIO_OUT_EXTS))
-APP_MONITOR_OUT_DIR = $(BUILD_DIR)/okdcc/app/monitor/build
-APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
-TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/okdcc/test/electric/build
-TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
+# debug または release
+BUILD_TYPE = debug
+# $(1): プロジェクトディレクトリー、$(2): ビルドディレクトリー
+IDF_PY = IDF_COMPONENT_MANAGER=0 idf.py \
+	-C $(1) \
+	-B $(abspath $(2)) \
+	-D SDKCONFIG=$(abspath $(2))/sdkconfig \
+	-D OKDCC_DEBUG=$(if $(filter debug,$(BUILD_TYPE)),ON,OFF)
+
+APP_MONITOR_OUT_DIR = $(BUILD_DIR)/okdcc/app/monitor/$(BUILD_TYPE)
+APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/monitor.,bin elf map)
+APP_MONITOR_SOURCES = $(shell find app/monitor/main -type f)
+TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/okdcc/test/electric/$(BUILD_TYPE)
+TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/electric.,bin elf map)
+TEST_ELECTRIC_SOURCES = $(shell find test/electric/main -type f)
 
 LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
@@ -57,7 +65,11 @@ test: $(BUILD_DIR)/okdcc/logic/test/unit
 
 .PHONY: upload.app.monitor
 upload.app.monitor: build.app.monitor
-	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT) --target upload --upload-port $(PORT)
+	$(call IDF_PY,app/monitor,$(APP_MONITOR_OUT_DIR)) --port $(PORT) --baud 1500000 flash
+
+.PHONY: monitor
+monitor: build.app.monitor
+	$(call IDF_PY,app/monitor,$(APP_MONITOR_OUT_DIR)) --port $(PORT) monitor
 
 .PHONY: format
 format: format.c
@@ -114,11 +126,11 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -I lib/munit -c -o $@ $^
 
-$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
-	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
+$(APP_MONITOR_OUT_PATHS)&: $(APP_MONITOR_SOURCES) app/monitor/CMakeLists.txt app/monitor/sdkconfig.defaults $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
+	$(call IDF_PY,app/monitor,$(APP_MONITOR_OUT_DIR)) build
 
-$(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
-	pio run --project-dir test/electric --environment $(PLATFORMIO_ENVIRONMENT)
+$(TEST_ELECTRIC_OUT_PATHS)&: $(TEST_ELECTRIC_SOURCES) test/electric/CMakeLists.txt test/electric/sdkconfig.defaults $(OKDCC_ELECTRIC_SOURCES)
+	$(call IDF_PY,test/electric,$(TEST_ELECTRIC_OUT_DIR)) build
 
 $(BUILD_DIR)/okdcc/examples/%: $(BUILD_DIR)/okdcc/examples/%.o $(OKDCC_LOGIC_OBJECTS)
 	@mkdir -p $(@D)
