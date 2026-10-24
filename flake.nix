@@ -37,7 +37,6 @@
             sphinx
             stdenv
             valgrind
-            xorg.libX11
           ];
         in
         {

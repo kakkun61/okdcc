@@ -1,7 +1,6 @@
 #include <M5Unified.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/stream_buffer.h>
-#include <lvgl.h>
 #include <okdcc.h>
 
 // 最後に include する
@@ -13,7 +12,6 @@
 
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 240
-#define BYTE_PER_PIXEL (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565))
 #define SIGNAL_BUFFER_SIZE 1024
 #define LOG_STREAM_BUFFER_SIZE (4 * 1024)
 #define VOLTAGE_GPIO GPIO_NUM_5
@@ -26,8 +24,6 @@
 extern "C" {
 void app_main(void);
 void loopTask(void *);
-void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map);
-void readButtons(lv_indev_t *indev, lv_indev_data_t *data);
 void onVoltageChange(void *);
 [[noreturn]] void errorLoop(void);
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...);
@@ -39,10 +35,6 @@ void printLogVa(char const *const level, char const *const file, int const line,
 void printLogTask(void *);
 }
 
-#if LV_USE_LOG
-void printLvLog(lv_log_level_t level, const char *buf);
-#endif
-
 static M5GFX gfx;
 static dcc_TimeMicroSec signalBufferValues[SIGNAL_BUFFER_SIZE];
 static struct dcc_Decoder decoder = dcc_initializeDecoder(signalBufferValues, SIGNAL_BUFFER_SIZE);
@@ -53,32 +45,13 @@ static StaticStreamBuffer_t logStreamBufferStruct;
 void app_main(void) {
   M5.begin();
   gfx.init();
-  lv_init();
   printf("OKDCC v0.0 (%s %s)\n", __DATE__, __TIME__);
-  printf("LVGL v%d.%d.%d\n", lv_version_major(), lv_version_minor(), lv_version_patch());
-
-  lv_init();
-
-#if LV_USE_LOG
-  lv_log_register_print_cb(printLvLog);
-#endif
-
-  lv_tick_set_cb((lv_tick_get_cb_t) xTaskGetTickCount);
-
-  lv_display_t *display = lv_display_create(SCREEN_WIDTH, SCREEN_HEIGHT);
-  static uint8_t draw_buffer[SCREEN_WIDTH * SCREEN_HEIGHT / 10 * BYTE_PER_PIXEL];
-  lv_display_set_buffers(display, draw_buffer, NULL, sizeof(draw_buffer), LV_DISPLAY_RENDER_MODE_PARTIAL);
-  lv_display_set_flush_cb(display, displayFlush);
-
-  lv_indev_t *buttonsIndev = lv_indev_create();
-  lv_indev_set_type(buttonsIndev, LV_INDEV_TYPE_KEYPAD);
-  lv_indev_set_read_cb(buttonsIndev, readButtons);
 
   logStreamBuffer =
     xStreamBufferCreateStatic(LOG_STREAM_BUFFER_SIZE, 1, (uint8_t *) logStreamBufferStorage, &logStreamBufferStruct);
   dcc_error_log = printErrorLog;
 
-  struct dcc_ui_Model_Command modelCommand = dcc_ui_init(buttonsIndev);
+  struct dcc_ui_Model_Command modelCommand = dcc_ui_init();
   dcc_ui_view(modelCommand.model);
 
   {
@@ -132,7 +105,6 @@ void app_main(void) {
 void loopTask(void *) {
   while (true) {
     M5.update();
-    lv_timer_handler();
     {
       dcc_TimeMicroSec signal;
       char buffer[512] = { 0 };
@@ -159,34 +131,6 @@ void loopTask(void *) {
     }
   }
   vTaskDelete(NULL);
-}
-
-void displayFlush(lv_display_t *display, const lv_area_t *area, uint8_t *px_map) {
-  unsigned int const w = area->x2 - area->x1 + 1;
-  unsigned int const h = area->y2 - area->y1 + 1;
-
-  gfx.startWrite();
-  gfx.setAddrWindow(area->x1, area->y1, w, h);
-  gfx.writePixels((uint16_t *) px_map, w * h, true);
-  gfx.endWrite();
-
-  lv_display_flush_ready(display);
-}
-
-void readButtons(lv_indev_t *indev, lv_indev_data_t *data) {
-  static int index = 0;
-  static m5::Button_Class buttons[] = { M5.BtnA, M5.BtnB, M5.BtnC };
-  static uint32_t const keys[] = { LV_KEY_NEXT, LV_KEY_PREV, LV_KEY_ENTER };
-
-  if (buttons[index].wasPressed()) {
-    data->state = LV_INDEV_STATE_PRESSED;
-    data->key = keys[index];
-  } else if (buttons[index].wasReleased()) {
-    data->state = LV_INDEV_STATE_RELEASED;
-    data->key = keys[index];
-  }
-
-  index = (index + 1) % 3;
 }
 
 enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_TimeMicroSec *const signal) {
@@ -217,13 +161,6 @@ void printLogTask(void *) {
   }
   vTaskDelete(NULL);
 }
-
-#if LV_USE_LOG
-void printLvLog(lv_log_level_t level, const char *buf) {
-  static const char *lvl_prefix[] = { "TRACE", "INFO", "WARN", "ERROR", "USER" };
-  printf("LVGL: %s: %s\n", lvl_prefix[level], buf);
-}
-#endif
 
 int printDebugLog(char const *const file, int const line, char const *func, char const *format, ...) {
   va_list vlist;

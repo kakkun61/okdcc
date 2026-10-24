@@ -17,10 +17,6 @@ APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/$(PLATFORMIO_ENVIRONM
 TEST_ELECTRIC_OUT_DIR = $(BUILD_DIR)/okdcc/test/electric/build
 TEST_ELECTRIC_OUT_PATHS = $(addprefix $(TEST_ELECTRIC_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
 
-LVGL_DIR = lib/lvgl
-LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
-LVGL_MOCK_X11_OBJECTS = $(patsubst $(LVGL_DIR)/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/lvgl/%,$(LVGL_SOURCES:.c=.o))
-
 # spell-checker:ignore Wextra Wconversion Wdeprecated
 CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter -D DCC_ASSERT
 
@@ -114,7 +110,7 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -I lib/munit -c -o $@ $^
 
-$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
+$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
 
 $(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
@@ -128,17 +124,13 @@ $(BUILD_DIR)/okdcc/examples/%.o: examples/%/main.c
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I logic/src -c -o $@ $^
 
-$(BUILD_DIR)/okdcc/mock/x11.d/lvgl/%.o: $(LVGL_DIR)/src/%.c mock/x11/lv_conf.h
-	@mkdir -p $(@D)
-	$(CC) -I mock/x11 -DLV_CONF_INCLUDE_SIMPLE -c -o $@ $<
-
 $(BUILD_DIR)/okdcc/mock/x11.d/okdcc/%.o: ui/src/okdcc/%.c
 	@mkdir -p $(@D)
-	$(CC) $(CC_OPTS) -I lib/lvgl -I mock/x11 -D LV_CONF_INCLUDE_SIMPLE -c -o $@ $<
+	$(CC) $(CC_OPTS) -c -o $@ $<
 
-$(BUILD_DIR)/okdcc/mock/x11: $(LVGL_MOCK_X11_OBJECTS) $(OKDCC_UI_MOCK_X11_OBJECTS) mock/x11/main.c
+$(BUILD_DIR)/okdcc/mock/x11: $(OKDCC_UI_MOCK_X11_OBJECTS) mock/x11/main.c
 	@mkdir -p $(@D)
-	$(CC) $(CC_OPTS) -I lib/lvgl -I mock/x11 -I ui/src -l X11 -l pthread -l m -D LV_CONF_INCLUDE_SIMPLE -o $@ $^
+	$(CC) $(CC_OPTS) -I ui/src -o $@ $^
 
 # spellchecker:ignore msgfmt
 doc/locales/ja/html/LC_MESSAGES/index.mo: doc/locales/ja/html/LC_MESSAGES/index.po
