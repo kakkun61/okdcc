@@ -13,7 +13,6 @@
     "htmlacademy",
     "kazuki",
     "lowmed",
-    "lvgl",
     "munit",
     "nixfmt",
     "nixos",
@@ -48,7 +47,6 @@
     "lib",
     "node_modules",
     "sdkconfig*",
-    "lv_conf.h",
     "Configure.mdx",
     "treefmt.toml",
   ]
