@@ -115,7 +115,7 @@ void app_main(void) {
   {
     TaskHandle_t printLogTaskHandle = NULL;
     BaseType_t printLogTaskCreationResult =
-      xTaskCreate(printLogTask, "printLogTask", /* stack size */ 8 * 1096, NULL, 2, &printLogTaskHandle);
+      xTaskCreate(printLogTask, "printLogTask", /* stack size */ 8 * 1024, NULL, 2, &printLogTaskHandle);
     if (pdPASS != printLogTaskCreationResult) {
       LOG("Failed to create \"printLogTask\" task");
       errorLoop();
