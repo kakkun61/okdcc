@@ -1,5 +1,3 @@
-<!-- spell-checker:ignore NMRA photocoupler -->
-
 # okdcc monitor
 
 NMRA DCC 信号を受信してデコードし、結果をシリアル通信に出力するテストアプリケーション。
