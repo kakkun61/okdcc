@@ -5,12 +5,15 @@ ABS_BUILD_DIR = $(shell realpath $(BUILD_DIR))
 OKDCC_LOGIC_SOURCES = $(shell find logic/src -type f -name '*.c')
 OKDCC_ELECTRIC_SOURCES = $(shell find electric/src -type f -name '*.c')
 OKDCC_UI_SOURCES = $(shell find ui/src -type f -name '*.c')
+OKDCC_LOGIC_HEADERS = $(shell find logic/src -type f -name '*.h')
+OKDCC_ELECTRIC_HEADERS = $(shell find electric/src -type f -name '*.h')
+OKDCC_UI_HEADERS = $(shell find ui/src -type f -name '*.h')
 OKDCC_LOGIC_OBJECTS = $(patsubst logic/src/%,$(BUILD_DIR)/okdcc/logic/%,$(OKDCC_LOGIC_SOURCES:.c=.o))
 OKDCC_ELECTRIC_OBJECTS = $(patsubst electric/src/%,$(BUILD_DIR)/okdcc/electric/%,$(OKDCC_ELECTRIC_SOURCES:.c=.o))
 OKDCC_UI_MOCK_X11_OBJECTS = $(patsubst ui/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/%,$(OKDCC_UI_SOURCES:.c=.o))
 
 PLATFORMIO_ENVIRONMENT = debug
-PLATFORMIO_OUT_EXTS = bin elf map
+PLATFORMIO_OUT_EXTS = bin elf
 PLATFORMIO_OUTS = $(addprefix firmware.,$(PLATFORMIO_OUT_EXTS))
 APP_MONITOR_OUT_DIR = $(BUILD_DIR)/okdcc/app/monitor/build
 APP_MONITOR_OUT_PATHS = $(addprefix $(APP_MONITOR_OUT_DIR)/$(PLATFORMIO_ENVIRONMENT)/,$(PLATFORMIO_OUTS))
@@ -58,6 +61,10 @@ test: $(BUILD_DIR)/okdcc/logic/test/unit
 .PHONY: upload.app.monitor
 upload.app.monitor: build.app.monitor
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT) --target upload --upload-port $(PORT)
+
+.PHONY: monitor.app.monitor
+monitor.app.monitor:
+	pio device monitor --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT) --port $(PORT)
 
 .PHONY: format
 format: format.c
@@ -114,11 +121,13 @@ $(BUILD_DIR)/munit/munit.o: lib/munit/munit.c
 	@mkdir -p $(@D)
 	$(CC) -I lib/munit -c -o $@ $^
 
-$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES)
+$(APP_MONITOR_OUT_PATHS)&: app/monitor/src/main.cc app/monitor/src/lv_conf.h app/monitor/platformio.ini app/monitor/sdkconfig.$(PLATFORMIO_ENVIRONMENT) $(OKDCC_LOGIC_SOURCES) $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_UI_SOURCES) $(OKDCC_LOGIC_HEADERS) $(OKDCC_ELECTRIC_HEADERS) $(OKDCC_UI_HEADERS)
 	pio run --project-dir app/monitor --environment $(PLATFORMIO_ENVIRONMENT)
+	touch $(APP_MONITOR_OUT_PATHS)
 
-$(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES)
+$(TEST_ELECTRIC_OUT_PATHS)&: test/electric/src/main.cc test/electric/platformio.ini $(OKDCC_ELECTRIC_SOURCES) $(OKDCC_ELECTRIC_HEADERS)
 	pio run --project-dir test/electric --environment $(PLATFORMIO_ENVIRONMENT)
+	touch $(TEST_ELECTRIC_OUT_PATHS)
 
 $(BUILD_DIR)/okdcc/examples/%: $(BUILD_DIR)/okdcc/examples/%.o $(OKDCC_LOGIC_OBJECTS)
 	@mkdir -p $(@D)
