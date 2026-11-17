@@ -1,3 +1,5 @@
+.. spellchecker:ignore toctree doxygenfunction doxygenenum undoc
+.. spellchecker:ignore doxygenstruct doxygentypedef doxygenvariable
 
 Okdcc Documentation
 ===================

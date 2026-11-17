@@ -24,6 +24,7 @@ LVGL_DIR = lib/lvgl
 LVGL_SOURCES = $(shell find $(LVGL_DIR)/src -type f -name '*.c' -not -path '*/\.*')
 LVGL_MOCK_X11_OBJECTS = $(patsubst $(LVGL_DIR)/src/%,$(BUILD_DIR)/okdcc/mock/x11.d/lvgl/%,$(LVGL_SOURCES:.c=.o))
 
+# spell-checker:ignore Wextra Wconversion Wdeprecated
 CC_OPTS = -Wall -Wextra -Wconversion -Wdeprecated -Wno-unused-parameter -D DCC_ASSERT
 
 .PHONY: all
@@ -148,10 +149,12 @@ $(BUILD_DIR)/okdcc/mock/x11: $(LVGL_MOCK_X11_OBJECTS) $(OKDCC_UI_MOCK_X11_OBJECT
 	@mkdir -p $(@D)
 	$(CC) $(CC_OPTS) -I lib/lvgl -I mock/x11 -I ui/src -l X11 -l pthread -l m -D LV_CONF_INCLUDE_SIMPLE -o $@ $^
 
+# spellchecker:ignore msgfmt
 doc/locales/ja/html/LC_MESSAGES/index.mo: doc/locales/ja/html/LC_MESSAGES/index.po
 	@mkdir -p $(@D)
 	msgfmt -o $@ $<
 
+# spellchecker:ignore msgmerge
 doc/locales/ja/html/LC_MESSAGES/index.po: $(BUILD_DIR)/okdcc/doc/sphinx/gettext/index.pot
 	@mkdir -p $(@D)
 	if [ -f $@ ]; then msgmerge --update $@ $<; else cp $< $@; fi
