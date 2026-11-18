@@ -200,7 +200,7 @@ enum dcc_Result readSignalBuffer(struct dcc_SignalBuffer *const buffer, dcc_Time
   return result;
 }
 
-void IRAM_ATTR onVoltageChange(void *) {
+void onVoltageChange(void *) {
   static int lastLevel = -1;
   int const level = gpio_get_level(DCC_SIGNAL_GPIO);
   if (level == lastLevel) return;
