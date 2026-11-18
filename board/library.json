@@ -14,9 +14,6 @@
   },
   "frameworks": "*",
   "platforms": "*",
-  "dependencies": {
-    "lvgl/lvgl": "^9"
-  },
   "headers": "okdcc.h",
   "export": {
     "include": [
