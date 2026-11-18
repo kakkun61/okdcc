@@ -1,19 +1,57 @@
+version: "0.2"
+language: en
 words:
   - autodocs
+  - cachix
   - customise
+  - doxyfile
   - envrc
+  - espidf
+  - espressif
+  - esptool
   - evenodd
   - htmlacademy
+  - kazuki
+  - lowmed
+  - lvgl
+  - munit
   - nixfmt
   - nixos
   - nixpkgs
+  - NMRA
+  - okamoto
   - okdcc
   - opsz
+  - photocoupler
   - pkgs
+  - pthread
+  - sdkconfig
+  - srcs
+  - stdenv
+  - treefmt
   - turbopack
+  - valgrind
   - wght
   - xlarge
+  - xorg
+  - yamlfmt
+flagWords: []
 ignorePaths:
+  - .build
   - .cspell.yaml
+  - .git
+  - .gitignore
+  - .gitmodules
+  - .vscode
+  - "*.kicad_*"
+  - "*.lock"
+  - copying
+  - Doxyfile*
+  - lib
+  - node_modules
   - public
+  - sdkconfig*
   - storybook-static
+  - lv_conf.h
+  - Configure.mdx
+  - treefmt.toml
