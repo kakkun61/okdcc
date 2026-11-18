@@ -65,4 +65,5 @@ M5 GPIO 5 ----------------------- 5: VO
 ```sh
 make build.app.monitor
 make upload.app.monitor PORT=/dev/ttyUSB0
+make monitor PORT=/dev/ttyUSB0
 ```
