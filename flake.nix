@@ -4,60 +4,54 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    cspell-nix = {
+      url = "github:kakkun61/cspell-nix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        treefmt-nix.follows = "treefmt-nix";
+      };
+    };
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
   outputs =
-    inputs@{ nixpkgs, flake-parts, ... }:
+    inputs@{
+      nixpkgs,
+      flake-parts,
+      cspell-nix,
+      treefmt-nix,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ ];
+      imports = [
+        cspell-nix.flakeModule
+        treefmt-nix.flakeModule
+        ./board/flake-module.nix
+        ./web/flake-module.nix
+      ];
       systems = nixpkgs.lib.systems.flakeExposed;
       perSystem =
         {
-          config,
           self',
-          inputs',
           pkgs,
-          system,
           ...
         }:
-        let
-          web-packages = with pkgs; [
-            nodejs_24
-          ];
-          board-packages = with pkgs; [
-            clang
-            doxygen
-            gettext
-            glibc
-            nixpkgs-fmt
-            platformio-core
-            python312
-            python312Packages.breathe
-            python312Packages.sphinx_rtd_theme
-            sphinx
-            stdenv
-            valgrind
-          ];
-        in
         {
           devShells.default = pkgs.mkShell {
-            packages =
-              (with pkgs; [
-                cspell
-                nixfmt
-                treefmt
-                yamlfmt
-              ])
-              ++ web-packages
-              ++ board-packages;
+            inputsFrom = with self'.devShells; [
+              board
+              web
+            ];
           };
-          apps = {
-            unit = {
-              type = "app";
-              program = "${self'.packages.${system}.default}/bin/unit";
-            };
+          cspell.configFile = ./.cspell.yaml;
+          treefmt.programs = {
+            biome.enable = false;
+            clang-format.enable = true;
+            cmake-format.enable = true;
+            nixfmt.enable = true;
+            yamlfmt.enable = true;
           };
-          formatter = pkgs.treefmt;
         };
       flake = { };
     };
